@@ -18,6 +18,12 @@ from .schemas import (
     UserResponse
 )
 
+# Импорт платежного модуля (опционально)
+try:
+    from . import payments
+except ImportError:
+    payments = None
+
 logger = logging.getLogger(__name__)
 
 # Создаем приложение FastAPI
