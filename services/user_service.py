@@ -64,6 +64,14 @@ class UserService:
         return user
     
     @staticmethod
+    async def get_user_by_id(
+        session: AsyncSession,
+        user_id: int
+    ) -> Optional[User]:
+        """Получить пользователя по ID"""
+        return await session.get(User, user_id)
+    
+    @staticmethod
     async def get_user_by_telegram_id(
         session: AsyncSession,
         telegram_id: int

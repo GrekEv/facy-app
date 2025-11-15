@@ -42,6 +42,10 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 app.mount("/uploads", StaticFiles(directory=str(BASE_DIR / "uploads")), name="uploads")
 app.mount("/generated", StaticFiles(directory=str(BASE_DIR / "generated")), name="generated")
 
+# Подключаем роутеры
+if payments:
+    app.include_router(payments.router)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():

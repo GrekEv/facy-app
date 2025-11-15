@@ -110,53 +110,7 @@ async def show_buy_points(callback: CallbackQuery):
     await callback.answer()
 
 
-@router.callback_query(F.data.startswith("buy_"))
-async def process_buy_points(callback: CallbackQuery):
-    """Обработка покупки поинтов"""
-    # Извлекаем количество поинтов
-    amount_str = callback.data.replace("buy_", "")
-    
-    packages = {
-        "100": {"points": 100, "price": 99},
-        "500": {"points": 500, "price": 399},
-        "1000": {"points": 1000, "price": 699},
-        "2500": {"points": 2500, "price": 1499}
-    }
-    
-    if amount_str not in packages:
-        await callback.answer("❌ Неверный пакет", show_alert=True)
-        return
-    
-    package = packages[amount_str]
-    
-    # Здесь должна быть интеграция с платежной системой
-    # Пока что показываем информационное сообщение
-    
-    text = f"""
-💎 <b>Покупка {package['points']} поинтов</b>
-
-💰 Стоимость: <b>{package['price']}₽</b>
-
-⚠️ <b>Функция оплаты в разработке</b>
-
-Для активации платежей необходимо:
-1. Подключить Telegram Payments
-2. Настроить платежного провайдера
-3. Получить токен платежной системы
-
-Свяжитесь с администратором для подключения платежей.
-"""
-    
-    builder = InlineKeyboardBuilder()
-    builder.row(
-        InlineKeyboardButton(text="🔙 Назад", callback_data="buy_points")
-    )
-    
-    await callback.message.edit_text(
-        text,
-        reply_markup=builder.as_markup()
-    )
-    await callback.answer()
+# Обработка покупки поинтов перенесена в handlers/payments.py
 
 
 @router.callback_query(F.data == "stats")

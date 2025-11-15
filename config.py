@@ -33,6 +33,23 @@ class Settings(BaseSettings):
     # Admin
     ADMIN_IDS: str = ""
     
+    # Payment providers
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    YOOKASSA_SHOP_ID: str = ""
+    YOOKASSA_SECRET_KEY: str = ""
+    
+    # Crypto payments
+    CRYPTO_API_KEY: str = ""  # Для блокчейн API (например, BlockCypher, Blockchain.info)
+    CRYPTO_WALLET_ADDRESS_BTC: str = ""
+    CRYPTO_WALLET_ADDRESS_ETH: str = ""
+    CRYPTO_WALLET_ADDRESS_USDT: str = ""
+    
+    # Payment settings
+    MIN_WITHDRAWAL: float = 100.0  # Минимальная сумма вывода
+    WITHDRAWAL_FEE_PERCENT: float = 5.0  # Комиссия на вывод (%)
+    REFERRAL_COMMISSION_PERCENT: float = 50.0  # Комиссия реферальной программы (%)
+    
     @property
     def admin_ids_list(self) -> List[int]:
         """Получить список ID администраторов"""

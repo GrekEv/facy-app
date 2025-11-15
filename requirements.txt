@@ -14,3 +14,8 @@ pydantic==2.6.1
 pydantic-settings==2.1.0
 jinja2==3.1.3
 
+# Payment providers (опционально, устанавливайте по необходимости)
+# stripe==7.0.0  # Для Stripe (Google Pay, Samsung Pay)
+# yookassa==3.0.0  # Для YooKassa (Visa, Mir)
+# blockcypher==1.0.9  # Для проверки криптоплатежей
+
