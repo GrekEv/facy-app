@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: deepface-api
+    command: python run_api.py
+    ports:
+      - "8000:8000"
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - DEEPFACE_API_KEY=${DEEPFACE_API_KEY}
+      - DEEPFACE_API_URL=${DEEPFACE_API_URL}
+      - FFANS_API_KEY=${FFANS_API_KEY}
+      - FFANS_API_URL=${FFANS_API_URL}
+      - DATABASE_URL=sqlite+aiosqlite:///./data/app.db
+      - HOST=0.0.0.0
+      - PORT=8000
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+      - ./generated:/app/generated
+    restart: unless-stopped
+
+  bot:
+    build: .
+    container_name: deepface-bot
+    command: python main.py
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - DEEPFACE_API_KEY=${DEEPFACE_API_KEY}
+      - DEEPFACE_API_URL=${DEEPFACE_API_URL}
+      - FFANS_API_KEY=${FFANS_API_KEY}
+      - FFANS_API_URL=${FFANS_API_URL}
+      - DATABASE_URL=sqlite+aiosqlite:///./data/app.db
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - api
+    restart: unless-stopped
+

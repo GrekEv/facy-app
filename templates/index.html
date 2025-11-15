@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Facy - Стань кем угодно за 10 секунд</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Хедер -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="logo-icon">🎭</div>
+                    <div class="logo-text">Facy</div>
+                </div>
+                <div class="header-right">
+                    <button class="header-btn" id="loginBtn">Вход</button>
+                    <button class="header-btn header-btn-primary" id="createVideoBtn">Создать видео</button>
+                    <button class="header-btn" id="partnerBtn">Партнерка</button>
+                </div>
+            </div>
+            <div class="header-demo">
+                <div class="demo-before-after">
+                    <div class="demo-label">До</div>
+                    <div class="demo-label">После</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Геро-блок -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Стань кем угодно за 10 секунд
+                </h1>
+                <p class="hero-subtitle">
+                    Меняй лица. Генерируй видео. Создавай невозможное.
+                </p>
+                <button class="btn btn-hero" id="startFreeBtn">
+                    <span class="btn-text">Начать бесплатно</span>
+                    <span class="btn-icon">✨</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Подзаголовок -->
+        <section class="subhero">
+            <p class="subhero-text">
+                Загрузи любое видео или опиши сцену — Facy сделает остальное.
+            </p>
+            <p class="subhero-text">
+                Качество студии. Скорость сервиса. Никаких навыков.
+            </p>
+        </section>
+
+        <!-- Преимущества -->
+        <section class="advantages">
+            <div class="advantage-card">
+                <div class="advantage-icon">⚡</div>
+                <h3 class="advantage-title">Моментальный Face Swap</h3>
+                <p class="advantage-text">Поменяй лицо в ролике за пару секунд. Чисто, ровно, натурально.</p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon">🎬</div>
+                <h3 class="advantage-title">Видео по описанию</h3>
+                <p class="advantage-text">Напиши 1–2 предложения. Получи полноценную сцену с твоим персонажем.</p>
+            </div>
+            <div class="advantage-card">
+                <div class="advantage-icon">🔒</div>
+                <h3 class="advantage-title">Абсолютная приватность</h3>
+                <p class="advantage-text">Твои фото и ролики хранятся в зашифрованном виде и не используются для обучения.</p>
+            </div>
+        </section>
+
+        <!-- Демонстрация -->
+        <section class="demo-section">
+            <h2 class="section-title">Посмотри, как это выглядит на деле</h2>
+            <div class="demo-container">
+                <div class="demo-item">
+                    <div class="demo-toggle">
+                        <button class="toggle-btn active" data-demo="before">До</button>
+                        <button class="toggle-btn" data-demo="after">После</button>
+                    </div>
+                    <div class="demo-video-container">
+                        <video class="demo-video" id="demoVideo1" loop muted>
+                            <source src="/static/demo1.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+                <div class="demo-item">
+                    <div class="demo-toggle">
+                        <button class="toggle-btn active" data-demo="before">До</button>
+                        <button class="toggle-btn" data-demo="after">После</button>
+                    </div>
+                    <div class="demo-video-container">
+                        <video class="demo-video" id="demoVideo2" loop muted>
+                            <source src="/static/demo2.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Тарифы -->
+        <section class="pricing">
+            <h2 class="section-title">Тарифы</h2>
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <h3 class="pricing-name">Базовый</h3>
+                    <div class="pricing-badge">Популярный</div>
+                </div>
+                <ul class="pricing-features">
+                    <li>✓ Face Swap + AI видео + AI картинки</li>
+                    <li>✓ Высокое качество</li>
+                    <li>✓ Скорость максимальная</li>
+                    <li>✓ Безлимит</li>
+                    <li>✓ Приватность</li>
+                </ul>
+                <div class="pricing-price">
+                    <span class="price-amount" id="priceAmount">XXX</span>
+                    <span class="price-currency">₽</span>
+                </div>
+                <button class="btn btn-pricing" id="activateBtn">
+                    <span class="btn-text">Активировать</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Партнерка -->
+        <section class="partnership">
+            <div class="partnership-content">
+                <h2 class="partnership-title">Хочешь зарабатывать на нас?</h2>
+                <p class="partnership-text">
+                    Отдаём тебе половину денег. Всерьёз.
+                </p>
+                <p class="partnership-text-small">
+                    У тебя есть аудитория? Идеально.<br>
+                    Нет аудитории? Тоже нормально — репост в соцсетях окупает подписку.
+                </p>
+                <button class="btn btn-partnership" id="getLinkBtn">
+                    <span class="btn-text">Получить ссылку</span>
+                    <span class="btn-icon">🔗</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Завершение -->
+        <section class="cta">
+            <div class="cta-content">
+                <h2 class="cta-title">Facy. Твоя фантазия — наш движок.</h2>
+                <p class="cta-subtitle">Создай первый ролик бесплатно.</p>
+                <button class="btn btn-cta" id="startBtn">
+                    <span class="btn-text">Начать</span>
+                    <span class="btn-icon">🚀</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Футер -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">Контакты</h4>
+                    <a href="#" class="footer-link">Поддержка</a>
+                    <a href="#" class="footer-link">Telegram</a>
+                </div>
+                <div class="footer-section">
+                    <h4 class="footer-title">Информация</h4>
+                    <a href="#" class="footer-link" id="faqBtn">FAQ</a>
+                    <a href="#" class="footer-link" id="policyBtn">Политика конфиденциальности</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Facy. Все права защищены.</p>
+            </div>
+        </footer>
+
+        <!-- Модальное окно создания видео -->
+        <div class="modal" id="createModal">
+            <div class="modal-content">
+                <button class="modal-close" id="modalClose">✕</button>
+                <h3 class="modal-title">Создать видео</h3>
+                <div class="modal-body">
+                    <div class="create-tabs">
+                        <button class="create-tab active" data-tab="swap">Face Swap</button>
+                        <button class="create-tab" data-tab="generate">Генерация</button>
+                    </div>
+
+                    <!-- Face Swap -->
+                    <div class="create-section active" id="swap-section">
+                        <div class="upload-container">
+                            <div class="upload-box">
+                                <input type="file" id="sourceImage" accept="image/*" hidden>
+                                <label for="sourceImage" class="upload-label">
+                                    <div class="upload-icon">📷</div>
+                                    <div class="upload-text">Загрузить фото</div>
+                                    <div class="upload-hint">Лицо для замены</div>
+                                </label>
+                                <div class="preview" id="sourcePreview"></div>
+                            </div>
+                            <div class="upload-box">
+                                <input type="file" id="targetVideo" accept="video/*" hidden>
+                                <label for="targetVideo" class="upload-label">
+                                    <div class="upload-icon">🎬</div>
+                                    <div class="upload-text">Загрузить видео</div>
+                                    <div class="upload-hint">Целевое видео</div>
+                                </label>
+                                <div class="preview" id="targetPreview"></div>
+                            </div>
+                        </div>
+                        <div class="action-container">
+                            <div class="cost-info">
+                                <span class="cost-label">Стоимость:</span>
+                                <span class="cost-value">50 💎</span>
+                            </div>
+                            <button class="btn btn-primary" id="swapFaceBtn">
+                                <span class="btn-icon">🎭</span>
+                                <span>Создать</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Генерация -->
+                    <div class="create-section" id="generate-section">
+                        <div class="form-group">
+                            <label class="form-label">Опиши сцену</label>
+                            <textarea 
+                                id="promptInput" 
+                                class="form-textarea" 
+                                placeholder="Например: Красивый закат на море, в стиле импрессионизма..."
+                                rows="4"
+                            ></textarea>
+                        </div>
+                        <div class="action-container">
+                            <div class="cost-info">
+                                <span class="cost-label">Стоимость:</span>
+                                <span class="cost-value">10 💎</span>
+                            </div>
+                            <button class="btn btn-primary" id="generateBtn">
+                                <span class="btn-icon">✨</span>
+                                <span>Сгенерировать</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно результата -->
+        <div class="modal" id="resultModal">
+            <div class="modal-content">
+                <button class="modal-close" id="resultModalClose">✕</button>
+                <h3 class="modal-title">Результат готов!</h3>
+                <div class="modal-body">
+                    <div class="result-preview" id="resultPreview"></div>
+                    <div class="result-actions">
+                        <button class="btn btn-secondary" id="downloadBtn">
+                            <span>📥 Скачать</span>
+                        </button>
+                        <button class="btn btn-primary" id="shareBtn">
+                            <span>📤 Поделиться</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Лоадер -->
+        <div class="loader" id="loader">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">Обработка...</div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
