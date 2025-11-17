@@ -9,19 +9,74 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Создаем движок базы данных
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=False,
-    future=True
-)
+# Ленивая инициализация движка базы данных
+_engine = None
+_AsyncSessionLocal = None
 
-# Создаем фабрику сессий
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
+def _init_engine():
+    """Инициализировать движок базы данных"""
+    global _engine, _AsyncSessionLocal
+    
+    if _engine is not None:
+        return  # Уже инициализирован
+    
+    if not settings.DATABASE_URL:
+        logger.warning(
+            "DATABASE_URL not set. Database operations will fail. "
+            "Please set DATABASE_URL environment variable. "
+            "For Vercel serverless, use PostgreSQL: postgresql+asyncpg://user:password@host:port/dbname"
+        )
+        # Создаем заглушку чтобы не падать при импорте
+        return
+    
+    try:
+        _engine = create_async_engine(
+            settings.DATABASE_URL,
+            echo=False,
+            future=True
+        )
+        
+        _AsyncSessionLocal = async_sessionmaker(
+            _engine,
+            class_=AsyncSession,
+            expire_on_commit=False
+        )
+        logger.info("Database engine initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize database engine: {e}")
+        raise
+
+# Инициализируем при импорте модуля (но только если DATABASE_URL установлен)
+_init_engine()
+
+# Для обратной совместимости - используем функции вместо прямого доступа
+def get_engine():
+    """Получить движок базы данных"""
+    _init_engine()
+    if _engine is None:
+        raise ValueError("DATABASE_URL not set. Cannot initialize database engine.")
+    return _engine
+
+def get_session_factory():
+    """Получить фабрику сессий"""
+    _init_engine()
+    if _AsyncSessionLocal is None:
+        raise ValueError("DATABASE_URL not set. Cannot initialize session factory.")
+    return _AsyncSessionLocal
+
+# Для обратной совместимости - свойства
+class _EngineProxy:
+    def __getattr__(self, name):
+        return getattr(get_engine(), name)
+
+class _SessionFactoryProxy:
+    def __call__(self, *args, **kwargs):
+        return get_session_factory()(*args, **kwargs)
+    def __getattr__(self, name):
+        return getattr(get_session_factory(), name)
+
+engine = _EngineProxy()
+AsyncSessionLocal = _SessionFactoryProxy()
 
 
 async def apply_security_policies():
@@ -173,7 +228,8 @@ async def init_db():
             os.makedirs(db_dir, exist_ok=True)
     
     # Создаем все таблицы
-    async with engine.begin() as conn:
+    db_engine = get_engine()
+    async with db_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     
     # Применяем правила безопасности (только для PostgreSQL)
@@ -182,6 +238,7 @@ async def init_db():
 
 async def get_session() -> AsyncSession:
     """Получить сессию базы данных"""
-    async with AsyncSessionLocal() as session:
+    session_factory = get_session_factory()
+    async with session_factory() as session:
         yield session
 
