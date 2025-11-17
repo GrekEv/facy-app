@@ -51,11 +51,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Монтируем статические файлы
+# Монтируем статические файлы (с обработкой ошибок для serverless)
 BASE_DIR = Path(__file__).resolve().parent.parent
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
-app.mount("/uploads", StaticFiles(directory=str(BASE_DIR / "uploads")), name="uploads")
-app.mount("/generated", StaticFiles(directory=str(BASE_DIR / "generated")), name="generated")
+
+# Создаем директории если их нет (для serverless)
+static_dir = BASE_DIR / "static"
+uploads_dir = BASE_DIR / "uploads"
+generated_dir = BASE_DIR / "generated"
+
+static_dir.mkdir(exist_ok=True)
+uploads_dir.mkdir(exist_ok=True)
+generated_dir.mkdir(exist_ok=True)
+
+# Монтируем только если директории существуют
+if static_dir.exists():
+    try:
+        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+    except Exception as e:
+        logger.warning(f"Could not mount static directory: {e}")
+
+if uploads_dir.exists():
+    try:
+        app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+    except Exception as e:
+        logger.warning(f"Could not mount uploads directory: {e}")
+
+if generated_dir.exists():
+    try:
+        app.mount("/generated", StaticFiles(directory=str(generated_dir)), name="generated")
+    except Exception as e:
+        logger.warning(f"Could not mount generated directory: {e}")
 
 # Подключаем роутеры
 if payments:

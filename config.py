@@ -80,7 +80,8 @@ class Settings(BaseSettings):
     IMAGE_GENERATION_PROVIDER: str = "openai"  # openai, ffans, leonardo, replicate
     
     # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///./data/app.db"
+    # Для Vercel serverless нужен PostgreSQL (SQLite не работает)
+    DATABASE_URL: str = ""  # Должен быть установлен через переменные окружения
     
     # Server
     HOST: str = "0.0.0.0"
