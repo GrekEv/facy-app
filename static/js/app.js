@@ -440,25 +440,32 @@ async function handleGenerateImage() {
         return;
     }
     
-    // Получаем telegram_id из Telegram Web App
+    // Получаем telegram_id из Telegram Web App или используем тестовый ID
     const telegramUser = tg?.initDataUnsafe?.user;
-    const telegramId = telegramUser?.id;
+    let telegramId = telegramUser?.id;
     
+    // Если нет Telegram ID, используем тестовый ID для разработки
     if (!telegramId) {
-        showNotification('Не удалось получить данные пользователя из Telegram', 'error');
-        return;
+        telegramId = 123456789; // Тестовый ID
+        console.warn('Telegram ID not found, using test ID:', telegramId);
     }
     
     // Автоматически загружаем данные пользователя из Telegram, если еще не загружены
-    if (!userData) {
-        await loadUserData(telegramId);
+    if (!userData && telegramUser?.id) {
+        await loadUserData(telegramUser.id);
     }
-    
-    // Проверка баланса убрана - бесплатный доступ
     
     showLoader('Генерируем изображение...');
     
     try {
+        console.log('Sending request to:', `${API_BASE_URL}/api/generate/image`);
+        console.log('Request body:', {
+            telegram_id: telegramId,
+            prompt: prompt,
+            model: 'flux',
+            style: 'realistic'
+        });
+        
         const response = await fetch(`${API_BASE_URL}/api/generate/image`, {
             method: 'POST',
             headers: {
@@ -472,27 +479,30 @@ async function handleGenerateImage() {
             })
         });
         
+        console.log('Response status:', response.status);
+        const result = await response.json();
+        console.log('Response data:', result);
+        
         hideLoader();
         
         if (response.ok) {
-            const result = await response.json();
-            
             if (result.success) {
                 showResult(result.image_url, 'image');
                 closeCreateModal();
-                await loadUserData(telegramId);
+                if (telegramUser?.id) {
+                    await loadUserData(telegramUser.id);
+                }
                 showNotification('Изображение успешно сгенерировано!', 'success');
             } else {
                 showNotification(result.message || 'Ошибка при генерации', 'error');
             }
         } else {
-            const error = await response.json();
-            showNotification(error.detail || 'Ошибка сервера', 'error');
+            showNotification(result.detail || 'Ошибка сервера', 'error');
         }
     } catch (error) {
         hideLoader();
-        console.error('Error:', error);
-        showNotification('Произошла ошибка. Попробуйте позже.', 'error');
+        console.error('Error generating image:', error);
+        showNotification(`Произошла ошибка: ${error.message}`, 'error');
     }
 }
 
