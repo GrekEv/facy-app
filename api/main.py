@@ -19,11 +19,6 @@ from api.schemas import (
     GenerateVideoResponse,
     SwapFaceResponse,
     UserResponse,
-    RegisterRequest,
-    RegisterResponse,
-    LoginRequest,
-    LoginResponse,
-    LogoutResponse,
     StatsResponse
 )
 
