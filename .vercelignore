@@ -38,6 +38,14 @@ venv/
 env/
 ENV/
 
+# Бот (не нужен для API на Vercel)
+bot/
+handlers/
+main.py
+
+# Тяжелые зависимости (не используются в API)
+# opencv-python, numpy, pillow используются только в боте
+
 # IDE
 .vscode/
 .idea/
