@@ -56,6 +56,17 @@ requirements-*.txt
 pyproject.toml
 runtime.txt
 
+# Все Python файлы (не нужны для статического фронтенда)
+*.py
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+ENV/
+
 # IDE
 .vscode/
 .idea/
