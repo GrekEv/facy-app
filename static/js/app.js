@@ -259,8 +259,15 @@ function initButtons() {
     
     // Кнопка генерации изображения
     const generateBtn = document.getElementById('generateBtn');
+    console.log('generateBtn found:', generateBtn);
     if (generateBtn) {
-        generateBtn.addEventListener('click', handleGenerateImage);
+        generateBtn.addEventListener('click', (e) => {
+            console.log('Generate button clicked!');
+            e.preventDefault();
+            handleGenerateImage();
+        });
+    } else {
+        console.error('generateBtn not found in DOM!');
     }
     
     // Кнопка генерации видео
