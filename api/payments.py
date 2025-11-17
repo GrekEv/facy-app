@@ -111,28 +111,22 @@ async def get_payment_status(
 
 
 @router.post("/webhook/telegram")
-async def telegram_payment_webhook(
-    # Здесь должна быть обработка webhook от Telegram Payments
-    pass
-):
+async def telegram_payment_webhook():
     """Webhook для Telegram Payments"""
+    # Здесь должна быть обработка webhook от Telegram Payments
     pass
 
 
 @router.post("/webhook/stripe")
-async def stripe_payment_webhook(
-    # Здесь должна быть обработка webhook от Stripe
-    pass
-):
+async def stripe_payment_webhook():
     """Webhook для Stripe"""
+    # Здесь должна быть обработка webhook от Stripe
     pass
 
 
 @router.post("/webhook/yookassa")
-async def yookassa_payment_webhook(
-    # Здесь должна быть обработка webhook от YooKassa
-    pass
-):
+async def yookassa_payment_webhook():
     """Webhook для YooKassa"""
+    # Здесь должна быть обработка webhook от YooKassa
     pass
 

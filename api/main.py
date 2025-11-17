@@ -5,22 +5,31 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from pathlib import Path
+from datetime import datetime
 import logging
 import uuid
 import os
 
 from database import get_session, User, Generation
-from services import deepface_service, image_generation_service, user_service, content_moderation
-from .schemas import (
+from services import deepface_service, image_generation_service, video_generation_service, user_service, content_moderation
+from api.schemas import (
     GenerateImageRequest,
     GenerateImageResponse,
+    GenerateVideoRequest,
+    GenerateVideoResponse,
     SwapFaceResponse,
-    UserResponse
+    UserResponse,
+    RegisterRequest,
+    RegisterResponse,
+    LoginRequest,
+    LoginResponse,
+    LogoutResponse,
+    StatsResponse
 )
 
 # Импорт платежного модуля (опционально)
 try:
-    from . import payments
+    from api import payments
 except ImportError:
     payments = None
 
@@ -89,7 +98,8 @@ async def get_user(
         free_generations=user.free_generations,
         total_generations=user.total_generations,
         total_deepfakes=user.total_deepfakes,
-        is_premium=user.is_premium
+        is_premium=user.is_premium,
+        referral_code=user.referral_code
     )
 
 
@@ -268,6 +278,17 @@ async def swap_face(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/deepfake/task/{task_id}")
+async def check_deepfake_task_status(task_id: str):
+    """Проверить статус задачи смены лица"""
+    try:
+        result = await deepface_service.check_task_status(task_id)
+        return result
+    except Exception as e:
+        logger.error(f"Error checking deepfake task status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/models")
 async def get_models():
     """Получить список доступных моделей"""
@@ -280,6 +301,267 @@ async def get_styles():
     """Получить список доступных стилей"""
     styles = await image_generation_service.get_available_styles()
     return {"styles": styles}
+
+
+@app.post("/api/generate/video", response_model=GenerateVideoResponse)
+async def generate_video(
+    request: GenerateVideoRequest,
+    session: AsyncSession = Depends(get_session)
+):
+    """Генерация видео по текстовому описанию"""
+    # Проверка контента на допустимость
+    is_allowed, reason = content_moderation.check_text_content(request.prompt)
+    if not is_allowed:
+        content_moderation.log_violation(
+            request.telegram_id,
+            "video_generation",
+            request.prompt,
+            reason
+        )
+        raise HTTPException(
+            status_code=400,
+            detail=f"❌ Запрос отклонен: {reason}\n\n"
+                   "Пожалуйста, ознакомьтесь с политикой контента (/help в боте)."
+        )
+    
+    # Получаем пользователя
+    user = await user_service.get_user_by_telegram_id(session, request.telegram_id)
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Проверяем баланс (генерация видео дороже)
+    cost = 30  # 30 поинтов за видео
+    if not await user_service.can_afford(user, cost):
+        raise HTTPException(status_code=402, detail="Insufficient balance")
+    
+    # Создаем запись о генерации
+    generation = Generation(
+        user_id=user.id,
+        generation_type="video",
+        prompt=request.prompt,
+        model=request.model,
+        style=request.style,
+        cost=cost,
+        status="processing"
+    )
+    session.add(generation)
+    await session.commit()
+    
+    try:
+        # Генерируем видео (используем экземпляр сервиса)
+        result = await video_generation_service.generate_video(
+            prompt=request.prompt,
+            model=request.model or "sora",
+            style=request.style,
+            negative_prompt=request.negative_prompt,
+            duration=request.duration,
+            fps=request.fps,
+            width=request.width,
+            height=request.height
+        )
+        
+        if result["status"] == "success":
+            # Списываем средства
+            if user.free_generations > 0:
+                user.free_generations -= 1
+            else:
+                await user_service.update_balance(session, user, -cost)
+            
+            user.total_generations += 1
+            generation.status = "completed"
+            generation.result_file = result.get("video_url") or result.get("video")
+            
+            # Если есть task_id, сохраняем его для отслеживания статуса
+            if result.get("task_id"):
+                generation.error_message = f"task_id:{result['task_id']}"  # Временно используем это поле
+            
+            await session.commit()
+            
+            return GenerateVideoResponse(
+                success=True,
+                message="Video generation started successfully",
+                video_url=result.get("video_url") or result.get("video"),
+                task_id=result.get("task_id"),
+                generation_id=generation.id
+            )
+        else:
+            generation.status = "failed"
+            generation.error_message = result.get("message", "Unknown error")
+            await session.commit()
+            
+            raise HTTPException(status_code=500, detail=result.get("message", "Video generation failed"))
+    
+    except Exception as e:
+        logger.error(f"Error generating video: {e}")
+        generation.status = "failed"
+        generation.error_message = str(e)
+        await session.commit()
+        
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/video/task/{task_id}")
+async def check_video_task_status(task_id: str):
+    """Проверить статус задачи генерации видео"""
+    try:
+        result = await video_generation_service.check_video_task_status(task_id)
+        return result
+    except Exception as e:
+        logger.error(f"Error checking video task status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/video/models")
+async def get_video_models():
+    """Получить список доступных моделей для генерации видео"""
+    models = await video_generation_service.get_available_video_models()
+    return {"models": models}
+
+
+@app.get("/api/video/styles")
+async def get_video_styles():
+    """Получить список доступных стилей для видео"""
+    styles = await video_generation_service.get_available_video_styles()
+    return {"styles": styles}
+
+
+@app.post("/api/register", response_model=RegisterResponse)
+async def register(
+    request: RegisterRequest,
+    session: AsyncSession = Depends(get_session)
+):
+    """Регистрация нового пользователя"""
+    try:
+        # Проверяем, существует ли пользователь
+        existing_user = await user_service.get_user_by_telegram_id(session, request.telegram_id)
+        
+        if existing_user:
+            return RegisterResponse(
+                success=False,
+                message="Пользователь уже зарегистрирован",
+                user=UserResponse(
+                    id=existing_user.id,
+                    telegram_id=existing_user.telegram_id,
+                    username=existing_user.username,
+                    first_name=existing_user.first_name,
+                    balance=existing_user.balance,
+                    free_generations=existing_user.free_generations,
+                    total_generations=existing_user.total_generations,
+                    total_deepfakes=existing_user.total_deepfakes,
+                    is_premium=existing_user.is_premium,
+                    referral_code=existing_user.referral_code
+                )
+            )
+        
+        # Создаем пользователя с реферальным кодом
+        user = await user_service.create_user_with_referral(
+            session=session,
+            telegram_id=request.telegram_id,
+            username=request.username,
+            first_name=request.first_name,
+            last_name=request.last_name,
+            referral_code=request.referral_code
+        )
+        
+        return RegisterResponse(
+            success=True,
+            message="Регистрация успешна",
+            user=UserResponse(
+                id=user.id,
+                telegram_id=user.telegram_id,
+                username=user.username,
+                first_name=user.first_name,
+                balance=user.balance,
+                free_generations=user.free_generations,
+                total_generations=user.total_generations,
+                total_deepfakes=user.total_deepfakes,
+                is_premium=user.is_premium,
+                referral_code=user.referral_code
+            )
+        )
+    except Exception as e:
+        logger.error(f"Error registering user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/login", response_model=LoginResponse)
+async def login(
+    request: LoginRequest,
+    session: AsyncSession = Depends(get_session)
+):
+    """Вход пользователя"""
+    try:
+        user = None
+        
+        # Ищем пользователя по telegram_id или username
+        if request.telegram_id:
+            user = await user_service.get_user_by_telegram_id(session, request.telegram_id)
+        elif request.username:
+            # Ищем по username
+            from sqlalchemy import select
+            result = await session.execute(
+                select(User).where(User.username == request.username)
+            )
+            user = result.scalar_one_or_none()
+        
+        if not user:
+            # Если пользователь не найден и есть telegram_id, создаем нового
+            if request.telegram_id:
+                user = await user_service.get_or_create_user(
+                    session,
+                    telegram_id=request.telegram_id
+                )
+            else:
+                raise HTTPException(status_code=404, detail="User not found")
+        
+        # Обновляем время последней активности
+        user.last_active = datetime.utcnow()
+        await session.commit()
+        
+        return LoginResponse(
+            success=True,
+            message="Вход выполнен успешно",
+            user=UserResponse(
+                id=user.id,
+                telegram_id=user.telegram_id,
+                username=user.username,
+                first_name=user.first_name,
+                balance=user.balance,
+                free_generations=user.free_generations,
+                total_generations=user.total_generations,
+                total_deepfakes=user.total_deepfakes,
+                is_premium=user.is_premium,
+                referral_code=user.referral_code
+            )
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error logging in user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/logout", response_model=LogoutResponse)
+async def logout():
+    """Выход пользователя (на клиенте)"""
+    return LogoutResponse(
+        success=True,
+        message="Выход выполнен успешно"
+    )
+
+
+@app.get("/api/stats", response_model=StatsResponse)
+async def get_stats(
+    session: AsyncSession = Depends(get_session)
+):
+    """Получить статистику системы"""
+    try:
+        stats = await user_service.get_stats(session)
+        return StatsResponse(**stats)
+    except Exception as e:
+        logger.error(f"Error getting stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/health")

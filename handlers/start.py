@@ -15,11 +15,14 @@ def get_main_keyboard() -> InlineKeyboardMarkup:
     """Получить главную клавиатуру"""
     builder = InlineKeyboardBuilder()
     
+    # Получаем URL Web App (с автоматическим определением)
+    webapp_url = settings.webapp_url
+    
     # Кнопка для открытия Web App
     builder.row(
         InlineKeyboardButton(
             text="🚀 Открыть приложение",
-            web_app=WebAppInfo(url=settings.WEBAPP_URL)
+            web_app=WebAppInfo(url=webapp_url)
         )
     )
     

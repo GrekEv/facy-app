@@ -8,19 +8,73 @@
 # Токен бота от BotFather
 BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
 
-# URL вашего Web App (Vercel или Railway)
-WEBAPP_URL=https://your-app.vercel.app
+# URL вашего Web App (ОПЦИОНАЛЬНО - можно использовать домен или Railway/Render/ngrok URL)
+# Варианты:
+# 1. С доменом: WEBAPP_URL=https://your-domain.com
+# 2. Railway: WEBAPP_URL=https://your-app.up.railway.app (или оставьте пустым - определится автоматически)
+# 3. Render: WEBAPP_URL=https://your-app.onrender.com (или оставьте пустым - определится автоматически)
+# 4. ngrok: WEBAPP_URL=https://xxx.ngrok-free.app
+# 5. Оставить пустым - будет использован автоматически определенный URL или http://localhost:8000
+WEBAPP_URL=
 
 # ============================================
 # ОПЦИОНАЛЬНЫЕ ПЕРЕМЕННЫЕ
 # ============================================
 
-# API ключи для реальной работы (если не указаны, используется mock режим)
+# ============================================
+# API КЛЮЧИ ДЛЯ ЗАМЕНЫ ЛИЦ
+# ============================================
+
+# DeepFace Video (рекомендуется)
 DEEPFACE_API_KEY=your_deepface_api_key
 DEEPFACE_API_URL=https://deepfacevideo.com/api
 
-FFANS_API_KEY=your_ffans_api_key
-FFANS_API_URL=https://ffans.ai/api
+# Альтернативные сервисы для замены лиц
+FACESWAP_API_KEY=
+FACESWAP_API_URL=https://faceswap.ru/api
+DEEPSWAP_API_KEY=
+DEEPSWAP_API_URL=https://api.deepswap.ai
+
+# ============================================
+# API КЛЮЧИ ДЛЯ ГЕНЕРАЦИИ ИЗОБРАЖЕНИЙ
+# ============================================
+
+# Replicate (рекомендуется для изображений)
+# Зарегистрируйтесь на https://replicate.com
+# Account → API Tokens → Create token
+REPLICATE_API_KEY=your_replicate_api_key
+REPLICATE_API_URL=https://api.replicate.com/v1
+
+# ============================================
+# API КЛЮЧИ ДЛЯ ГЕНЕРАЦИИ ВИДЕО
+# ============================================
+
+# OpenAI Sora (для генерации видео высокого качества)
+# Зарегистрируйтесь на https://platform.openai.com
+# API Keys → Create new secret key
+OPENAI_API_KEY=your_openai_api_key
+SORA_MODEL=sora-1.0-pro  # или sora-2.0
+
+# Higgsfield.ai (для генерации видео)
+# Зарегистрируйтесь на https://higgsfield.ai
+# API → Create new API key
+HIGGSFIELD_API_KEY=your_higgsfield_api_key
+HIGGSFIELD_API_URL=https://api.higgsfield.ai
+
+# Replicate (также поддерживает генерацию видео)
+# Используйте тот же REPLICATE_API_KEY что и для изображений
+
+# ============================================
+# ВЫБОР ПРОВАЙДЕРОВ
+# ============================================
+
+# Для генерации изображений
+IMAGE_GENERATION_PROVIDER=replicate  # replicate
+
+# Для генерации видео (выберите один)
+VIDEO_GENERATION_PROVIDER=replicate  # replicate, sora, higgsfield
+
+# Примечание: Если API ключи не указаны, используется mock режим для тестирования
 
 # База данных
 # Оставьте пустым для SQLite (по умолчанию)

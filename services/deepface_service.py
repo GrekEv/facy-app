@@ -1,6 +1,7 @@
 """Сервис для работы с DeepFace API"""
 import aiohttp
 import logging
+import os
 from typing import Optional, Dict, Any
 from config import settings
 
@@ -32,11 +33,13 @@ class DeepFaceService:
             Результат обработки
         """
         try:
-            # Здесь будет реальный запрос к API DeepFace
-            # Пока что возвращаем заглушку
-            
             if not self.api_key:
                 logger.warning("DeepFace API key not configured, using mock response")
+                # В mock режиме создаем пустой файл для тестирования
+                import os
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                with open(output_path, 'w') as f:
+                    f.write("")  # Создаем пустой файл
                 return {
                     "status": "success",
                     "message": "Mock: DeepFace processing completed",
@@ -44,7 +47,7 @@ class DeepFaceService:
                     "task_id": "mock_task_123"
                 }
             
-            # Реальный запрос к API
+            # Реальный запрос к API DeepFace
             async with aiohttp.ClientSession() as session:
                 # Подготавливаем файлы для отправки
                 data = aiohttp.FormData()
@@ -68,11 +71,27 @@ class DeepFaceService:
                 async with session.post(
                     f"{self.api_url}/swap",
                     data=data,
-                    headers=headers
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=300)  # 5 минут таймаут
                 ) as response:
                     if response.status == 200:
                         result = await response.json()
-                        return result
+                        
+                        # Если API возвращает URL видео, скачиваем его
+                        if result.get("video_url"):
+                            video_url = result["video_url"]
+                            async with session.get(video_url) as video_response:
+                                if video_response.status == 200:
+                                    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                                    with open(output_path, 'wb') as f:
+                                        f.write(await video_response.read())
+                        
+                        return {
+                            "status": "success",
+                            "message": result.get("message", "Face swap completed"),
+                            "output_path": output_path,
+                            "task_id": result.get("task_id", "")
+                        }
                     else:
                         error_text = await response.text()
                         logger.error(f"DeepFace API error: {error_text}")

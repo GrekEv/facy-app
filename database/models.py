@@ -1,10 +1,12 @@
 """Модели базы данных"""
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, ForeignKey, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import DeclarativeBase, relationship
 from datetime import datetime
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    """Базовый класс для всех моделей"""
+    pass
 
 
 class User(Base):
@@ -202,7 +204,7 @@ class Transaction(Base):
     discount_amount = Column(Float, default=0.0)  # Сумма скидки
     
     # Метаданные
-    metadata = Column(Text, nullable=True)  # JSON с дополнительными данными
+    transaction_metadata = Column(Text, nullable=True)  # JSON с дополнительными данными
     
     # Даты
     created_at = Column(DateTime, default=datetime.utcnow)

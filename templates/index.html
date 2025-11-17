@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Facy - Стань кем угодно за 10 секунд</title>
+    <title>OnlyFace - Стань кем угодно за 10 секунд</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -13,19 +13,13 @@
         <header class="header">
             <div class="header-content">
                 <div class="header-left">
-                    <div class="logo-icon">🎭</div>
-                    <div class="logo-text">Facy</div>
+                    <div class="logo-text">OnlyFace</div>
                 </div>
                 <div class="header-right">
+                    <button class="header-btn" id="registerBtn">Зарегистрироваться</button>
                     <button class="header-btn" id="loginBtn">Вход</button>
                     <button class="header-btn header-btn-primary" id="createVideoBtn">Создать видео</button>
-                    <button class="header-btn" id="partnerBtn">Партнерка</button>
-                </div>
-            </div>
-            <div class="header-demo">
-                <div class="demo-before-after">
-                    <div class="demo-label">До</div>
-                    <div class="demo-label">После</div>
+                    <button class="header-btn" id="partnerBtn" style="display: none;">Партнерка</button>
                 </div>
             </div>
         </header>
@@ -48,8 +42,8 @@
 
         <!-- Подзаголовок -->
         <section class="subhero">
-            <p class="subhero-text">
-                Загрузи любое видео или опиши сцену — Facy сделает остальное.
+                    <p class="subhero-text">
+                Загрузи любое видео или опиши сцену — OnlyFace сделает остальное.
             </p>
             <p class="subhero-text">
                 Качество студии. Скорость сервиса. Никаких навыков.
@@ -150,7 +144,7 @@
         <!-- Завершение -->
         <section class="cta">
             <div class="cta-content">
-                <h2 class="cta-title">Facy. Твоя фантазия — наш движок.</h2>
+                <h2 class="cta-title">OnlyFace. Твоя фантазия — наш движок.</h2>
                 <p class="cta-subtitle">Создай первый ролик бесплатно.</p>
                 <button class="btn btn-cta" id="startBtn">
                     <span class="btn-text">Начать</span>
@@ -174,7 +168,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Facy. Все права защищены.</p>
+                <p>&copy; 2024 OnlyFace. Все права защищены.</p>
             </div>
         </footer>
 
@@ -186,7 +180,8 @@
                 <div class="modal-body">
                     <div class="create-tabs">
                         <button class="create-tab active" data-tab="swap">Face Swap</button>
-                        <button class="create-tab" data-tab="generate">Генерация</button>
+                        <button class="create-tab" data-tab="generate">Генерация изображений</button>
+                        <button class="create-tab" data-tab="generate-video">Генерация видео</button>
                     </div>
 
                     <!-- Face Swap -->
@@ -217,16 +212,16 @@
                                 <span class="cost-value">50 💎</span>
                             </div>
                             <button class="btn btn-primary" id="swapFaceBtn">
-                                <span class="btn-icon">🎭</span>
+                                <span class="btn-icon">✨</span>
                                 <span>Создать</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Генерация -->
+                    <!-- Генерация изображений -->
                     <div class="create-section" id="generate-section">
                         <div class="form-group">
-                            <label class="form-label">Опиши сцену</label>
+                            <label class="form-label">Опиши изображение</label>
                             <textarea 
                                 id="promptInput" 
                                 class="form-textarea" 
@@ -242,6 +237,37 @@
                             <button class="btn btn-primary" id="generateBtn">
                                 <span class="btn-icon">✨</span>
                                 <span>Сгенерировать</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Генерация видео -->
+                    <div class="create-section" id="generate-video-section">
+                        <div class="form-group">
+                            <label class="form-label">Опиши видео сцену</label>
+                            <textarea 
+                                id="videoPromptInput" 
+                                class="form-textarea" 
+                                placeholder="Например: Красивый закат на море с волнами, камера медленно движется вдоль берега..."
+                                rows="4"
+                            ></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Длительность (секунды)</label>
+                            <select id="videoDuration" class="form-select">
+                                <option value="3">3 секунды</option>
+                                <option value="5" selected>5 секунд</option>
+                                <option value="10">10 секунд</option>
+                            </select>
+                        </div>
+                        <div class="action-container">
+                            <div class="cost-info">
+                                <span class="cost-label">Стоимость:</span>
+                                <span class="cost-value">30 💎</span>
+                            </div>
+                            <button class="btn btn-primary" id="generateVideoBtn">
+                                <span class="btn-icon">🎬</span>
+                                <span>Сгенерировать видео</span>
                             </button>
                         </div>
                     </div>
@@ -272,6 +298,170 @@
         <div class="loader" id="loader">
             <div class="loader-spinner"></div>
             <div class="loader-text">Обработка...</div>
+        </div>
+
+        <!-- Модальное окно первого входа с реферальным кодом -->
+        <div class="modal" id="welcomeModal">
+            <div class="modal-content modal-welcome">
+                    <button class="modal-close" id="welcomeModalClose">✕</button>
+                <div class="welcome-header">
+                    <div class="welcome-icon">🎉</div>
+                    <h3 class="welcome-title">Добро пожаловать в OnlyFace!</h3>
+                    <p class="welcome-subtitle">Создай свое первое видео или изображение</p>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Реферальный код (необязательно)</label>
+                        <input 
+                            type="text" 
+                            id="referralCodeInput" 
+                            class="form-input" 
+                            placeholder="Введите код друга"
+                            maxlength="8"
+                        >
+                        <p class="form-hint">Если у тебя есть код друга, введи его и получи бонус!</p>
+                    </div>
+                    <div class="welcome-actions">
+                        <button class="btn btn-primary" id="welcomeRegisterBtn">
+                            <span class="btn-text">Зарегистрироваться</span>
+                            <span class="btn-icon">✨</span>
+                        </button>
+                        <button class="btn btn-secondary" id="skipReferralBtn">
+                            Пропустить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно входа -->
+        <div class="modal" id="loginModal">
+            <div class="modal-content">
+                <button class="modal-close" id="loginModalClose">✕</button>
+                <h3 class="modal-title">Вход</h3>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Логин (Telegram ID или Username)</label>
+                        <input 
+                            type="text" 
+                            id="loginUsername" 
+                            class="form-input" 
+                            placeholder="Введите Telegram ID или username"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Пароль</label>
+                        <input 
+                            type="password" 
+                            id="loginPassword" 
+                            class="form-input" 
+                            placeholder="Введите пароль"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" id="submitLoginBtn" style="width: 100%;">
+                            <span class="btn-text">Войти</span>
+                        </button>
+                    </div>
+                    <p class="form-hint" style="text-align: center; margin-top: 1rem;">
+                        Нет аккаунта? <a href="#" id="goToRegisterLink" style="color: var(--primary-purple);">Зарегистрироваться</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно регистрации -->
+        <div class="modal" id="registerModal">
+            <div class="modal-content">
+                <button class="modal-close" id="registerModalClose">✕</button>
+                <h3 class="modal-title">Регистрация</h3>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Логин (Telegram Username)</label>
+                        <input 
+                            type="text" 
+                            id="registerUsername" 
+                            class="form-input" 
+                            placeholder="Введите username"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Пароль</label>
+                        <input 
+                            type="password" 
+                            id="registerPassword" 
+                            class="form-input" 
+                            placeholder="Придумайте пароль"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Реферальный код (необязательно)</label>
+                        <input 
+                            type="text" 
+                            id="registerReferralCode" 
+                            class="form-input" 
+                            placeholder="Введите код друга"
+                            maxlength="8"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" id="submitRegisterBtn" style="width: 100%;">
+                            <span class="btn-text">Зарегистрироваться</span>
+                        </button>
+                    </div>
+                    <p class="form-hint" style="text-align: center; margin-top: 1rem;">
+                        Уже есть аккаунт? <a href="#" id="goToLoginLink" style="color: var(--primary-purple);">Войти</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно партнерки -->
+        <div class="modal" id="partnerModal">
+            <div class="modal-content">
+                <button class="modal-close" id="partnerModalClose">✕</button>
+                <h3 class="modal-title">Партнерская программа</h3>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Ваш партнерский код</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input 
+                                type="text" 
+                                id="partnerCodeDisplay" 
+                                class="form-input" 
+                                readonly
+                                style="flex: 1; background: var(--bg-darker);"
+                            >
+                            <button class="btn btn-secondary" id="copyPartnerCodeBtn">
+                                📋 Копировать
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ваша партнерская ссылка</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input 
+                                type="text" 
+                                id="partnerLinkDisplay" 
+                                class="form-input" 
+                                readonly
+                                style="flex: 1; background: var(--bg-darker);"
+                            >
+                            <button class="btn btn-secondary" id="copyPartnerLinkBtn">
+                                📋 Копировать
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group" style="background: var(--bg-card); padding: 1rem; border-radius: 12px; margin-top: 1rem;">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--primary-purple);">Как это работает:</h4>
+                        <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary);">
+                            <li>Делитесь своей партнерской ссылкой</li>
+                            <li>За каждого приглашенного получаете 50% от его платежей</li>
+                            <li>Выводите заработанные средства в любое время</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

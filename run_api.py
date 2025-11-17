@@ -12,7 +12,7 @@ async def startup():
     port = settings.port
     print(f"✓ Database initialized")
     print(f"✓ API server starting on http://{settings.HOST}:{port}")
-    print(f"✓ Web App available at {settings.WEBAPP_URL or f'http://{settings.HOST}:{port}'}")
+    print(f"✓ Web App available at {settings.webapp_url}")
 
 
 if __name__ == "__main__":
