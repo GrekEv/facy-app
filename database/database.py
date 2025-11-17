@@ -188,7 +188,8 @@ async def apply_security_policies():
                 commands.append(cmd)
         
         # Выполняем SQL команды
-        async with engine.begin() as conn:
+        db_engine = get_engine()
+        async with db_engine.begin() as conn:
             applied_count = 0
             skipped_count = 0
             
