@@ -42,9 +42,13 @@ except Exception as e:
         return {"error": "Application initialization failed", "details": str(e)}
     
     handler = Mangum(error_app, lifespan="off")
+    app = error_app  # Для локального тестирования
 
 # Для локального тестирования
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=3000)
+    try:
+        uvicorn.run(app, host="0.0.0.0", port=3000)
+    except NameError:
+        logger.error("App not initialized, cannot run locally")
 
