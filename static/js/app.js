@@ -162,6 +162,37 @@ function openCreateModal() {
     if (modal) {
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
+        
+        // Убеждаемся, что обработчики привязаны к кнопкам внутри модального окна
+        const generateBtn = document.getElementById('generateBtn');
+        if (generateBtn && !generateBtn.dataset.listenerAttached) {
+            generateBtn.addEventListener('click', (e) => {
+                console.log('Generate button clicked from modal!');
+                e.preventDefault();
+                handleGenerateImage();
+            });
+            generateBtn.dataset.listenerAttached = 'true';
+        }
+        
+        const generateVideoBtn = document.getElementById('generateVideoBtn');
+        if (generateVideoBtn && !generateVideoBtn.dataset.listenerAttached) {
+            generateVideoBtn.addEventListener('click', (e) => {
+                console.log('Generate video button clicked from modal!');
+                e.preventDefault();
+                handleGenerateVideo();
+            });
+            generateVideoBtn.dataset.listenerAttached = 'true';
+        }
+        
+        const swapFaceBtn = document.getElementById('swapFaceBtn');
+        if (swapFaceBtn && !swapFaceBtn.dataset.listenerAttached) {
+            swapFaceBtn.addEventListener('click', (e) => {
+                console.log('Swap face button clicked from modal!');
+                e.preventDefault();
+                handleSwapFace();
+            });
+            swapFaceBtn.dataset.listenerAttached = 'true';
+        }
     }
 }
 
