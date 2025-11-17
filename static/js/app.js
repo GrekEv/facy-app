@@ -104,15 +104,9 @@ function updatePrice() {
     }
 }
 
-// Инициализация кнопок хедера
+// Инициализация кнопок хедера (убрана кнопка создания видео)
 function initHeaderButtons() {
-    const createVideoBtn = document.getElementById('createVideoBtn');
-    
-    if (createVideoBtn) {
-        createVideoBtn.addEventListener('click', () => {
-            openCreateModal();
-        });
-    }
+    // Кнопка создания видео убрана из хедера
 }
 
 
