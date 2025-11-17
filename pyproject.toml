@@ -1,0 +1,9 @@
+[project]
+name = "telegram-deepface-app"
+version = "1.0.0"
+requires-python = ">=3.11,<3.12"
+description = "Telegram Mini App for DeepFace AI"
+
+[tool.python]
+version = "3.11"
+
