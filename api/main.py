@@ -149,14 +149,11 @@ async def generate_image(
                    "Пожалуйста, ознакомьтесь с политикой контента (/help в боте)."
         )
     
-    # Получаем пользователя или создаем если не существует
-    user = await user_service.get_user_by_telegram_id(session, request.telegram_id)
-    
-    if not user:
-        user = await user_service.get_or_create_user(
-            session,
-            telegram_id=request.telegram_id
-        )
+    # Получаем или создаем пользователя автоматически
+    user = await user_service.get_or_create_user(
+        session,
+        telegram_id=request.telegram_id
+    )
     
     # Создаем запись о генерации (без проверки баланса - бесплатный доступ)
     generation = Generation(
@@ -217,14 +214,11 @@ async def swap_face(
     session: AsyncSession = Depends(get_session)
 ):
     """Замена лица в видео"""
-    # Получаем пользователя или создаем если не существует
-    user = await user_service.get_user_by_telegram_id(session, telegram_id)
-    
-    if not user:
-        user = await user_service.get_or_create_user(
-            session,
-            telegram_id=telegram_id
-        )
+    # Получаем или создаем пользователя автоматически
+    user = await user_service.get_or_create_user(
+        session,
+        telegram_id=telegram_id
+    )
     
     try:
         # Сохраняем загруженные файлы
@@ -335,14 +329,11 @@ async def generate_video(
                    "Пожалуйста, ознакомьтесь с политикой контента (/help в боте)."
         )
     
-    # Получаем пользователя или создаем если не существует
-    user = await user_service.get_user_by_telegram_id(session, request.telegram_id)
-    
-    if not user:
-        user = await user_service.get_or_create_user(
-            session,
-            telegram_id=request.telegram_id
-        )
+    # Получаем или создаем пользователя автоматически
+    user = await user_service.get_or_create_user(
+        session,
+        telegram_id=request.telegram_id
+    )
     
     # Создаем запись о генерации (без проверки баланса - бесплатный доступ)
     generation = Generation(
