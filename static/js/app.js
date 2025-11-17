@@ -37,29 +37,20 @@ let statsData = null;
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('Facy App initialized');
+    console.log('OnlyFace App initialized');
     
     // Получаем данные пользователя из Telegram (всегда доступны в Telegram Web App)
     const telegramUser = tg?.initDataUnsafe?.user;
     
     if (telegramUser && telegramUser.id) {
-        // Проверяем, первый ли это вход
-        const isFirstVisit = !localStorage.getItem(`user_${telegramUser.id}_visited`);
-        
-        if (isFirstVisit) {
-            // Показываем модальное окно приветствия
-            showWelcomeModal(telegramUser);
-    } else {
-            // Автоматически загружаем данные пользователя при загрузке страницы
-            await loadUserData(telegramUser.id);
-        }
+        // Автоматически загружаем/создаем пользователя при загрузке страницы
+        await loadUserData(telegramUser.id);
     }
     
     // Загружаем статистику
     await loadStats();
     
     // Инициализируем обработчики
-    initWelcomeModal(); // Сначала инициализируем модальные окна
     initHeaderButtons();
     initCreateModal();
     initFileUploads();
@@ -68,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initSmoothScroll();
 });
 
-// Загрузка данных пользователя
+// Загрузка данных пользователя (автоматически создается если не существует)
 async function loadUserData(telegramId) {
     try {
         const response = await fetch(`${API_BASE_URL}/api/user/${telegramId}`);
@@ -76,7 +67,6 @@ async function loadUserData(telegramId) {
         if (response.ok) {
             userData = await response.json();
             updatePrice();
-            updateHeaderButtons();
         } else {
             console.error('Failed to load user data');
         }
@@ -101,191 +91,6 @@ async function loadStats() {
     }
 }
 
-// Показать модальное окно приветствия
-function showWelcomeModal(telegramUser) {
-    const welcomeModal = document.getElementById('welcomeModal');
-    if (welcomeModal) {
-        welcomeModal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-// Закрыть модальное окно приветствия
-function closeWelcomeModal() {
-    const welcomeModal = document.getElementById('welcomeModal');
-    if (welcomeModal) {
-        welcomeModal.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-}
-
-// Инициализация модальных окон
-function initWelcomeModal() {
-    const welcomeRegisterBtn = document.getElementById('welcomeRegisterBtn');
-    const skipReferralBtn = document.getElementById('skipReferralBtn');
-    const submitLoginBtn = document.getElementById('submitLoginBtn');
-    const submitRegisterBtn = document.getElementById('submitRegisterBtn');
-    const goToRegisterLink = document.getElementById('goToRegisterLink');
-    const goToLoginLink = document.getElementById('goToLoginLink');
-    const copyPartnerCodeBtn = document.getElementById('copyPartnerCodeBtn');
-    const copyPartnerLinkBtn = document.getElementById('copyPartnerLinkBtn');
-    
-    if (welcomeRegisterBtn) {
-        welcomeRegisterBtn.addEventListener('click', handleRegister);
-    }
-    
-    if (skipReferralBtn) {
-        skipReferralBtn.addEventListener('click', handleSkipReferral);
-    }
-    
-    if (submitLoginBtn) {
-        submitLoginBtn.addEventListener('click', handleFormLogin);
-    }
-    
-    if (submitRegisterBtn) {
-        submitRegisterBtn.addEventListener('click', handleFormRegister);
-    }
-    
-    if (goToRegisterLink) {
-        goToRegisterLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeLoginModal();
-            openRegisterModal();
-        });
-    }
-    
-    if (goToLoginLink) {
-        goToLoginLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            closeRegisterModal();
-            openLoginModal();
-        });
-    }
-    
-    if (copyPartnerCodeBtn) {
-        copyPartnerCodeBtn.addEventListener('click', () => {
-            const code = document.getElementById('partnerCodeDisplay').value;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(code);
-                showNotification('Партнерский код скопирован!', 'success');
-            }
-        });
-    }
-    
-    if (copyPartnerLinkBtn) {
-        copyPartnerLinkBtn.addEventListener('click', () => {
-            const link = document.getElementById('partnerLinkDisplay').value;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(link);
-                showNotification('Партнерская ссылка скопирована!', 'success');
-            }
-        });
-    }
-    
-    // Кнопки закрытия модальных окон
-    const welcomeModalClose = document.getElementById('welcomeModalClose');
-    const loginModalClose = document.getElementById('loginModalClose');
-    const registerModalClose = document.getElementById('registerModalClose');
-    const partnerModalClose = document.getElementById('partnerModalClose');
-    
-    if (welcomeModalClose) {
-        welcomeModalClose.addEventListener('click', closeWelcomeModal);
-    }
-    
-    if (loginModalClose) {
-        loginModalClose.addEventListener('click', closeLoginModal);
-    }
-    
-    if (registerModalClose) {
-        registerModalClose.addEventListener('click', closeRegisterModal);
-    }
-    
-    if (partnerModalClose) {
-        partnerModalClose.addEventListener('click', closePartnerModal);
-    }
-    
-    // Закрытие модальных окон по клику вне их
-    const modals = [
-        { id: 'welcomeModal', close: closeWelcomeModal },
-        { id: 'loginModal', close: closeLoginModal },
-        { id: 'registerModal', close: closeRegisterModal },
-        { id: 'partnerModal', close: closePartnerModal }
-    ];
-    
-    modals.forEach(({ id, close }) => {
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    close();
-                }
-            });
-        }
-    });
-}
-
-// Обработка регистрации
-async function handleRegister() {
-    // Данные пользователя автоматически доступны из Telegram Web App
-    const telegramUser = tg?.initDataUnsafe?.user;
-    const telegramId = telegramUser?.id;
-    
-    const referralCodeInput = document.getElementById('referralCodeInput');
-    const referralCode = referralCodeInput?.value.trim().toUpperCase() || null;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                telegram_id: telegramId,
-                username: telegramUser?.username,
-                first_name: telegramUser?.first_name,
-                last_name: telegramUser?.last_name,
-                referral_code: referralCode
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok && result.success) {
-            userData = result.user;
-            if (telegramId) {
-                localStorage.setItem(`user_${telegramId}_visited`, 'true');
-            }
-            closeWelcomeModal();
-            updateHeaderButtons();
-            showNotification('Регистрация успешна! Добро пожаловать!', 'success');
-            // Предлагаем создать первое видео/изображение
-            setTimeout(() => {
-                showNotification('Создай свое первое видео или изображение!', 'info');
-                openCreateModal();
-            }, 1000);
-        } else {
-            // Пользователь уже зарегистрирован
-            if (result.user) {
-                userData = result.user;
-                if (telegramId) {
-                    localStorage.setItem(`user_${telegramId}_visited`, 'true');
-                }
-                closeWelcomeModal();
-                updateHeaderButtons();
-            } else {
-                showNotification(result.message || 'Ошибка регистрации', 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Error registering:', error);
-        showNotification('Произошла ошибка при регистрации', 'error');
-    }
-}
-
-// Обработка пропуска реферального кода
-async function handleSkipReferral() {
-    await handleRegister();
-}
 
 // Обновление цены
 function updatePrice() {
@@ -300,271 +105,14 @@ function updatePrice() {
 // Инициализация кнопок хедера
 function initHeaderButtons() {
     const createVideoBtn = document.getElementById('createVideoBtn');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const partnerBtn = document.getElementById('partnerBtn');
     
     if (createVideoBtn) {
         createVideoBtn.addEventListener('click', () => {
-            if (userData) {
             openCreateModal();
-            } else {
-                showNotification('Пожалуйста, войдите или зарегистрируйтесь', 'error');
-            }
         });
     }
-    
-    if (registerBtn) {
-        registerBtn.addEventListener('click', () => {
-            openRegisterModal();
-        });
-    }
-    
-    if (loginBtn) {
-        loginBtn.addEventListener('click', () => {
-            if (userData) {
-                handleLogout();
-            } else {
-                openLoginModal();
-            }
-        });
-    }
-    
-    if (partnerBtn) {
-        partnerBtn.addEventListener('click', () => {
-            if (userData) {
-                openPartnerModal();
-            } else {
-                showNotification('Для доступа к партнерке необходимо войти', 'error');
-            }
-        });
-    }
-    
-    // Обновляем видимость кнопок
-    updateHeaderButtons();
 }
 
-// Обновление кнопок хедера в зависимости от статуса пользователя
-function updateHeaderButtons() {
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const partnerBtn = document.getElementById('partnerBtn');
-    
-    if (userData) {
-        // Пользователь зарегистрирован
-        if (loginBtn) loginBtn.textContent = 'Выход';
-        if (registerBtn) registerBtn.style.display = 'none';
-        if (partnerBtn) partnerBtn.style.display = 'inline-block';
-    } else {
-        // Пользователь не зарегистрирован
-        if (loginBtn) loginBtn.textContent = 'Вход';
-        if (registerBtn) registerBtn.style.display = 'inline-block';
-        if (partnerBtn) partnerBtn.style.display = 'none';
-    }
-}
-
-// Открыть модальное окно входа
-function openLoginModal() {
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-// Закрыть модальное окно входа
-function closeLoginModal() {
-    const modal = document.getElementById('loginModal');
-    if (modal) {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-        // Очищаем поля
-        document.getElementById('loginUsername').value = '';
-        document.getElementById('loginPassword').value = '';
-    }
-}
-
-// Открыть модальное окно регистрации
-function openRegisterModal() {
-    const modal = document.getElementById('registerModal');
-    if (modal) {
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-// Закрыть модальное окно регистрации
-function closeRegisterModal() {
-    const modal = document.getElementById('registerModal');
-    if (modal) {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-        // Очищаем поля
-        document.getElementById('registerUsername').value = '';
-        document.getElementById('registerPassword').value = '';
-        document.getElementById('registerReferralCode').value = '';
-    }
-}
-
-// Открыть модальное окно партнерки
-function openPartnerModal() {
-    if (!userData) {
-        showNotification('Для доступа к партнерке необходимо войти', 'error');
-        return;
-    }
-    
-    const modal = document.getElementById('partnerModal');
-    if (modal) {
-        // Заполняем данные партнерки
-        const partnerCode = userData.referral_code || 'Не доступен';
-        const partnerLink = `https://t.me/your_bot?start=ref_${partnerCode}`;
-        
-        document.getElementById('partnerCodeDisplay').value = partnerCode;
-        document.getElementById('partnerLinkDisplay').value = partnerLink;
-        
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-// Закрыть модальное окно партнерки
-function closePartnerModal() {
-    const modal = document.getElementById('partnerModal');
-    if (modal) {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-}
-
-// Обработка входа через форму
-async function handleFormLogin() {
-    const usernameInput = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!usernameInput) {
-        showNotification('Введите логин', 'error');
-        return;
-    }
-    
-    // Пытаемся определить, это Telegram ID или username
-    const isTelegramId = /^\d+$/.test(usernameInput);
-    const requestBody = {};
-    
-    if (isTelegramId) {
-        requestBody.telegram_id = parseInt(usernameInput);
-    } else {
-        requestBody.username = usernameInput;
-    }
-    
-    // Пароль опциональный (для Telegram Web App не обязателен)
-    if (password) {
-        requestBody.password = password;
-    }
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestBody)
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok && result.success) {
-            userData = result.user;
-            updateHeaderButtons();
-            closeLoginModal();
-            showNotification('Вход выполнен успешно!', 'success');
-        } else {
-            showNotification(result.message || 'Неверный логин или пароль', 'error');
-        }
-    } catch (error) {
-        console.error('Error logging in:', error);
-        showNotification('Произошла ошибка при входе', 'error');
-    }
-}
-
-// Обработка регистрации через форму
-async function handleFormRegister() {
-    const username = document.getElementById('registerUsername').value.trim();
-    const password = document.getElementById('registerPassword').value;
-    const referralCode = document.getElementById('registerReferralCode').value.trim().toUpperCase() || null;
-    
-    if (!username || !password) {
-        showNotification('Заполните все обязательные поля', 'error');
-        return;
-    }
-    
-    // Получаем данные из Telegram, если доступны
-    const telegramUser = tg?.initDataUnsafe?.user;
-    const telegramId = telegramUser?.id;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                telegram_id: telegramId || 0, // Если нет Telegram ID, используем 0
-                username: username,
-                password: password,
-                referral_code: referralCode
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok && result.success) {
-            userData = result.user;
-            updateHeaderButtons();
-            closeRegisterModal();
-            showNotification('Регистрация успешна! Добро пожаловать!', 'success');
-            // Предлагаем создать первое видео/изображение
-            setTimeout(() => {
-                showNotification('Создай свое первое видео или изображение!', 'info');
-                openCreateModal();
-            }, 1000);
-        } else {
-            showNotification(result.message || 'Ошибка регистрации', 'error');
-        }
-    } catch (error) {
-        console.error('Error registering:', error);
-        showNotification('Произошла ошибка при регистрации', 'error');
-    }
-}
-
-// Обработка выхода
-async function handleLogout() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/logout`, {
-            method: 'POST'
-        });
-        
-        const result = await response.json();
-        
-        if (response.ok && result.success) {
-            userData = null;
-            const telegramUser = tg?.initDataUnsafe?.user;
-            if (telegramUser) {
-                localStorage.removeItem(`user_${telegramUser.id}_visited`);
-            }
-            updateHeaderButtons();
-            showNotification('Выход выполнен успешно', 'success');
-        }
-    } catch (error) {
-        console.error('Error logging out:', error);
-        // Выход на клиенте в любом случае
-        userData = null;
-        const telegramUser = tg?.initDataUnsafe?.user;
-        if (telegramUser) {
-            localStorage.removeItem(`user_${telegramUser.id}_visited`);
-        }
-        updateHeaderButtons();
-    }
-}
 
 // Инициализация модального окна создания
 function initCreateModal() {
@@ -733,13 +281,6 @@ function initButtons() {
         });
     }
     
-    // Кнопка получения партнерской ссылки
-    const getLinkBtn = document.getElementById('getLinkBtn');
-    if (getLinkBtn) {
-        getLinkBtn.addEventListener('click', () => {
-            openPartnerModal();
-        });
-    }
     
     // Модальное окно результата
     const resultModalClose = document.getElementById('resultModalClose');
@@ -802,14 +343,6 @@ function initButtons() {
     }
 }
 
-// Плавная прокрутка к партнерке
-function scrollToPartnership() {
-    const partnership = document.querySelector('.partnership');
-    if (partnership) {
-        partnership.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
 // Инициализация плавной прокрутки
 function initSmoothScroll() {
     // Добавляем плавную прокрутку для всех якорных ссылок
@@ -836,25 +369,27 @@ async function handleSwapFace() {
         return;
     }
     
-    // Автоматически загружаем данные пользователя из Telegram, если еще не загружены
-    if (!userData) {
-        const telegramUser = tg?.initDataUnsafe?.user;
-        if (telegramUser?.id) {
-            await loadUserData(telegramUser.id);
-        }
-    }
+    // Получаем telegram_id из Telegram Web App
+    const telegramUser = tg?.initDataUnsafe?.user;
+    const telegramId = telegramUser?.id;
     
-    // Проверяем баланс
-    if (userData.balance < 50 && userData.free_generations === 0) {
-        showNotification('Недостаточно поинтов. Пополните баланс!', 'error');
+    if (!telegramId) {
+        showNotification('Не удалось получить данные пользователя из Telegram', 'error');
         return;
     }
+    
+    // Автоматически загружаем данные пользователя из Telegram, если еще не загружены
+    if (!userData) {
+        await loadUserData(telegramId);
+    }
+    
+    // Проверка баланса убрана - бесплатный доступ
     
     showLoader('Создаем Face Swap...');
     
     try {
         const formData = new FormData();
-        formData.append('telegram_id', userData.telegram_id);
+        formData.append('telegram_id', telegramId);
         formData.append('source_image', sourceImageFile);
         formData.append('target_video', targetVideoFile);
         
@@ -871,7 +406,7 @@ async function handleSwapFace() {
             if (result.success) {
                 showResult(result.video_url, 'video');
                 closeCreateModal();
-                await loadUserData(userData.telegram_id);
+                await loadUserData(telegramId);
                 showNotification('Face Swap успешно создан!', 'success');
             } else {
                 showNotification(result.message || 'Ошибка при создании', 'error');
@@ -905,19 +440,21 @@ async function handleGenerateImage() {
         return;
     }
     
-    // Автоматически загружаем данные пользователя из Telegram, если еще не загружены
-    if (!userData) {
-        const telegramUser = tg?.initDataUnsafe?.user;
-        if (telegramUser?.id) {
-            await loadUserData(telegramUser.id);
-        }
-    }
+    // Получаем telegram_id из Telegram Web App
+    const telegramUser = tg?.initDataUnsafe?.user;
+    const telegramId = telegramUser?.id;
     
-    // Проверяем баланс
-    if (userData.balance < 10 && userData.free_generations === 0) {
-        showNotification('Недостаточно поинтов. Пополните баланс!', 'error');
+    if (!telegramId) {
+        showNotification('Не удалось получить данные пользователя из Telegram', 'error');
         return;
     }
+    
+    // Автоматически загружаем данные пользователя из Telegram, если еще не загружены
+    if (!userData) {
+        await loadUserData(telegramId);
+    }
+    
+    // Проверка баланса убрана - бесплатный доступ
     
     showLoader('Генерируем изображение...');
     
@@ -928,7 +465,7 @@ async function handleGenerateImage() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                telegram_id: userData.telegram_id,
+                telegram_id: telegramId,
                 prompt: prompt,
                 model: 'flux',
                 style: 'realistic'
@@ -943,7 +480,7 @@ async function handleGenerateImage() {
             if (result.success) {
                 showResult(result.image_url, 'image');
                 closeCreateModal();
-                await loadUserData(userData.telegram_id);
+                await loadUserData(telegramId);
                 showNotification('Изображение успешно сгенерировано!', 'success');
             } else {
                 showNotification(result.message || 'Ошибка при генерации', 'error');
@@ -980,19 +517,21 @@ async function handleGenerateVideo() {
         return;
     }
     
-    // Автоматически загружаем данные пользователя из Telegram, если еще не загружены
-    if (!userData) {
-        const telegramUser = tg?.initDataUnsafe?.user;
-        if (telegramUser?.id) {
-            await loadUserData(telegramUser.id);
-        }
-    }
+    // Получаем telegram_id из Telegram Web App
+    const telegramUser = tg?.initDataUnsafe?.user;
+    const telegramId = telegramUser?.id;
     
-    // Проверяем баланс (видео дороже - 30 поинтов)
-    if (userData.balance < 30 && userData.free_generations === 0) {
-        showNotification('Недостаточно поинтов. Пополните баланс!', 'error');
+    if (!telegramId) {
+        showNotification('Не удалось получить данные пользователя из Telegram', 'error');
         return;
     }
+    
+    // Автоматически загружаем данные пользователя из Telegram, если еще не загружены
+    if (!userData) {
+        await loadUserData(telegramId);
+    }
+    
+    // Проверка баланса убрана - бесплатный доступ
     
     showLoader('Генерируем видео... Это может занять несколько минут.');
     
@@ -1003,7 +542,7 @@ async function handleGenerateVideo() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                telegram_id: userData.telegram_id,
+                telegram_id: telegramId,
                 prompt: prompt,
                 model: 'runway',
                 style: 'realistic',
@@ -1028,7 +567,7 @@ async function handleGenerateVideo() {
                 } else if (result.video_url) {
                     showResult(result.video_url, 'video');
                     closeCreateModal();
-                    await loadUserData(userData.telegram_id);
+                    await loadUserData(telegramId);
                     showNotification('Видео успешно сгенерировано!', 'success');
                 } else {
                     showNotification('Видео генерируется. Проверьте позже.', 'info');
@@ -1052,6 +591,10 @@ async function checkVideoTaskStatus(taskId, generationId) {
     let attempts = 0;
     const maxAttempts = 60; // Проверяем до 5 минут (60 попыток по 5 секунд)
     
+    // Получаем telegram_id из Telegram Web App
+    const telegramUser = tg?.initDataUnsafe?.user;
+    const telegramId = telegramUser?.id;
+    
     const checkStatus = async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/api/video/task/${taskId}`);
@@ -1063,7 +606,9 @@ async function checkVideoTaskStatus(taskId, generationId) {
                     hideLoader();
                     showResult(status.video_url, 'video');
                     closeCreateModal();
-                    await loadUserData(userData.telegram_id);
+                    if (telegramId) {
+                        await loadUserData(telegramId);
+                    }
                     showNotification('Видео успешно сгенерировано!', 'success');
                     return true;
                 } else if (status.status === 'failed') {
@@ -1096,15 +641,6 @@ async function checkVideoTaskStatus(taskId, generationId) {
     };
     
     await checkStatus();
-}
-
-// Получение партнерской ссылки (используется для кнопки в секции партнерки)
-async function handleGetPartnerLink() {
-    if (!userData) {
-        showNotification('Для доступа к партнерке необходимо войти', 'error');
-            return;
-        }
-    openPartnerModal();
 }
 
 // Показать результат

@@ -4,6 +4,9 @@ version = "1.0.0"
 requires-python = ">=3.11,<3.12"
 description = "Telegram Mini App for DeepFace AI"
 
+[project.scripts]
+app = "api.main:app"
+
 [tool.vercel]
 python-version = "3.11"
 

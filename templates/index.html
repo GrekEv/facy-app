@@ -22,10 +22,7 @@
                     <div class="logo-text">OnlyFace</div>
                 </div>
                 <div class="header-right">
-                    <button class="header-btn" id="registerBtn">Зарегистрироваться</button>
-                    <button class="header-btn" id="loginBtn">Вход</button>
                     <button class="header-btn header-btn-primary" id="createVideoBtn">Создать видео</button>
-                    <button class="header-btn" id="partnerBtn" style="display: none;">Партнерка</button>
                 </div>
             </div>
         </header>
@@ -129,23 +126,6 @@
             </div>
         </section>
 
-        <!-- Партнерка -->
-        <section class="partnership">
-            <div class="partnership-content">
-                <h2 class="partnership-title">Хочешь зарабатывать на нас?</h2>
-                <p class="partnership-text">
-                    Отдаём тебе половину денег. Всерьёз.
-                </p>
-                <p class="partnership-text-small">
-                    У тебя есть аудитория? Идеально.<br>
-                    Нет аудитории? Тоже нормально — репост в соцсетях окупает подписку.
-                </p>
-                <button class="btn btn-partnership" id="getLinkBtn">
-                    <span class="btn-text">Получить ссылку</span>
-                    <span class="btn-icon">🔗</span>
-                </button>
-            </div>
-        </section>
 
         <!-- Завершение -->
         <section class="cta">
@@ -304,170 +284,6 @@
         <div class="loader" id="loader">
             <div class="loader-spinner"></div>
             <div class="loader-text">Обработка...</div>
-        </div>
-
-        <!-- Модальное окно первого входа с реферальным кодом -->
-        <div class="modal" id="welcomeModal">
-            <div class="modal-content modal-welcome">
-                    <button class="modal-close" id="welcomeModalClose">✕</button>
-                <div class="welcome-header">
-                    <div class="welcome-icon">🎉</div>
-                    <h3 class="welcome-title">Добро пожаловать в OnlyFace!</h3>
-                    <p class="welcome-subtitle">Создай свое первое видео или изображение</p>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">Реферальный код (необязательно)</label>
-                        <input 
-                            type="text" 
-                            id="referralCodeInput" 
-                            class="form-input" 
-                            placeholder="Введите код друга"
-                            maxlength="8"
-                        >
-                        <p class="form-hint">Если у тебя есть код друга, введи его и получи бонус!</p>
-                    </div>
-                    <div class="welcome-actions">
-                        <button class="btn btn-primary" id="welcomeRegisterBtn">
-                            <span class="btn-text">Зарегистрироваться</span>
-                            <span class="btn-icon">✨</span>
-                        </button>
-                        <button class="btn btn-secondary" id="skipReferralBtn">
-                            Пропустить
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальное окно входа -->
-        <div class="modal" id="loginModal">
-            <div class="modal-content">
-                <button class="modal-close" id="loginModalClose">✕</button>
-                <h3 class="modal-title">Вход</h3>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">Логин (Telegram ID или Username)</label>
-                        <input 
-                            type="text" 
-                            id="loginUsername" 
-                            class="form-input" 
-                            placeholder="Введите Telegram ID или username"
-                        >
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Пароль</label>
-                        <input 
-                            type="password" 
-                            id="loginPassword" 
-                            class="form-input" 
-                            placeholder="Введите пароль"
-                        >
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-primary" id="submitLoginBtn" style="width: 100%;">
-                            <span class="btn-text">Войти</span>
-                        </button>
-                    </div>
-                    <p class="form-hint" style="text-align: center; margin-top: 1rem;">
-                        Нет аккаунта? <a href="#" id="goToRegisterLink" style="color: var(--primary-purple);">Зарегистрироваться</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальное окно регистрации -->
-        <div class="modal" id="registerModal">
-            <div class="modal-content">
-                <button class="modal-close" id="registerModalClose">✕</button>
-                <h3 class="modal-title">Регистрация</h3>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">Логин (Telegram Username)</label>
-                        <input 
-                            type="text" 
-                            id="registerUsername" 
-                            class="form-input" 
-                            placeholder="Введите username"
-                        >
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Пароль</label>
-                        <input 
-                            type="password" 
-                            id="registerPassword" 
-                            class="form-input" 
-                            placeholder="Придумайте пароль"
-                        >
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Реферальный код (необязательно)</label>
-                        <input 
-                            type="text" 
-                            id="registerReferralCode" 
-                            class="form-input" 
-                            placeholder="Введите код друга"
-                            maxlength="8"
-                        >
-                    </div>
-                    <div class="form-group">
-                        <button class="btn btn-primary" id="submitRegisterBtn" style="width: 100%;">
-                            <span class="btn-text">Зарегистрироваться</span>
-                        </button>
-                    </div>
-                    <p class="form-hint" style="text-align: center; margin-top: 1rem;">
-                        Уже есть аккаунт? <a href="#" id="goToLoginLink" style="color: var(--primary-purple);">Войти</a>
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальное окно партнерки -->
-        <div class="modal" id="partnerModal">
-            <div class="modal-content">
-                <button class="modal-close" id="partnerModalClose">✕</button>
-                <h3 class="modal-title">Партнерская программа</h3>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">Ваш партнерский код</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input 
-                                type="text" 
-                                id="partnerCodeDisplay" 
-                                class="form-input" 
-                                readonly
-                                style="flex: 1; background: var(--bg-darker);"
-                            >
-                            <button class="btn btn-secondary" id="copyPartnerCodeBtn">
-                                📋 Копировать
-                            </button>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ваша партнерская ссылка</label>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <input 
-                                type="text" 
-                                id="partnerLinkDisplay" 
-                                class="form-input" 
-                                readonly
-                                style="flex: 1; background: var(--bg-darker);"
-                            >
-                            <button class="btn btn-secondary" id="copyPartnerLinkBtn">
-                                📋 Копировать
-                            </button>
-                        </div>
-                    </div>
-                    <div class="form-group" style="background: var(--bg-card); padding: 1rem; border-radius: 12px; margin-top: 1rem;">
-                        <h4 style="margin-bottom: 0.5rem; color: var(--primary-purple);">Как это работает:</h4>
-                        <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary);">
-                            <li>Делитесь своей партнерской ссылкой</li>
-                            <li>За каждого приглашенного получаете 50% от его платежей</li>
-                            <li>Выводите заработанные средства в любое время</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 

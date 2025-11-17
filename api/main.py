@@ -149,25 +149,23 @@ async def generate_image(
                    "Пожалуйста, ознакомьтесь с политикой контента (/help в боте)."
         )
     
-    # Получаем пользователя
+    # Получаем пользователя или создаем если не существует
     user = await user_service.get_user_by_telegram_id(session, request.telegram_id)
     
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        user = await user_service.get_or_create_user(
+            session,
+            telegram_id=request.telegram_id
+        )
     
-    # Проверяем баланс
-    cost = 10
-    if not await user_service.can_afford(user, cost):
-        raise HTTPException(status_code=402, detail="Insufficient balance")
-    
-    # Создаем запись о генерации
+    # Создаем запись о генерации (без проверки баланса - бесплатный доступ)
     generation = Generation(
         user_id=user.id,
         generation_type="image",
         prompt=request.prompt,
         model=request.model,
         style=request.style,
-        cost=cost,
+        cost=0,  # Бесплатно
         status="processing"
     )
     session.add(generation)
@@ -182,12 +180,7 @@ async def generate_image(
         )
         
         if result["status"] == "success":
-            # Списываем средства
-            if user.free_generations > 0:
-                user.free_generations -= 1
-            else:
-                await user_service.update_balance(session, user, -cost)
-            
+            # Обновляем статистику без списания средств
             user.total_generations += 1
             generation.status = "completed"
             generation.result_file = result.get("images", [""])[0]
@@ -224,16 +217,14 @@ async def swap_face(
     session: AsyncSession = Depends(get_session)
 ):
     """Замена лица в видео"""
-    # Получаем пользователя
+    # Получаем пользователя или создаем если не существует
     user = await user_service.get_user_by_telegram_id(session, telegram_id)
     
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Проверяем баланс
-    cost = 50
-    if not await user_service.can_afford(user, cost):
-        raise HTTPException(status_code=402, detail="Insufficient balance")
+        user = await user_service.get_or_create_user(
+            session,
+            telegram_id=telegram_id
+        )
     
     try:
         # Сохраняем загруженные файлы
@@ -249,13 +240,13 @@ async def swap_face(
         with open(target_path, "wb") as f:
             f.write(await target_video.read())
         
-        # Создаем запись о генерации
+        # Создаем запись о генерации (без проверки баланса - бесплатный доступ)
         generation = Generation(
             user_id=user.id,
             generation_type="deepfake",
             source_file=str(source_path),
             target_file=str(target_path),
-            cost=cost,
+            cost=0,  # Бесплатно
             status="processing"
         )
         session.add(generation)
@@ -273,12 +264,7 @@ async def swap_face(
         )
         
         if result["status"] == "success":
-            # Списываем средства
-            if user.free_generations > 0:
-                user.free_generations -= 1
-            else:
-                await user_service.update_balance(session, user, -cost)
-            
+            # Обновляем статистику без списания средств
             user.total_deepfakes += 1
             generation.status = "completed"
             generation.result_file = str(output_path)
@@ -349,25 +335,23 @@ async def generate_video(
                    "Пожалуйста, ознакомьтесь с политикой контента (/help в боте)."
         )
     
-    # Получаем пользователя
+    # Получаем пользователя или создаем если не существует
     user = await user_service.get_user_by_telegram_id(session, request.telegram_id)
     
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        user = await user_service.get_or_create_user(
+            session,
+            telegram_id=request.telegram_id
+        )
     
-    # Проверяем баланс (генерация видео дороже)
-    cost = 30  # 30 поинтов за видео
-    if not await user_service.can_afford(user, cost):
-        raise HTTPException(status_code=402, detail="Insufficient balance")
-    
-    # Создаем запись о генерации
+    # Создаем запись о генерации (без проверки баланса - бесплатный доступ)
     generation = Generation(
         user_id=user.id,
         generation_type="video",
         prompt=request.prompt,
         model=request.model,
         style=request.style,
-        cost=cost,
+        cost=0,  # Бесплатно
         status="processing"
     )
     session.add(generation)
@@ -387,12 +371,7 @@ async def generate_video(
         )
         
         if result["status"] == "success":
-            # Списываем средства
-            if user.free_generations > 0:
-                user.free_generations -= 1
-            else:
-                await user_service.update_balance(session, user, -cost)
-            
+            # Обновляем статистику без списания средств
             user.total_generations += 1
             generation.status = "completed"
             generation.result_file = result.get("video_url") or result.get("video")
