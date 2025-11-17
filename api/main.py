@@ -164,6 +164,8 @@ async def generate_image(
     await session.commit()
     
     try:
+        logger.info(f"Starting image generation for user {user.telegram_id}, prompt: {request.prompt[:50]}...")
+        
         # Генерируем изображение
         result = await image_generation_service.generate_image(
             prompt=request.prompt,
@@ -171,29 +173,45 @@ async def generate_image(
             style=request.style
         )
         
-        if result["status"] == "success":
+        logger.info(f"Image generation result: status={result.get('status')}, has_images={bool(result.get('images'))}")
+        
+        if result.get("status") == "success":
+            image_url = result.get("images", [""])[0]
+            if not image_url:
+                logger.error("No image URL in successful response")
+                generation.status = "failed"
+                generation.error_message = "No image URL received"
+                await session.commit()
+                raise HTTPException(status_code=500, detail="No image URL received from generation service")
+            
             # Обновляем статистику без списания средств
             user.total_generations += 1
             generation.status = "completed"
-            generation.result_file = result.get("images", [""])[0]
+            generation.result_file = image_url
             
             await session.commit()
+            
+            logger.info(f"Image generation completed successfully, URL: {image_url}")
             
             return GenerateImageResponse(
                 success=True,
                 message="Image generated successfully",
-                image_url=result.get("images", [""])[0],
+                image_url=image_url,
                 generation_id=generation.id
             )
         else:
+            error_msg = result.get("message", "Unknown error")
+            logger.error(f"Image generation failed: {error_msg}")
             generation.status = "failed"
-            generation.error_message = result.get("message", "Unknown error")
+            generation.error_message = error_msg
             await session.commit()
             
-            raise HTTPException(status_code=500, detail=result.get("message", "Generation failed"))
+            raise HTTPException(status_code=500, detail=error_msg)
     
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error generating image: {e}")
+        logger.error(f"Error generating image: {e}", exc_info=True)
         generation.status = "failed"
         generation.error_message = str(e)
         await session.commit()

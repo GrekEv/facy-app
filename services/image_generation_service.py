@@ -40,20 +40,29 @@ class ImageGenerationService:
             Результат генерации
         """
         try:
-            # Используем OpenAI DALL-E если доступен
-            if self.openai_key and (self.provider == "openai" or not self.api_key):
+            logger.info(f"Generating image with provider: {self.provider}, has_openai_key: {bool(self.openai_key)}, has_ffans_key: {bool(self.api_key)}")
+            
+            # Используем OpenAI DALL-E если доступен и выбран как провайдер
+            if self.openai_key and self.provider == "openai":
+                logger.info("Using OpenAI DALL-E for image generation")
                 return await self._generate_with_openai(prompt, model, width, height)
             
             # Используем FFans API если доступен
-            if self.api_key:
+            if self.api_key and self.provider == "ffans":
+                logger.info("Using FFans API for image generation")
                 return await self._generate_with_ffans(prompt, model, style, negative_prompt, width, height)
+            
+            # Если OpenAI ключ есть, но провайдер не указан или указан другой - используем OpenAI
+            if self.openai_key:
+                logger.info("OpenAI key found, using OpenAI DALL-E as fallback")
+                return await self._generate_with_openai(prompt, model, width, height)
             
             # Fallback на mock
             logger.warning("No API keys configured, using mock response")
             return {
                 "status": "success",
                 "message": "Mock: Image generation completed",
-                "images": ["mock_image_url.png"],
+                "images": ["https://via.placeholder.com/1024x1024?text=Mock+Image"],
                 "task_id": "mock_img_task_123"
             }
         
