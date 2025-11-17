@@ -1,0 +1,9 @@
+{
+  "name": "onlyface-frontend",
+  "version": "1.0.0",
+  "description": "Static frontend for OnlyFace Telegram Mini App",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'"
+  }
+}
+

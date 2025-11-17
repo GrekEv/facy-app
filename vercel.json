@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "framework": null,
-  "buildCommand": null,
+  "buildCommand": "echo 'Static frontend - no build needed'",
   "outputDirectory": ".",
+  "framework": null,
   "rewrites": [
     {
       "source": "/static/(.*)",
