@@ -420,8 +420,14 @@ async function handleSwapFace() {
 
 // Обработка генерации изображения
 async function handleGenerateImage() {
+    console.log('handleGenerateImage called');
+    
     const promptInput = document.getElementById('promptInput');
-    if (!promptInput) return;
+    if (!promptInput) {
+        console.error('promptInput not found!');
+        showNotification('Ошибка: поле ввода не найдено', 'error');
+        return;
+    }
     
     const prompt = promptInput.value.trim();
     
@@ -446,38 +452,52 @@ async function handleGenerateImage() {
         console.warn('Telegram ID not found, using test ID:', telegramId);
     }
     
+    console.log('Starting generation with telegram_id:', telegramId, 'prompt:', prompt);
     showLoader('Генерируем изображение...');
     
     try {
-        console.log('Sending request to:', `${API_BASE_URL}/api/generate/image`);
-        console.log('Request body:', {
+        const apiUrl = `${API_BASE_URL}/api/generate/image`;
+        console.log('Sending request to:', apiUrl);
+        console.log('API_BASE_URL:', API_BASE_URL);
+        
+        const requestBody = {
             telegram_id: telegramId,
             prompt: prompt,
             model: 'flux',
             style: 'realistic'
-        });
+        };
+        console.log('Request body:', requestBody);
         
-        const response = await fetch(`${API_BASE_URL}/api/generate/image`, {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                telegram_id: telegramId,
-                prompt: prompt,
-                model: 'flux',
-                style: 'realistic'
-            })
+            body: JSON.stringify(requestBody)
         });
         
         console.log('Response status:', response.status);
-        const result = await response.json();
+        console.log('Response headers:', response.headers);
+        
+        let result;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            result = await response.json();
+        } else {
+            const text = await response.text();
+            console.error('Non-JSON response:', text);
+            hideLoader();
+            showNotification(`Ошибка сервера: ${text.substring(0, 100)}`, 'error');
+            return;
+        }
+        
         console.log('Response data:', result);
         
         hideLoader();
         
         if (response.ok) {
             if (result.success) {
+                console.log('Generation successful, image_url:', result.image_url);
                 showResult(result.image_url, 'image');
                 closeCreateModal();
                 if (telegramUser?.id) {
@@ -485,14 +505,17 @@ async function handleGenerateImage() {
                 }
                 showNotification('Изображение успешно сгенерировано!', 'success');
             } else {
+                console.error('Generation failed:', result.message);
                 showNotification(result.message || 'Ошибка при генерации', 'error');
             }
         } else {
-            showNotification(result.detail || 'Ошибка сервера', 'error');
+            console.error('HTTP error:', result);
+            showNotification(result.detail || result.message || 'Ошибка сервера', 'error');
         }
     } catch (error) {
         hideLoader();
         console.error('Error generating image:', error);
+        console.error('Error stack:', error.stack);
         showNotification(`Произошла ошибка: ${error.message}`, 'error');
     }
 }
