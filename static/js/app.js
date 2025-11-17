@@ -39,24 +39,26 @@ let statsData = null;
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('OnlyFace App initialized');
     
-    // Получаем данные пользователя из Telegram (всегда доступны в Telegram Web App)
-    const telegramUser = tg?.initDataUnsafe?.user;
-    
-    if (telegramUser && telegramUser.id) {
-        // Автоматически загружаем/создаем пользователя при загрузке страницы
-        await loadUserData(telegramUser.id);
-    }
-    
-    // Загружаем статистику
-    await loadStats();
-    
-    // Инициализируем обработчики
+    // Инициализируем обработчики сразу
     initHeaderButtons();
     initCreateModal();
     initFileUploads();
     initDemoToggles();
     initButtons();
     initSmoothScroll();
+    
+    // Загружаем данные пользователя в фоне (не блокируем интерфейс)
+    const telegramUser = tg?.initDataUnsafe?.user;
+    if (telegramUser && telegramUser.id) {
+        loadUserData(telegramUser.id).catch(err => {
+            console.error('Error loading user data:', err);
+        });
+    }
+    
+    // Загружаем статистику в фоне
+    loadStats().catch(err => {
+        console.error('Error loading stats:', err);
+    });
 });
 
 // Загрузка данных пользователя (автоматически создается если не существует)
@@ -448,11 +450,6 @@ async function handleGenerateImage() {
     if (!telegramId) {
         telegramId = 123456789; // Тестовый ID
         console.warn('Telegram ID not found, using test ID:', telegramId);
-    }
-    
-    // Автоматически загружаем данные пользователя из Telegram, если еще не загружены
-    if (!userData && telegramUser?.id) {
-        await loadUserData(telegramUser.id);
     }
     
     showLoader('Генерируем изображение...');
