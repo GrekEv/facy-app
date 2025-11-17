@@ -6,6 +6,29 @@ if (tg) {
     tg.setBackgroundColor('#0a0a0f');
 }
 
+// API Base URL - автоматическое определение:
+// - Если на Vercel (не onlyface.art) - используем API на Yandex Cloud
+// - Если на onlyface.art - используем локальный API (относительные пути)
+const getApiBaseUrl = () => {
+    // Если установлена переменная окружения - используем её
+    if (window.API_BASE_URL) {
+        return window.API_BASE_URL;
+    }
+    
+    // Определяем текущий домен
+    const currentHost = window.location.hostname;
+    
+    // Если на домене onlyface.art - используем локальный API (пустая строка для относительных путей)
+    if (currentHost === 'onlyface.art' || currentHost.includes('onlyface')) {
+        return '';
+    }
+    
+    // Если на Vercel или другом домене - используем API на Yandex Cloud
+    return 'https://onlyface.art';
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
 // Глобальные переменные
 let userData = null;
 let sourceImageFile = null;
@@ -48,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Загрузка данных пользователя
 async function loadUserData(telegramId) {
     try {
-        const response = await fetch(`/api/user/${telegramId}`);
+        const response = await fetch(`${API_BASE_URL}/api/user/${telegramId}`);
         
         if (response.ok) {
             userData = await response.json();
@@ -65,7 +88,7 @@ async function loadUserData(telegramId) {
 // Загрузка статистики
 async function loadStats() {
     try {
-        const response = await fetch('/api/stats');
+        const response = await fetch(`${API_BASE_URL}/api/stats`);
         
         if (response.ok) {
             statsData = await response.json();
@@ -211,7 +234,7 @@ async function handleRegister() {
     const referralCode = referralCodeInput?.value.trim().toUpperCase() || null;
     
     try {
-        const response = await fetch('/api/register', {
+        const response = await fetch(`${API_BASE_URL}/api/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -439,7 +462,7 @@ async function handleFormLogin() {
     }
     
     try {
-        const response = await fetch('/api/login', {
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -479,7 +502,7 @@ async function handleFormRegister() {
     const telegramId = telegramUser?.id;
     
     try {
-        const response = await fetch('/api/register', {
+        const response = await fetch(`${API_BASE_URL}/api/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -516,7 +539,7 @@ async function handleFormRegister() {
 // Обработка выхода
 async function handleLogout() {
     try {
-        const response = await fetch('/api/logout', {
+        const response = await fetch(`${API_BASE_URL}/api/logout`, {
             method: 'POST'
         });
         
@@ -835,7 +858,7 @@ async function handleSwapFace() {
         formData.append('source_image', sourceImageFile);
         formData.append('target_video', targetVideoFile);
         
-        const response = await fetch('/api/deepfake/swap', {
+        const response = await fetch(`${API_BASE_URL}/api/deepfake/swap`, {
             method: 'POST',
             body: formData
         });
@@ -899,7 +922,7 @@ async function handleGenerateImage() {
     showLoader('Генерируем изображение...');
     
     try {
-        const response = await fetch('/api/generate/image', {
+        const response = await fetch(`${API_BASE_URL}/api/generate/image`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -974,7 +997,7 @@ async function handleGenerateVideo() {
     showLoader('Генерируем видео... Это может занять несколько минут.');
     
     try {
-        const response = await fetch('/api/generate/video', {
+        const response = await fetch(`${API_BASE_URL}/api/generate/video`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1031,7 +1054,7 @@ async function checkVideoTaskStatus(taskId, generationId) {
     
     const checkStatus = async () => {
         try {
-            const response = await fetch(`/api/video/task/${taskId}`);
+            const response = await fetch(`${API_BASE_URL}/api/video/task/${taskId}`);
             
             if (response.ok) {
                 const status = await response.json();

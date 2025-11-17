@@ -6,6 +6,12 @@
     <title>OnlyFace - Стань кем угодно за 10 секунд</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        // API URL определяется автоматически в app.js
+        // На onlyface.art - локальный API (относительные пути)
+        // На Vercel - API на Yandex Cloud (https://onlyface.art)
+        // Можно переопределить через переменную окружения Vercel: window.API_BASE_URL
+    </script>
 </head>
 <body>
     <div class="app">

@@ -38,13 +38,23 @@ venv/
 env/
 ENV/
 
-# Бот (не нужен для API на Vercel)
+# Бот (не нужен для фронтенда на Vercel)
 bot/
 handlers/
 main.py
+run_api.py
 
-# Тяжелые зависимости (не используются в API)
-# opencv-python, numpy, pillow используются только в боте
+# API (работает на Yandex Cloud)
+api/
+database/
+services/
+config.py
+
+# Тяжелые зависимости (не используются во фронтенде)
+requirements.txt
+requirements-*.txt
+pyproject.toml
+runtime.txt
 
 # IDE
 .vscode/
