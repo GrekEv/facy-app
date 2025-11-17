@@ -280,3 +280,4 @@ sudo certbot renew --force-renewal
 - Как веб-сайт: `http://158.160.96.182` или `https://ваш-домен.ru`
 - Как Telegram Mini App: через кнопку в боте
 
+

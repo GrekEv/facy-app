@@ -21,22 +21,22 @@ def get_main_keyboard() -> InlineKeyboardMarkup:
     # Кнопка для открытия Web App
     builder.row(
         InlineKeyboardButton(
-            text="🚀 Открыть приложение",
+            text="Открыть приложение",
             web_app=WebAppInfo(url=webapp_url)
         )
     )
     
     builder.row(
-        InlineKeyboardButton(text="💰 Мой баланс", callback_data="balance"),
-        InlineKeyboardButton(text="📊 Статистика", callback_data="stats")
+        InlineKeyboardButton(text="Мой баланс", callback_data="balance"),
+        InlineKeyboardButton(text="Статистика", callback_data="stats")
     )
     
     builder.row(
-        InlineKeyboardButton(text="💎 Купить поинты", callback_data="buy_points"),
+        InlineKeyboardButton(text="Купить поинты", callback_data="buy_points"),
     )
     
     builder.row(
-        InlineKeyboardButton(text="ℹ️ Помощь", callback_data="help")
+        InlineKeyboardButton(text="Помощь", callback_data="help")
     )
     
     return builder.as_markup()
@@ -48,25 +48,25 @@ async def cmd_start(message: Message):
     user = message.from_user
     
     welcome_text = f"""
-👋 <b>Привет, {user.first_name}!</b>
+<b>Привет, {user.first_name}!</b>
 
-Добро пожаловать в <b>DeepFace AI</b> — твой персональный инструмент для:
+Добро пожаловать в <b>DeepFace</b> — инструмент для:
 
-🎭 <b>Замены лиц в видео</b> (DeepFake)
+<b>Замены лиц в видео</b> (DeepFake)
 • Заменяй лица в любых видео
 • Профессиональное качество
 • Быстрая обработка
 
-🎨 <b>Генерации изображений</b>
+<b>Генерации изображений</b>
 • Создавай уникальные изображения по описанию
 • Множество стилей и моделей
 • Высокое разрешение
 
-🎁 <b>Бонус для новых пользователей:</b>
+<b>Бонус для новых пользователей:</b>
 • 50 поинтов на старте
 • 1 бесплатная генерация
 
-Нажми на кнопку ниже, чтобы начать! 👇
+Нажми на кнопку ниже, чтобы начать!
 """
     
     await message.answer(
@@ -79,7 +79,7 @@ async def cmd_start(message: Message):
 async def back_to_main(callback):
     """Вернуться в главное меню"""
     await callback.message.edit_text(
-        "🏠 <b>Главное меню</b>\n\nВыберите действие:",
+        "<b>Главное меню</b>\n\nВыберите действие:",
         reply_markup=get_main_keyboard()
     )
     await callback.answer()

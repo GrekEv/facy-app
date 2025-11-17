@@ -149,3 +149,4 @@ echo "   curl https://$DOMAIN/health"
 echo ""
 echo -e "${GREEN}🎉 Готово! Ваше приложение доступно на https://$DOMAIN${NC}"
 
+

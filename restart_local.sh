@@ -29,3 +29,4 @@ mkdir -p data uploads generated temp
 # Запускаем сервер
 python3 run_api.py
 
+

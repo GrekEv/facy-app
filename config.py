@@ -55,6 +55,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     SORA_MODEL: str = "sora"  # Модель Sora
     
+    # Прокси для OpenAI API (настраивается на сервере, пользователю VPN не нужен!)
+    # Формат: http://user:pass@host:port или http://host:port или socks5://host:port
+    # Прокси используется автоматически сервером для запросов к OpenAI API
+    OPENAI_PROXY: str = ""  # Опционально: прокси для запросов к OpenAI API
+    
     # RunwayML
     RUNWAY_API_KEY: str = ""
     RUNWAY_API_URL: str = "https://api.runwayml.com/v1"

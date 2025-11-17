@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Создаем приложение FastAPI
 app = FastAPI(
-    title="DeepFace AI API",
+    title="DeepFace API",
     description="API для замены лиц и генерации изображений",
     version="1.0.0"
 )
@@ -140,7 +140,7 @@ async def generate_image(
         )
         raise HTTPException(
             status_code=400,
-            detail=f"❌ Запрос отклонен: {reason}\n\n"
+            detail=f"Запрос отклонен: {reason}\n\n"
                    "Пожалуйста, ознакомьтесь с политикой контента (/help в боте)."
         )
     
@@ -338,7 +338,7 @@ async def generate_video(
         )
         raise HTTPException(
             status_code=400,
-            detail=f"❌ Запрос отклонен: {reason}\n\n"
+            detail=f"Запрос отклонен: {reason}\n\n"
                    "Пожалуйста, ознакомьтесь с политикой контента (/help в боте)."
         )
     

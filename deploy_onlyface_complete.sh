@@ -229,3 +229,4 @@ echo "   curl https://$DOMAIN/health"
 echo ""
 echo -e "${GREEN}🎉 Готово! OnlyFace.art развернут!${NC}"
 
+

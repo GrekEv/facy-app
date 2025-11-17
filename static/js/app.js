@@ -10,9 +10,13 @@ if (tg) {
 // - Если на Vercel (не onlyface.art) - используем API на Yandex Cloud
 // - Если на onlyface.art - используем локальный API (относительные пути)
 const getApiBaseUrl = () => {
-    // Если установлена переменная окружения - используем её
+    // Проверяем переменную окружения, но игнорируем неправильные значения
     if (window.API_BASE_URL) {
-        return window.API_BASE_URL;
+        const url = window.API_BASE_URL;
+        // Игнорируем URL с payment в пути или heleket домен
+        if (!url.includes('/payment') && !url.includes('heleket')) {
+            return url;
+        }
     }
     
     // Определяем текущий домен
@@ -28,6 +32,9 @@ const getApiBaseUrl = () => {
 };
 
 const API_BASE_URL = getApiBaseUrl();
+console.log('API_BASE_URL determined:', API_BASE_URL);
+console.log('window.API_BASE_URL:', window.API_BASE_URL);
+console.log('window.location.hostname:', window.location.hostname);
 
 // Глобальные переменные
 let userData = null;

@@ -88,3 +88,4 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDP0ygn/Ga+V3AmuxO5oAYOd0gcFEWovDRwqVf3DUlv
 
 После добавления ключа через серийную консоль SSH подключение заработает.
 
+

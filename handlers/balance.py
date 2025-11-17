@@ -16,10 +16,10 @@ def get_balance_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     
     builder.row(
-        InlineKeyboardButton(text="💎 Купить поинты", callback_data="buy_points")
+        InlineKeyboardButton(text="Купить поинты", callback_data="buy_points")
     )
     builder.row(
-        InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_main")
+        InlineKeyboardButton(text="Назад", callback_data="back_to_main")
     )
     
     return builder.as_markup()
@@ -43,7 +43,7 @@ def get_buy_points_keyboard() -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="2500 поинтов - 1499₽", callback_data="buy_2500")
     )
     builder.row(
-        InlineKeyboardButton(text="🔙 Назад", callback_data="balance")
+        InlineKeyboardButton(text="Назад", callback_data="balance")
     )
     
     return builder.as_markup()
@@ -59,26 +59,26 @@ async def show_balance(callback: CallbackQuery):
         )
         
         if not user:
-            await callback.answer("❌ Ошибка: пользователь не найден", show_alert=True)
+            await callback.answer("Ошибка: пользователь не найден", show_alert=True)
             return
         
         balance_text = f"""
-💰 <b>Ваш баланс</b>
+<b>Ваш баланс</b>
 
-💎 Поинты: <b>{user.balance}</b>
-🎁 Бесплатных генераций: <b>{user.free_generations}</b>
+Поинты: <b>{user.balance}</b>
+Бесплатных генераций: <b>{user.free_generations}</b>
 
-📊 <b>Статистика использования:</b>
+<b>Статистика использования:</b>
 • Всего генераций изображений: {user.total_generations}
 • Всего DeepFake видео: {user.total_deepfakes}
 
-💡 <b>Стоимость услуг:</b>
+<b>Стоимость услуг:</b>
 • Генерация изображения: 10 поинтов
 • DeepFake видео: 50 поинтов
 """
         
         if user.is_premium:
-            balance_text += f"\n⭐ <b>Premium статус активен</b>"
+            balance_text += f"\n<b>Premium статус активен</b>"
         
         await callback.message.edit_text(
             balance_text,
@@ -92,15 +92,15 @@ async def show_balance(callback: CallbackQuery):
 async def show_buy_points(callback: CallbackQuery):
     """Показать варианты покупки поинтов"""
     text = """
-💎 <b>Покупка поинтов</b>
+<b>Покупка поинтов</b>
 
 Выберите подходящий пакет:
 
-💡 <b>Что можно сделать с поинтами:</b>
+<b>Что можно сделать с поинтами:</b>
 • 10 поинтов = 1 генерация изображения
 • 50 поинтов = 1 DeepFake видео
 
-🎁 Чем больше пакет — тем выгоднее!
+Чем больше пакет — тем выгоднее!
 """
     
     await callback.message.edit_text(
@@ -123,34 +123,34 @@ async def show_stats(callback: CallbackQuery):
         )
         
         if not user:
-            await callback.answer("❌ Ошибка: пользователь не найден", show_alert=True)
+            await callback.answer("Ошибка: пользователь не найден", show_alert=True)
             return
         
         stats_text = f"""
-📊 <b>Ваша статистика</b>
+<b>Ваша статистика</b>
 
-👤 <b>Профиль:</b>
+<b>Профиль:</b>
 • ID: {user.telegram_id}
 • Имя: {user.first_name or 'Не указано'}
 • Username: @{user.username or 'Не указано'}
 
-💎 <b>Баланс:</b>
+<b>Баланс:</b>
 • Поинты: {user.balance}
 • Бесплатных генераций: {user.free_generations}
 
-🎨 <b>Активность:</b>
+<b>Активность:</b>
 • Генераций изображений: {user.total_generations}
 • DeepFake видео: {user.total_deepfakes}
 • Всего операций: {user.total_generations + user.total_deepfakes}
 
-📅 <b>Даты:</b>
+<b>Даты:</b>
 • Регистрация: {user.created_at.strftime('%d.%m.%Y')}
 • Последняя активность: {user.last_active.strftime('%d.%m.%Y %H:%M')}
 """
         
         builder = InlineKeyboardBuilder()
         builder.row(
-            InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_main")
+            InlineKeyboardButton(text="Назад", callback_data="back_to_main")
         )
         
         await callback.message.edit_text(

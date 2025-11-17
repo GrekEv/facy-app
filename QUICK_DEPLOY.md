@@ -136,3 +136,4 @@ chmod +x setup_web_cis.sh
 
 Или следуйте инструкции в `DEPLOY_ONLYFACE_ART.md`
 
+

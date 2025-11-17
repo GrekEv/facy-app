@@ -350,3 +350,4 @@ sudo certbot --nginx -d ваш-домен.ru --debug
 
 **Важно:** Telegram Mini App требует HTTPS, поэтому SSL обязателен!
 
+

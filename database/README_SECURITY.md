@@ -176,3 +176,4 @@ async with AsyncSessionLocal() as session:
 - [PostgreSQL Row Level Security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
 - [SQLAlchemy и RLS](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html)
 
+

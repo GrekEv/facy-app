@@ -105,3 +105,4 @@ echo "3. Если были данные в SQLite, выполните мигра
 echo ""
 echo -e "${YELLOW}⚠️  Старая база SQLite сохранена в data/app.db.backup${NC}"
 
+

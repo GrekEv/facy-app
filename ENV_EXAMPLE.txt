@@ -49,11 +49,16 @@ REPLICATE_API_URL=https://api.replicate.com/v1
 # API КЛЮЧИ ДЛЯ ГЕНЕРАЦИИ ВИДЕО
 # ============================================
 
-# OpenAI Sora (для генерации видео высокого качества)
+# OpenAI (для генерации изображений через DALL-E и видео через Sora)
 # Зарегистрируйтесь на https://platform.openai.com
 # API Keys → Create new secret key
-OPENAI_API_KEY=your_openai_api_key
+OPENAI_API_KEY=sk-ваш_ключ
 SORA_MODEL=sora-1.0-pro  # или sora-2.0
+
+# Прокси для OpenAI API (настраивается на сервере, пользователю VPN не нужен!)
+# Формат: http://user:pass@host:port или http://host:port или socks5://host:port
+# Прокси используется автоматически сервером для запросов к OpenAI API
+OPENAI_PROXY=http://proxy-server.com:8080
 
 # Higgsfield.ai (для генерации видео)
 # Зарегистрируйтесь на https://higgsfield.ai
@@ -69,7 +74,7 @@ HIGGSFIELD_API_URL=https://api.higgsfield.ai
 # ============================================
 
 # Для генерации изображений
-IMAGE_GENERATION_PROVIDER=replicate  # replicate
+IMAGE_GENERATION_PROVIDER=openai  # openai, replicate, ffans (по умолчанию: openai)
 
 # Для генерации видео (выберите один)
 VIDEO_GENERATION_PROVIDER=replicate  # replicate, sora, higgsfield

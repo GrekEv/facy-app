@@ -183,3 +183,4 @@ echo ""
 echo "3. Проверьте работу:"
 echo "   curl http://$DOMAIN/health"
 
+

@@ -53,3 +53,4 @@ docker compose -f docker-compose.prod.yml logs api --tail=40
 SCRIPTEOF
 chmod +x fix_all.sh && ./fix_all.sh
 
+

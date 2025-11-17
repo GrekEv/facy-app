@@ -125,3 +125,4 @@ docker compose -f docker-compose.prod.yml up -d
 
 См. [POSTGRESQL_SETUP.md](POSTGRESQL_SETUP.md) для детальной инструкции.
 
+

@@ -300,3 +300,4 @@ docker compose -f docker-compose.prod.yml logs -f
 - 🤖 **Telegram Bot:** Готов к работе
 - 🗄️ **База данных:** PostgreSQL в Яндекс.Облаке
 
+

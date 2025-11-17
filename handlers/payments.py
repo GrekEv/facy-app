@@ -110,7 +110,7 @@ async def process_buy_points(callback: CallbackQuery):
     }
     
     if amount_str not in packages:
-        await callback.answer("❌ Неверный пакет", show_alert=True)
+        await callback.answer("Неверный пакет", show_alert=True)
         return
     
     package = packages[amount_str]
@@ -128,9 +128,9 @@ async def process_buy_points(callback: CallbackQuery):
             transaction_id = payment_data["transaction_id"]
             
             text = f"""
-💎 <b>Покупка {package['points']} поинтов</b>
+<b>Покупка {package['points']} поинтов</b>
 
-💰 Стоимость: <b>{package['price']}₽</b>
+Стоимость: <b>{package['price']}₽</b>
 
 Выберите способ оплаты:
 """
@@ -142,7 +142,7 @@ async def process_buy_points(callback: CallbackQuery):
             
         except Exception as e:
             logger.error(f"Error creating payment: {e}")
-            await callback.answer("❌ Ошибка при создании платежа", show_alert=True)
+            await callback.answer("Ошибка при создании платежа", show_alert=True)
     
     await callback.answer()
 
@@ -159,7 +159,7 @@ async def process_telegram_payment(callback: CallbackQuery, bot):
         transaction = result.scalar_one_or_none()
         
         if not transaction or transaction.user_id != callback.from_user.id:
-            await callback.answer("❌ Транзакция не найдена", show_alert=True)
+            await callback.answer("Транзакция не найдена", show_alert=True)
             return
         
         # Создание инвойса для Telegram Payments
@@ -184,7 +184,7 @@ async def process_telegram_payment(callback: CallbackQuery, bot):
             await callback.answer()
         except Exception as e:
             logger.error(f"Error sending invoice: {e}")
-            await callback.answer("❌ Ошибка при создании платежа", show_alert=True)
+            await callback.answer("Ошибка при создании платежа", show_alert=True)
 
 
 @router.pre_checkout_query()
@@ -210,12 +210,12 @@ async def process_successful_payment(message: Message):
         if success:
             user = await UserService.get_user_by_telegram_id(session, message.from_user.id)
             await message.answer(
-                f"✅ Платеж успешно обработан!\n\n"
-                f"💎 Начислено: {payment.total_amount / 100} поинтов\n"
-                f"💰 Ваш баланс: {user.balance if user else 0} поинтов"
+                f"Платеж успешно обработан!\n\n"
+                f"Начислено: {payment.total_amount / 100} поинтов\n"
+                f"Ваш баланс: {user.balance if user else 0} поинтов"
             )
         else:
-            await message.answer("❌ Ошибка при обработке платежа")
+            await message.answer("Ошибка при обработке платежа")
 
 
 @router.callback_query(F.data.startswith("pay_crypto_"))
@@ -249,7 +249,7 @@ async def process_crypto_method(callback: CallbackQuery):
                 wallet_address = settings.CRYPTO_WALLET_ADDRESS_USDT
             
             if not wallet_address:
-                await callback.answer("❌ Криптовалюта не настроена", show_alert=True)
+                await callback.answer("Криптовалюта не настроена", show_alert=True)
                 return
             
             # Здесь должна быть логика конвертации цены в криптовалюту
@@ -260,7 +260,7 @@ async def process_crypto_method(callback: CallbackQuery):
             transaction = result.scalar_one_or_none()
             
             if not transaction:
-                await callback.answer("❌ Транзакция не найдена", show_alert=True)
+                await callback.answer("Транзакция не найдена", show_alert=True)
                 return
             
             # Создание криптоплатежа
@@ -273,14 +273,14 @@ async def process_crypto_method(callback: CallbackQuery):
             )
             
             text = f"""
-💎 <b>Оплата криптовалютой</b>
+<b>Оплата криптовалютой</b>
 
-💰 Сумма: <b>{transaction.price}₽</b>
-₿ Валюта: <b>{crypto_currency}</b>
-📝 Адрес: <code>{crypto_data['address']}</code>
-💵 К оплате: <b>{crypto_data['amount']} {crypto_currency}</b>
+Сумма: <b>{transaction.price}₽</b>
+Валюта: <b>{crypto_currency}</b>
+Адрес: <code>{crypto_data['address']}</code>
+К оплате: <b>{crypto_data['amount']} {crypto_currency}</b>
 
-⚠️ <b>Важно:</b>
+<b>Важно:</b>
 • Отправьте точную сумму на указанный адрес
 • После отправки транзакция будет проверена автоматически
 • Обычно это занимает 10-30 минут
@@ -292,19 +292,19 @@ async def process_crypto_method(callback: CallbackQuery):
             builder = InlineKeyboardBuilder()
             builder.row(
                 InlineKeyboardButton(
-                    text="✅ Подтвердить оплату",
+                    text="Подтвердить оплату",
                     callback_data=f"confirm_crypto_{transaction_id}"
                 )
             )
             builder.row(
-                InlineKeyboardButton(text="🔙 Назад", callback_data="buy_points")
+                InlineKeyboardButton(text="Назад", callback_data="buy_points")
             )
             
             await callback.message.edit_text(text, reply_markup=builder.as_markup())
             
         except Exception as e:
             logger.error(f"Error processing crypto payment: {e}")
-            await callback.answer("❌ Ошибка при создании платежа", show_alert=True)
+            await callback.answer("Ошибка при создании платежа", show_alert=True)
     
     await callback.answer()
 

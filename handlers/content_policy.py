@@ -15,8 +15,8 @@ async def show_content_policy(callback: CallbackQuery):
     
     builder = InlineKeyboardBuilder()
     builder.row(
-        InlineKeyboardButton(text="✅ Я согласен", callback_data="policy_accepted"),
-        InlineKeyboardButton(text="🔙 Назад", callback_data="help")
+        InlineKeyboardButton(text="Я согласен", callback_data="policy_accepted"),
+        InlineKeyboardButton(text="Назад", callback_data="help")
     )
     
     await callback.message.edit_text(
@@ -30,15 +30,15 @@ async def show_content_policy(callback: CallbackQuery):
 async def policy_accepted(callback: CallbackQuery):
     """Подтверждение принятия политики"""
     
-    await callback.answer("✅ Спасибо за понимание!", show_alert=True)
+    await callback.answer("Спасибо за понимание!", show_alert=True)
     
     builder = InlineKeyboardBuilder()
     builder.row(
-        InlineKeyboardButton(text="🔙 Главное меню", callback_data="back_to_main")
+        InlineKeyboardButton(text="Главное меню", callback_data="back_to_main")
     )
     
     await callback.message.edit_text(
-        "✅ <b>Вы приняли политику контента</b>\n\n"
+        "<b>Вы приняли политику контента</b>\n\n"
         "Теперь вы можете использовать все функции приложения.\n"
         "Помните: сервис предназначен для творчества и легального использования.",
         reply_markup=builder.as_markup()

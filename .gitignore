@@ -78,3 +78,4 @@ htmlcov/
 dmypy.json
 TOKENS.md
 DEPLOY_NOW.txt
+.env
