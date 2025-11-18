@@ -552,7 +552,7 @@ function checkDemoImages() {
             this.style.background = 'var(--bg-darker)';
         });
         beforeImg.addEventListener('load', function() {
-            console.log('✅ Demo before image loaded');
+            console.log('Demo before image loaded');
         });
     }
     
@@ -563,7 +563,7 @@ function checkDemoImages() {
             this.style.background = 'var(--bg-darker)';
         });
         afterImg.addEventListener('load', function() {
-            console.log('✅ Demo after image loaded');
+            console.log('Demo after image loaded');
         });
     }
 }
@@ -1400,7 +1400,7 @@ function initEmailAuth() {
                 showNotification('Ошибка отправки кода. Попробуйте позже.', 'error');
             } finally {
                 sendCodeBtn.disabled = false;
-                sendCodeBtn.innerHTML = '<span class="btn-text">Отправить код</span><span class="btn-icon">📧</span>';
+                sendCodeBtn.innerHTML = '<span class="btn-text">Отправить код</span>';
             }
         });
     }

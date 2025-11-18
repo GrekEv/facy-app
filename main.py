@@ -16,9 +16,9 @@ async def set_bot_commands(bot: Bot):
     """Установить команды бота"""
     try:
         commands = [
-            BotCommand(command="start", description="🏠 Главное меню"),
-            BotCommand(command="balance", description="💰 Мой баланс"),
-            BotCommand(command="help", description="ℹ️ Помощь"),
+            BotCommand(command="start", description="Главное меню"),
+            BotCommand(command="balance", description="Мой баланс"),
+            BotCommand(command="help", description="Помощь"),
         ]
         await bot.set_my_commands(commands)
         logger.info("Bot commands set successfully")

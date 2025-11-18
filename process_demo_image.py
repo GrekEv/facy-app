@@ -47,9 +47,8 @@ def remove_white_borders(image_path, output_path):
     # Обрезаем изображение
     cropped = img.crop((left, top, right + 1, bottom + 1))
     
-    # Сохраняем
     cropped.save(output_path, 'PNG', optimize=True)
-    print(f"✅ Изображение обрезано и сохранено: {output_path}")
+    print(f"Изображение обрезано и сохранено: {output_path}")
     print(f"   Исходный размер: {width}x{height}")
     print(f"   Новый размер: {cropped.size[0]}x{cropped.size[1]}")
     print(f"   Обрезано: {width - cropped.size[0]}px по ширине, {height - cropped.size[1]}px по высоте")
@@ -65,7 +64,7 @@ if __name__ == "__main__":
     output_path = f"static/images/demo-{position}-1.png"
     
     if not os.path.exists(input_path):
-        print(f"❌ Файл не найден: {input_path}")
+        print(f"Ошибка: Файл не найден: {input_path}")
         sys.exit(1)
     
     # Создаем директорию если нужно
