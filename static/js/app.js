@@ -476,25 +476,96 @@ function displayPreview(file, previewElement, type) {
     reader.readAsDataURL(file);
 }
 
-// Инициализация переключателей демо
+// Инициализация слайдеров "До - После"
 function initDemoToggles() {
-    const toggleButtons = document.querySelectorAll('.toggle-btn');
+    const sliders = document.querySelectorAll('.before-after-wrapper');
     
-    toggleButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const demoItem = btn.closest('.demo-item');
-            const allToggles = demoItem.querySelectorAll('.toggle-btn');
+    sliders.forEach((wrapper, index) => {
+        const sliderId = index + 1;
+        const afterImage = wrapper.querySelector('.after-image');
+        const sliderHandle = wrapper.querySelector('.slider-handle');
+        const sliderCircle = wrapper.querySelector('.slider-circle');
+        
+        if (!afterImage || !sliderHandle) return;
+        
+        let isDragging = false;
+        let startX = 0;
+        let currentX = 0;
+        
+        // Функция обновления позиции слайдера
+        const updateSlider = (clientX) => {
+            const rect = wrapper.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
             
-            // Убираем активный класс у всех кнопок в этом элементе
-            allToggles.forEach(t => t.classList.remove('active'));
+            // Обновляем clip-path для изображения "После"
+            afterImage.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
             
-            // Добавляем активный класс
-            btn.classList.add('active');
-            
-            // Здесь можно добавить логику переключения видео До/После
-            const demoType = btn.dataset.demo;
-            console.log('Demo type:', demoType);
+            // Обновляем позицию слайдера
+            sliderHandle.style.left = `${percent}%`;
+        };
+        
+        // Обработчик начала перетаскивания
+        const startDrag = (e) => {
+            isDragging = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            startX = clientX;
+            currentX = clientX;
+            wrapper.style.cursor = 'grabbing';
+            e.preventDefault();
+        };
+        
+        // Обработчик перетаскивания
+        const drag = (e) => {
+            if (!isDragging) return;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            currentX = clientX;
+            updateSlider(currentX);
+            e.preventDefault();
+        };
+        
+        // Обработчик окончания перетаскивания
+        const stopDrag = () => {
+            if (isDragging) {
+                isDragging = false;
+                wrapper.style.cursor = 'grab';
+            }
+        };
+        
+        // Клик по области слайдера
+        wrapper.addEventListener('click', (e) => {
+            if (!isDragging) {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                updateSlider(clientX);
+            }
         });
+        
+        // События мыши
+        wrapper.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+        
+        // События касания (для мобильных устройств)
+        wrapper.addEventListener('touchstart', startDrag, { passive: false });
+        wrapper.addEventListener('touchmove', drag, { passive: false });
+        wrapper.addEventListener('touchend', stopDrag);
+        
+        // Инициализация начальной позиции (50%) после загрузки изображений
+        const initSlider = () => {
+            const rect = wrapper.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            updateSlider(centerX);
+        };
+        
+        // Ждем загрузки изображений
+        const afterImg = wrapper.querySelector('.after-image');
+        if (afterImg.complete) {
+            initSlider();
+        } else {
+            afterImg.addEventListener('load', initSlider);
+        }
+        
+        console.log(`Slider ${sliderId} initialized`);
     });
 }
 

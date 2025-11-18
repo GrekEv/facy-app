@@ -14,7 +14,7 @@ import io
 import qrcode
 
 from database import get_session, User, Generation
-from services import deepface_service, image_generation_service, video_generation_service, user_service, content_moderation
+from services import deepface_service, image_generation_service, video_generation_service, user_service, content_moderation, background_removal_service
 from config import settings
 from api.schemas import (
     GenerateImageRequest,
@@ -604,6 +604,34 @@ async def generate_referral_qr(
         raise
     except Exception as e:
         logger.error(f"Error generating QR code: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/remove-background")
+async def remove_background(
+    image: UploadFile = File(...),
+    threshold: int = Query(240, ge=0, le=255, description="Порог для определения белого цвета")
+):
+    """Удалить белый фон из изображения"""
+    try:
+        # Читаем изображение
+        image_bytes = await image.read()
+        
+        # Удаляем фон
+        processed_bytes = background_removal_service.remove_white_background(
+            image_bytes,
+            threshold
+        )
+        
+        return Response(
+            content=processed_bytes,
+            media_type="image/png",
+            headers={
+                "Content-Disposition": f"attachment; filename=no-background-{image.filename or 'image.png'}"
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error removing background: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
