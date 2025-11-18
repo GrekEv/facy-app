@@ -283,7 +283,13 @@ async function generateReferralLink() {
     
     // Получаем реферальный код пользователя
     const referralCode = userData.referral_code;
-    console.log('Referral code:', referralCode);
+    console.log('Referral code from userData:', referralCode);
+    
+    if (!referralCode) {
+        console.error('Referral code is still missing after all attempts!');
+        console.error('Full userData object:', JSON.stringify(userData, null, 2));
+        return null;
+    }
     
     // Формируем реферальную ссылку на Web App с параметром ref для регистрации
     const webappUrl = window.location.origin || 'https://facy-app.vercel.app';
