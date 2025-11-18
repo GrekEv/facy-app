@@ -242,10 +242,13 @@ async def generate_image(
         logger.info(f"Starting image generation for user {user.telegram_id}, prompt: {request.prompt[:50]}...")
         
         # Генерируем изображение
+        logger.info(f"Calling image_generation_service.generate_image with provider={image_generation_service.provider}, has_replicate_key={bool(image_generation_service.replicate_key)}")
         result = await image_generation_service.generate_image(
             prompt=request.prompt,
             model=request.model or "flux",
-            style=request.style
+            style=request.style,
+            width=request.width,
+            height=request.height
         )
         
         logger.info(f"Image generation result: status={result.get('status')}, has_images={bool(result.get('images'))}")

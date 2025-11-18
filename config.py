@@ -81,9 +81,10 @@ class Settings(BaseSettings):
     LEONARDO_API_URL: str = "https://cloud.leonardo.ai/api/rest/v1"
     
     # Выбор провайдера по умолчанию
-    VIDEO_GENERATION_PROVIDER: str = "sora"  # sora, ffans, runway, pika, replicate, higgsfield, leonardo
+    VIDEO_GENERATION_PROVIDER: str = "replicate"  # sora, ffans, runway, pika, replicate, higgsfield, leonardo
     IMAGE_GENERATION_PROVIDER: str = "replicate"  # openai, ffans, leonardo, replicate
     REPLICATE_IMAGE_MODEL: str = "ideogram-ai/ideogram-v3-turbo"  # Модель для генерации изображений через Replicate
+    REPLICATE_VIDEO_MODEL: str = "minimax/video-01"  # Модель для генерации видео через Replicate
     
     # Database
     # Для Vercel serverless нужен PostgreSQL (SQLite не работает)

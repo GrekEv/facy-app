@@ -52,6 +52,11 @@ REPLICATE_IMAGE_MODEL=ideogram-ai/ideogram-v3-turbo
 # API КЛЮЧИ ДЛЯ ГЕНЕРАЦИИ ВИДЕО
 # ============================================
 
+# Replicate (рекомендуется для видео)
+# Используется тот же токен что и для изображений
+# Модель для генерации видео (по умолчанию minimax/video-01)
+REPLICATE_VIDEO_MODEL=minimax/video-01
+
 # OpenAI (для генерации изображений через DALL-E и видео через Sora)
 # Зарегистрируйтесь на https://platform.openai.com
 # API Keys → Create new secret key

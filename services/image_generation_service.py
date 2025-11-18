@@ -13,8 +13,6 @@ class ImageGenerationService:
     def __init__(self):
         self.api_url = settings.FFANS_API_URL
         self.api_key = settings.FFANS_API_KEY
-        self.openai_key = settings.OPENAI_API_KEY
-        self.openai_proxy = settings.OPENAI_PROXY
         self.replicate_key = settings.REPLICATE_API_KEY
         self.provider = settings.IMAGE_GENERATION_PROVIDER
         self.replicate_model = getattr(settings, 'REPLICATE_IMAGE_MODEL', 'ideogram-ai/ideogram-v3-turbo')
@@ -43,52 +41,38 @@ class ImageGenerationService:
             Результат генерации
         """
         try:
-            proxy_info = f", proxy: {'configured' if self.openai_proxy else 'not configured'}"
-            logger.info(f"Generating image with provider: {self.provider}, has_openai_key: {bool(self.openai_key)}, has_ffans_key: {bool(self.api_key)}, has_replicate_key: {bool(self.replicate_key)}{proxy_info}")
+            logger.info(f"Generating image with provider: {self.provider}, has_ffans_key: {bool(self.api_key)}, has_replicate_key: {bool(self.replicate_key)}")
             
-            # Приоритет 1: OpenAI если доступен и выбран как провайдер
-            if self.openai_key and self.provider == "openai":
-                logger.info("Using OpenAI DALL-E for image generation")
-                result = await self._generate_with_openai(prompt, model, width, height)
-                # Если OpenAI недоступен в регионе, пробуем альтернативы
-                if result.get("status") == "error" and ("unsupported_country_region_territory" in result.get("message", "") or "Ошибка подключения" in result.get("message", "")):
-                    logger.warning("OpenAI недоступен, пробуем альтернативные провайдеры...")
-                    if self.api_key:
-                        logger.info("Trying FFans API as fallback")
-                        return await self._generate_with_ffans(prompt, model, style, negative_prompt, width, height)
-                    if self.replicate_key:
-                        logger.info("Trying Replicate API as fallback")
-                        return await self._generate_with_replicate(prompt, model, width, height, style)
-                return result
-            
-            # Приоритет 2: Если провайдер не указан, используем OpenAI (основной провайдер)
-            if self.openai_key and not self.provider:
-                logger.info("No provider specified, using OpenAI DALL-E")
-                result = await self._generate_with_openai(prompt, model, width, height)
-                # Если OpenAI недоступен в регионе, пробуем альтернативы
-                if result.get("status") == "error" and ("unsupported_country_region_territory" in result.get("message", "") or "Ошибка подключения" in result.get("message", "")):
-                    logger.warning("OpenAI недоступен, пробуем альтернативные провайдеры...")
-                    if self.api_key:
-                        logger.info("Trying FFans API as fallback")
-                        return await self._generate_with_ffans(prompt, model, style, negative_prompt, width, height)
-                    if self.replicate_key:
-                        logger.info("Trying Replicate API as fallback")
-                        return await self._generate_with_replicate(prompt, model, width, height, style)
-                return result
-            
-            # Приоритет 3: Альтернативные провайдеры если OpenAI недоступен
-            # Используем FFans API если доступен и выбран как провайдер
-            if self.api_key and self.provider == "ffans":
-                logger.info("Using FFans API for image generation")
-                return await self._generate_with_ffans(prompt, model, style, negative_prompt, width, height)
-            
-            # Используем Replicate API если доступен и выбран как провайдер
-            if self.replicate_key and self.provider == "replicate":
+            # Приоритет 1: Используем указанный провайдер
+            if self.provider == "replicate" and self.replicate_key:
                 logger.info(f"Using Replicate API for image generation with model: {self.replicate_model}")
-                return await self._generate_with_replicate(prompt, model, width, height, style)
+                result = await self._generate_with_replicate(prompt, model, width, height, style)
+                if result.get("status") == "success":
+                    return result
+                logger.warning("Replicate failed, trying fallback...")
+            
+            if self.provider == "ffans" and self.api_key:
+                logger.info("Using FFans API for image generation")
+                result = await self._generate_with_ffans(prompt, model, style, negative_prompt, width, height)
+                if result.get("status") == "success":
+                    return result
+                logger.warning("FFans failed, trying fallback...")
+            
+            # Приоритет 2: Fallback - пробуем все доступные провайдеры по порядку
+            if self.replicate_key:
+                logger.info("Trying Replicate API as fallback")
+                result = await self._generate_with_replicate(prompt, model, width, height, style)
+                if result.get("status") == "success":
+                    return result
+            
+            if self.api_key:
+                logger.info("Trying FFans API as fallback")
+                result = await self._generate_with_ffans(prompt, model, style, negative_prompt, width, height)
+                if result.get("status") == "success":
+                    return result
             
             # Fallback на mock
-            logger.warning("No API keys configured, using mock response")
+            logger.warning("No working API available, using mock response")
             return {
                 "status": "success",
                 "message": "Mock: Image generation completed",
@@ -102,108 +86,6 @@ class ImageGenerationService:
                 "status": "error",
                 "message": str(e)
             }
-    
-    async def _generate_with_openai(self, prompt: str, model: str, width: int, height: int) -> Dict[str, Any]:
-        """Генерация через OpenAI DALL-E"""
-        try:
-            # Определяем размер для DALL-E (поддерживает только определенные размеры)
-            # DALL-E 3 поддерживает: 1024x1024, 1024x1536, 1536x1024
-            size_map = {
-                (1024, 1024): "1024x1024",
-                (1024, 1536): "1024x1536",
-                (1536, 1024): "1536x1024"
-            }
-            size = size_map.get((width, height), "1024x1024")
-            
-            # Используем DALL-E 3
-            dall_e_model = "dall-e-3" if "dall-e" in model.lower() else "dall-e-3"
-            
-            # Настройка прокси для OpenAI API (если указан)
-            proxy = self.openai_proxy if self.openai_proxy else None
-            if proxy:
-                logger.info(f"Using proxy for OpenAI API: {proxy.split('@')[-1] if '@' in proxy else proxy}")
-            else:
-                logger.info("No proxy configured for OpenAI API")
-            
-            async with aiohttp.ClientSession() as session:
-                headers = {
-                    'Authorization': f'Bearer {self.openai_key}',
-                    'Content-Type': 'application/json'
-                }
-                
-                payload = {
-                    "model": dall_e_model,
-                    "prompt": prompt,
-                    "size": size,
-                    "quality": "standard",
-                    "n": 1
-                }
-                
-                # Определяем URL для запроса
-                # Если прокси - это Cloudflare Workers (содержит workers.dev), используем его как endpoint
-                # Иначе используем обычный прокси
-                if proxy and 'workers.dev' in proxy:
-                    # Cloudflare Workers работает как reverse proxy
-                    # Используем URL Worker'а напрямую
-                    api_url = f"{proxy.rstrip('/')}/v1/images/generations"
-                    logger.info(f"Using Cloudflare Worker as reverse proxy: {api_url}")
-                    use_proxy = None
-                else:
-                    # Обычный HTTP прокси
-                    api_url = "https://api.openai.com/v1/images/generations"
-                    use_proxy = proxy
-                
-                async with session.post(
-                    api_url,
-                    json=payload,
-                    headers=headers,
-                    proxy=use_proxy
-                ) as response:
-                    if response.status == 200:
-                        result = await response.json()
-                        if "data" in result and len(result["data"]) > 0:
-                            image_url = result["data"][0].get("url", "")
-                            return {
-                                "status": "success",
-                                "message": "Image generated successfully",
-                                "images": [image_url],
-                                "task_id": result.get("created", "")
-                            }
-                        else:
-                            return {
-                                "status": "error",
-                                "message": "No image data in response"
-                            }
-                    else:
-                        error_text = await response.text()
-                        logger.error(f"OpenAI API error: {error_text}")
-                        
-                        # Проверка на ошибку региона
-                        if "unsupported_country_region_territory" in error_text:
-                            if proxy:
-                                logger.error(f"OpenAI API недоступен в регионе даже через прокси {proxy.split('@')[-1] if '@' in proxy else proxy}. Проверьте настройки прокси или используйте альтернативный провайдер.")
-                                return {
-                                    "status": "error",
-                                    "message": "Ошибка подключения к сервису генерации. Попробуйте позже или используйте другую модель."
-                                }
-                            else:
-                                logger.warning("OpenAI API недоступен в регионе сервера. Настройте OPENAI_PROXY в .env или используйте альтернативный провайдер.")
-                                return {
-                                    "status": "error",
-                                    "message": "Ошибка подключения к сервису генерации. Попробуйте позже или используйте другую модель."
-                                }
-                        
-                        return {
-                            "status": "error",
-                            "message": f"OpenAI API error: {error_text}"
-                        }
-        except Exception as e:
-            logger.error(f"Error in OpenAI generation: {e}")
-            return {
-                "status": "error",
-                "message": str(e)
-            }
-    
     async def _generate_with_ffans(self, prompt: str, model: str, style: Optional[str], 
                                    negative_prompt: Optional[str], width: int, height: int) -> Dict[str, Any]:
         """Генерация через FFans API"""
