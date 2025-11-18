@@ -533,6 +533,120 @@ body {
     letter-spacing: 0.5px;
 }
 
+/* Реферальная система */
+.referral-section {
+    padding: 3rem 1.5rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.referral-card {
+    background: var(--bg-card);
+    border: 2px solid var(--primary-purple);
+    border-radius: 20px;
+    padding: 2.5rem;
+    text-align: center;
+    box-shadow: var(--shadow-glow);
+    position: relative;
+    overflow: hidden;
+}
+
+.referral-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+}
+
+.referral-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.referral-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.referral-description {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+.referral-link-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.referral-link-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.referral-link-input:focus {
+    outline: none;
+    border-color: var(--primary-purple);
+}
+
+.btn-referral-copy {
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    min-width: 50px;
+}
+
+.btn-referral-copy:hover {
+    background: var(--primary-purple);
+    border-color: var(--primary-purple);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-referral-share {
+    width: 100%;
+    background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
+    color: white;
+    box-shadow: var(--shadow-glow);
+    position: relative;
+    z-index: 1;
+}
+
+.btn-referral-share:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-neon);
+}
+
 /* Партнерка */
 .partnership {
     padding: 4rem 1.5rem;

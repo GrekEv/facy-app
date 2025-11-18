@@ -76,6 +76,7 @@ async function loadUserData(telegramId) {
         if (response.ok) {
             userData = await response.json();
             updatePrice();
+            updateReferralLink();
         } else {
             console.error('Failed to load user data');
         }
@@ -109,6 +110,22 @@ function updatePrice() {
         // Пример: цена может зависеть от статуса пользователя
         priceElement.textContent = userData.is_premium ? 'XXX' : 'XXX';
     }
+}
+
+// Обновление реферальной ссылки
+function updateReferralLink() {
+    const referralLinkInput = document.getElementById('referralLink');
+    if (!referralLinkInput || !userData) return;
+    
+    // Получаем реферальный код пользователя
+    const referralCode = userData.referral_code;
+    if (!referralCode) return;
+    
+    // Формируем реферальную ссылку на оплату с параметром ref
+    const paymentUrl = window.STANDARD_PLAN_PAYMENT_URL || 'https://web.tribute.tg/p/n1Q';
+    const referralLink = `${paymentUrl}?ref=${referralCode}`;
+    
+    referralLinkInput.value = referralLink;
 }
 
 // Инициализация кнопок хедера (убрана кнопка создания видео)
@@ -315,6 +332,74 @@ function initButtons() {
     }
     
     // Базовый тариф теперь всегда активен - кнопка заменена на надпись "Активен"
+    
+    // Кнопка копирования реферальной ссылки
+    const copyReferralBtn = document.getElementById('copyReferralBtn');
+    if (copyReferralBtn) {
+        copyReferralBtn.addEventListener('click', () => {
+            const referralLinkInput = document.getElementById('referralLink');
+            if (referralLinkInput && referralLinkInput.value) {
+                referralLinkInput.select();
+                referralLinkInput.setSelectionRange(0, 99999); // Для мобильных устройств
+                
+                try {
+                    navigator.clipboard.writeText(referralLinkInput.value).then(() => {
+                        showNotification('Ссылка скопирована!', 'success');
+                    }).catch(() => {
+                        // Fallback для старых браузеров
+                        document.execCommand('copy');
+                        showNotification('Ссылка скопирована!', 'success');
+                    });
+                } catch (err) {
+                    // Fallback для старых браузеров
+                    document.execCommand('copy');
+                    showNotification('Ссылка скопирована!', 'success');
+                }
+            }
+        });
+    }
+    
+    // Кнопка поделиться реферальной ссылкой
+    const shareReferralBtn = document.getElementById('shareReferralBtn');
+    if (shareReferralBtn) {
+        shareReferralBtn.addEventListener('click', async () => {
+            const referralLinkInput = document.getElementById('referralLink');
+            if (!referralLinkInput || !referralLinkInput.value) {
+                showNotification('Реферальная ссылка не загружена', 'error');
+                return;
+            }
+            
+            const referralLink = referralLinkInput.value;
+            const shareText = `🎁 Привет! Попробуй OnlyFace - приложение для замены лиц и генерации видео!\n\n${referralLink}\n\nПри оплате подписки по этой ссылке мы оба получим бонусы! 🚀`;
+            
+            // Используем Telegram Share API если доступен
+            if (tg?.shareUrl) {
+                tg.shareUrl(referralLink);
+            } else if (navigator.share) {
+                // Используем Web Share API
+                try {
+                    await navigator.share({
+                        title: 'OnlyFace - Приглашение',
+                        text: shareText,
+                        url: referralLink
+                    });
+                } catch (err) {
+                    // Если пользователь отменил или произошла ошибка
+                    console.log('Share cancelled or error:', err);
+                }
+            } else {
+                // Fallback - копируем в буфер обмена
+                try {
+                    await navigator.clipboard.writeText(shareText);
+                    showNotification('Текст для отправки скопирован! Вставьте его в сообщение другу.', 'success');
+                } catch (err) {
+                    referralLinkInput.select();
+                    document.execCommand('copy');
+                    showNotification('Ссылка скопирована! Отправьте её другу.', 'success');
+                }
+            }
+        });
+    }
     
     // Кнопка оплаты стандартного тарифа ($20)
     const activateStandardBtn = document.getElementById('activateStandardBtn');
