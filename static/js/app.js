@@ -7,7 +7,7 @@ if (tg) {
 }
 
 // API Base URL - автоматическое определение:
-// - Если на Vercel (не onlyface.art) - используем API на Yandex Cloud
+// - Если на Vercel - используем API через serverless функции на том же домене
 // - Если на onlyface.art - используем локальный API (относительные пути)
 const getApiBaseUrl = () => {
     // Проверяем переменную окружения, но игнорируем неправильные значения
@@ -32,7 +32,7 @@ const getApiBaseUrl = () => {
         return '';
     }
     
-    // Если на другом домене - используем API на Yandex Cloud
+    // Если на другом домене - используем API на onlyface.art
     return 'https://onlyface.art';
 };
 
