@@ -1,4 +1,4 @@
-"""Сервис для работы с DeepFace API"""
+"""�е�в�� дл� �а�от� � DeepFace API"""
 import aiohttp
 import logging
 import os
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class DeepFaceService:
-    """Сервис для замены лиц в видео"""
+    """�е�в�� дл� замен� л�ц в в�део"""
     
     def __init__(self):
         self.api_url = settings.DEEPFACE_API_URL
@@ -22,24 +22,24 @@ class DeepFaceService:
         output_path: str
     ) -> Dict[str, Any]:
         """
-        Заменить лицо в видео
+        Замен�т� л�цо в в�део
         
         Args:
-            source_image_path: Путь к исходному изображению лица
-            target_video_path: Путь к целевому видео
-            output_path: Путь для сохранения результата
+            source_image_path: �ут� к ���одному �зо��ажен�� л�ца
+            target_video_path: �ут� к целевому в�део
+            output_path: �ут� дл� �о��анен�� �езул�тата
             
         Returns:
-            Результат обработки
+            �езул�тат о��а�отк�
         """
         try:
             if not self.api_key:
                 logger.warning("DeepFace API key not configured, using mock response")
-                # В mock режиме создаем пустой файл для тестирования
+                # � mock �еж�ме �оздаем пу�той файл дл� те�т��ован��
                 import os
                 os.makedirs(os.path.dirname(output_path), exist_ok=True)
                 with open(output_path, 'w') as f:
-                    f.write("")  # Создаем пустой файл
+                    f.write("")  # �оздаем пу�той файл
                 return {
                     "status": "success",
                     "message": "Mock: DeepFace processing completed",
@@ -47,9 +47,9 @@ class DeepFaceService:
                     "task_id": "mock_task_123"
                 }
             
-            # Реальный запрос к API DeepFace
+            # �еал�н�й зап�о� к API DeepFace
             async with aiohttp.ClientSession() as session:
-                # Подготавливаем файлы для отправки
+                # �од�отавл�ваем файл� дл� отп�авк�
                 data = aiohttp.FormData()
                 
                 with open(source_image_path, 'rb') as f:
@@ -72,12 +72,12 @@ class DeepFaceService:
                     f"{self.api_url}/swap",
                     data=data,
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=300)  # 5 минут таймаут
+                    timeout=aiohttp.ClientTimeout(total=300)  # 5 м�нут таймаут
                 ) as response:
                     if response.status == 200:
                         result = await response.json()
                         
-                        # Если API возвращает URL видео, скачиваем его
+                        # Е�л� API возв�а�ает URL в�део, �кач�ваем е�о
                         if result.get("video_url"):
                             video_url = result["video_url"]
                             async with session.get(video_url) as video_response:
@@ -109,13 +109,13 @@ class DeepFaceService:
     
     async def check_task_status(self, task_id: str) -> Dict[str, Any]:
         """
-        Проверить статус задачи
+        ��ове��т� �тату� задач�
         
         Args:
-            task_id: ID задачи
+            task_id: ID задач�
             
         Returns:
-            Статус задачи
+            �тату� задач�
         """
         try:
             if not self.api_key:

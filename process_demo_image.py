@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """
-Скрипт для обрезки белых полей с изображения и сохранения в demo-before-1.png
+�к��пт дл� о��езк� �ел�� полей � �зо��ажен�� � �о��анен�� в demo-before-1.png
 """
 from PIL import Image
 import sys
 import os
 
 def remove_white_borders(image_path, output_path):
-    """Обрезает белые поля с изображения"""
+    """О��езает �ел�е пол� � �зо��ажен��"""
     img = Image.open(image_path)
     
-    # Конвертируем в RGB если нужно
+    # �онве�т��уем в RGB е�л� нужно
     if img.mode != 'RGB':
         img = img.convert('RGB')
     
-    # Получаем данные изображения
+    # �олучаем данн�е �зо��ажен��
     img_data = img.load()
     width, height = img.size
     
-    # Находим границы контента (не белого)
-    # Белый цвет: RGB близко к (255, 255, 255)
-    threshold = 240  # Порог для определения "белого"
+    # �а�од�м ��ан�ц� контента (не �ело�о)
+    # Бел�й цвет: RGB �л�зко к (255, 255, 255)
+    threshold = 240  # �о�о� дл� оп�еделен�� "�ело�о"
     
     left = width
     right = 0
@@ -30,33 +30,33 @@ def remove_white_borders(image_path, output_path):
     for y in range(height):
         for x in range(width):
             r, g, b = img_data[x, y]
-            # Если пиксель не белый
+            # Е�л� п�к�ел� не �ел�й
             if r < threshold or g < threshold or b < threshold:
                 left = min(left, x)
                 right = max(right, x)
                 top = min(top, y)
                 bottom = max(bottom, y)
     
-    # Добавляем небольшой отступ (5% с каждой стороны)
+    # �о�авл�ем не�ол�шой от�туп (5% � каждой �то�он�)
     padding = int(min(width, height) * 0.05)
     left = max(0, left - padding)
     right = min(width - 1, right + padding)
     top = max(0, top - padding)
     bottom = min(height - 1, bottom + padding)
     
-    # Обрезаем изображение
+    # О��езаем �зо��ажен�е
     cropped = img.crop((left, top, right + 1, bottom + 1))
     
     cropped.save(output_path, 'PNG', optimize=True)
-    print(f"Изображение обрезано и сохранено: {output_path}")
-    print(f"   Исходный размер: {width}x{height}")
-    print(f"   Новый размер: {cropped.size[0]}x{cropped.size[1]}")
-    print(f"   Обрезано: {width - cropped.size[0]}px по ширине, {height - cropped.size[1]}px по высоте")
+    print(f"Изо��ажен�е о��езано � �о��анено: {output_path}")
+    print(f"   И��одн�й �азме�: {width}x{height}")
+    print(f"   �ов�й �азме�: {cropped.size[0]}x{cropped.size[1]}")
+    print(f"   О��езано: {width - cropped.size[0]}px по ш���не, {height - cropped.size[1]}px по в��оте")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Использование: python3 process_demo_image.py <путь_к_изображению> [before|after]")
-        print("Пример: python3 process_demo_image.py ~/Downloads/image.png after")
+        print("И�пол�зован�е: python3 process_demo_image.py <пут�_к_�зо��ажен��> [before|after]")
+        print("���ме�: python3 process_demo_image.py ~/Downloads/image.png after")
         sys.exit(1)
     
     input_path = sys.argv[1]
@@ -64,10 +64,10 @@ if __name__ == "__main__":
     output_path = f"static/images/demo-{position}-1.png"
     
     if not os.path.exists(input_path):
-        print(f"Ошибка: Файл не найден: {input_path}")
+        print(f"Ош��ка: Файл не найден: {input_path}")
         sys.exit(1)
     
-    # Создаем директорию если нужно
+    # �оздаем д��екто��� е�л� нужно
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
     remove_white_borders(input_path, output_path)

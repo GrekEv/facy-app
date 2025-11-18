@@ -1,4 +1,4 @@
-"""Обработчики для работы с балансом"""
+"""О��а�отч�к� дл� �а�от� � �алан�ом"""
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -12,38 +12,38 @@ router = Router()
 
 
 def get_balance_keyboard() -> InlineKeyboardMarkup:
-    """Клавиатура для баланса"""
+    """�лав�ату�а дл� �алан�а"""
     builder = InlineKeyboardBuilder()
     
     builder.row(
-        InlineKeyboardButton(text="Купить поинты", callback_data="buy_points")
+        InlineKeyboardButton(text="�уп�т� по�нт�", callback_data="buy_points")
     )
     builder.row(
-        InlineKeyboardButton(text="Назад", callback_data="back_to_main")
+        InlineKeyboardButton(text="�азад", callback_data="back_to_main")
     )
     
     return builder.as_markup()
 
 
 def get_buy_points_keyboard() -> InlineKeyboardMarkup:
-    """Клавиатура для покупки поинтов"""
+    """�лав�ату�а дл� покупк� по�нтов"""
     builder = InlineKeyboardBuilder()
     
-    # Пакеты поинтов
+    # �акет� по�нтов
     builder.row(
-        InlineKeyboardButton(text="100 поинтов - 99₽", callback_data="buy_100")
+        InlineKeyboardButton(text="100 по�нтов - 99��", callback_data="buy_100")
     )
     builder.row(
-        InlineKeyboardButton(text="500 поинтов - 399₽", callback_data="buy_500")
+        InlineKeyboardButton(text="500 по�нтов - 399��", callback_data="buy_500")
     )
     builder.row(
-        InlineKeyboardButton(text="1000 поинтов - 699₽", callback_data="buy_1000")
+        InlineKeyboardButton(text="1000 по�нтов - 699��", callback_data="buy_1000")
     )
     builder.row(
-        InlineKeyboardButton(text="2500 поинтов - 1499₽", callback_data="buy_2500")
+        InlineKeyboardButton(text="2500 по�нтов - 1499��", callback_data="buy_2500")
     )
     builder.row(
-        InlineKeyboardButton(text="Назад", callback_data="balance")
+        InlineKeyboardButton(text="�азад", callback_data="balance")
     )
     
     return builder.as_markup()
@@ -51,7 +51,7 @@ def get_buy_points_keyboard() -> InlineKeyboardMarkup:
 
 @router.callback_query(F.data == "balance")
 async def show_balance(callback: CallbackQuery):
-    """Показать баланс пользователя"""
+    """�оказат� �алан� пол�зовател�"""
     async for session in get_session():
         user = await user_service.get_user_by_telegram_id(
             session,
@@ -59,26 +59,26 @@ async def show_balance(callback: CallbackQuery):
         )
         
         if not user:
-            await callback.answer("Ошибка: пользователь не найден", show_alert=True)
+            await callback.answer("Ош��ка: пол�зовател� не найден", show_alert=True)
             return
         
         balance_text = f"""
-<b>Ваш баланс</b>
+<b>�аш �алан�</b>
 
-Поинты: <b>{user.balance}</b>
-Бесплатных генераций: <b>{user.free_generations}</b>
+�о�нт�: <b>{user.balance}</b>
+Бе�платн�� �ене�ац�й: <b>{user.free_generations}</b>
 
-<b>Статистика использования:</b>
-• Всего генераций изображений: {user.total_generations}
-• Всего DeepFake видео: {user.total_deepfakes}
+<b>�тат��т�ка ��пол�зован��:</b>
+� ��е�о �ене�ац�й �зо��ажен�й: {user.total_generations}
+� ��е�о DeepFake в�део: {user.total_deepfakes}
 
-<b>Стоимость услуг:</b>
-• Генерация изображения: 10 поинтов
-• DeepFake видео: 50 поинтов
+<b>�то�мо�т� у�лу�:</b>
+� �ене�ац�� �зо��ажен��: 10 по�нтов
+� DeepFake в�део: 50 по�нтов
 """
         
         if user.is_premium:
-            balance_text += f"\n<b>Premium статус активен</b>"
+            balance_text += f"\n<b>Premium �тату� акт�вен</b>"
         
         await callback.message.edit_text(
             balance_text,
@@ -90,17 +90,17 @@ async def show_balance(callback: CallbackQuery):
 
 @router.callback_query(F.data == "buy_points")
 async def show_buy_points(callback: CallbackQuery):
-    """Показать варианты покупки поинтов"""
+    """�оказат� ва��ант� покупк� по�нтов"""
     text = """
-<b>Покупка поинтов</b>
+<b>�окупка по�нтов</b>
 
-Выберите подходящий пакет:
+���е��те под�од���й пакет:
 
-<b>Что можно сделать с поинтами:</b>
-• 10 поинтов = 1 генерация изображения
-• 50 поинтов = 1 DeepFake видео
+<b>�то можно �делат� � по�нтам�:</b>
+� 10 по�нтов = 1 �ене�ац�� �зо��ажен��
+� 50 по�нтов = 1 DeepFake в�део
 
-Чем больше пакет — тем выгоднее!
+�ем �ол�ше пакет  тем в��однее!
 """
     
     await callback.message.edit_text(
@@ -110,12 +110,12 @@ async def show_buy_points(callback: CallbackQuery):
     await callback.answer()
 
 
-# Обработка покупки поинтов перенесена в handlers/payments.py
+# О��а�отка покупк� по�нтов пе�ене�ена в handlers/payments.py
 
 
 @router.callback_query(F.data == "stats")
 async def show_stats(callback: CallbackQuery):
-    """Показать статистику пользователя"""
+    """�оказат� �тат��т�ку пол�зовател�"""
     async for session in get_session():
         user = await user_service.get_user_by_telegram_id(
             session,
@@ -123,34 +123,34 @@ async def show_stats(callback: CallbackQuery):
         )
         
         if not user:
-            await callback.answer("Ошибка: пользователь не найден", show_alert=True)
+            await callback.answer("Ош��ка: пол�зовател� не найден", show_alert=True)
             return
         
         stats_text = f"""
-<b>Ваша статистика</b>
+<b>�аша �тат��т�ка</b>
 
-<b>Профиль:</b>
-• ID: {user.telegram_id}
-• Имя: {user.first_name or 'Не указано'}
-• Username: @{user.username or 'Не указано'}
+<b>��оф�л�:</b>
+� ID: {user.telegram_id}
+� Им�: {user.first_name or '�е указано'}
+� Username: @{user.username or '�е указано'}
 
-<b>Баланс:</b>
-• Поинты: {user.balance}
-• Бесплатных генераций: {user.free_generations}
+<b>Балан�:</b>
+� �о�нт�: {user.balance}
+� Бе�платн�� �ене�ац�й: {user.free_generations}
 
-<b>Активность:</b>
-• Генераций изображений: {user.total_generations}
-• DeepFake видео: {user.total_deepfakes}
-• Всего операций: {user.total_generations + user.total_deepfakes}
+<b>�кт�вно�т�:</b>
+� �ене�ац�й �зо��ажен�й: {user.total_generations}
+� DeepFake в�део: {user.total_deepfakes}
+� ��е�о опе�ац�й: {user.total_generations + user.total_deepfakes}
 
-<b>Даты:</b>
-• Регистрация: {user.created_at.strftime('%d.%m.%Y')}
-• Последняя активность: {user.last_active.strftime('%d.%m.%Y %H:%M')}
+<b>�ат�:</b>
+� �е���т�ац��: {user.created_at.strftime('%d.%m.%Y')}
+� �о�ледн�� акт�вно�т�: {user.last_active.strftime('%d.%m.%Y %H:%M')}
 """
         
         builder = InlineKeyboardBuilder()
         builder.row(
-            InlineKeyboardButton(text="Назад", callback_data="back_to_main")
+            InlineKeyboardButton(text="�азад", callback_data="back_to_main")
         )
         
         await callback.message.edit_text(

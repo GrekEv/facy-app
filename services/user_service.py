@@ -107,7 +107,7 @@ class UserService:
     ) -> tuple[bool, Optional[str]]:
         from services.email_service import EmailService
         if not EmailService.validate_email(email):
-            return False, "Неверный формат email"
+            return False, "�еве�н�й фо�мат email"
         user = await UserService.get_or_create_user(
             session,
             telegram_id=telegram_id
@@ -125,7 +125,7 @@ class UserService:
             return True, None
         else:
             logger.error(f"Failed to send verification code to {email}")
-            return False, "Не удалось отправить код. Проверьте настройки SMTP."
+            return False, "�е удало�� отп�ав�т� код. ��ове��те на�т�ойк� SMTP."
     @staticmethod
     async def verify_email_code(
         session: AsyncSession,
@@ -137,13 +137,13 @@ class UserService:
         )
         user = result.scalar_one_or_none()
         if not user:
-            return False, "Пользователь не найден"
+            return False, "�ол�зовател� не найден"
         if not user.verification_code:
-            return False, "Код подтверждения не был отправлен"
+            return False, "�од подтве�жден�� не ��л отп�авлен"
         if user.verification_code != code:
-            return False, "Неверный код подтверждения"
+            return False, "�еве�н�й код подтве�жден��"
         if user.verification_code_expires and user.verification_code_expires < datetime.utcnow():
-            return False, "Код подтверждения истек. Запросите новый код."
+            return False, "�од подтве�жден�� ��тек. Зап�о��те нов�й код."
         user.email_verified = True
         user.verification_code = None
         user.verification_code_expires = None

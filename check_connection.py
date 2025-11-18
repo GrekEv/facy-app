@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Скрипт для проверки подключения к серверу и базе данных на Yandex Cloud"""
+"""�к��пт дл� п�ове�к� подкл�чен�� к �е�ве�у � �азе данн�� на Yandex Cloud"""
 
 import asyncio
 import sys
 import os
 from pathlib import Path
 
-# Добавляем текущую директорию в путь
+# �о�авл�ем теку�у� д��екто��� в пут�
 sys.path.insert(0, str(Path(__file__).parent))
 
 from config import settings
@@ -25,69 +25,69 @@ NC = '\033[0m'  # No Color
 
 
 def print_status(message: str, status: str = "info"):
-    """Вывести сообщение с цветом"""
+    """��ве�т� �оо��ен�е � цветом"""
     if status == "success":
-        print(f"{GREEN}✅ {message}{NC}")
+        print(f"{GREEN} {message}{NC}")
     elif status == "error":
-        print(f"{RED}❌ {message}{NC}")
+        print(f"{RED} {message}{NC}")
     elif status == "warning":
-        print(f"{YELLOW}⚠️  {message}{NC}")
+        print(f"{YELLOW}  {message}{NC}")
     else:
-        print(f"{BLUE}ℹ️  {message}{NC}")
+        print(f"{BLUE}��  {message}{NC}")
 
 
 async def check_database_connection():
-    """Проверить подключение к базе данных"""
+    """��ове��т� подкл�чен�е к �азе данн��"""
     print("\n" + "="*60)
-    print_status("Проверка подключения к базе данных", "info")
+    print_status("��ове�ка подкл�чен�� к �азе данн��", "info")
     print("="*60)
     
-    # Проверяем тип базы данных
+    # ��ове��ем т�п �аз� данн��
     db_url = settings.DATABASE_URL
-    print_status(f"URL базы данных: {db_url[:50]}...", "info")
+    print_status(f"URL �аз� данн��: {db_url[:50]}...", "info")
     
     if db_url.startswith("sqlite"):
-        print_status("Используется SQLite (локальная база данных)", "warning")
-        print_status("Для продакшена рекомендуется PostgreSQL на Yandex Cloud", "warning")
+        print_status("И�пол�зует�� SQLite (локал�на� �аза данн��)", "warning")
+        print_status("�л� п�одакшена �екомендует�� PostgreSQL на Yandex Cloud", "warning")
         return False
     
     elif db_url.startswith("postgresql"):
-        print_status("Обнаружено подключение к PostgreSQL", "success")
+        print_status("О�на�ужено подкл�чен�е к PostgreSQL", "success")
         
-        # Извлекаем информацию о подключении
+        # Извлекаем �нфо�мац�� о подкл�чен��
         try:
-            # Парсим URL для отображения информации
+            # �а���м URL дл� ото��ажен�� �нфо�мац��
             if "postgresql+asyncpg://" in db_url:
                 db_url_clean = db_url.replace("postgresql+asyncpg://", "")
                 if "@" in db_url_clean:
                     auth_part, host_part = db_url_clean.split("@", 1)
                     if ":" in auth_part:
                         user, password = auth_part.split(":", 1)
-                        print_status(f"Пользователь: {user}", "info")
-                        print_status(f"Хост: {host_part.split('/')[0].split('?')[0]}", "info")
+                        print_status(f"�ол�зовател�: {user}", "info")
+                        print_status(f"�о�т: {host_part.split('/')[0].split('?')[0]}", "info")
                         if "yandexcloud.net" in host_part:
-                            print_status("Подключение к Yandex Cloud PostgreSQL", "success")
+                            print_status("�одкл�чен�е к Yandex Cloud PostgreSQL", "success")
                         else:
-                            print_status("Подключение к внешнему PostgreSQL", "warning")
+                            print_status("�одкл�чен�е к внешнему PostgreSQL", "warning")
         except Exception as e:
-            logger.debug(f"Не удалось распарсить URL: {e}")
+            logger.debug(f"�е удало�� �а�па���т� URL: {e}")
         
-        # Пытаемся подключиться
+        # ��таем�� подкл�ч�т���
         try:
-            print_status("Попытка подключения к базе данных...", "info")
+            print_status("�оп�тка подкл�чен�� к �азе данн��...", "info")
             async with engine.begin() as conn:
-                # Выполняем простой запрос
+                # ��полн�ем п�о�той зап�о�
                 result = await conn.execute(text("SELECT version(), current_database(), current_user"))
                 row = result.fetchone()
                 
                 if row:
                     version, db_name, db_user = row
-                    print_status("Подключение успешно!", "success")
-                    print_status(f"PostgreSQL версия: {version}", "info")
-                    print_status(f"База данных: {db_name}", "info")
-                    print_status(f"Пользователь: {db_user}", "info")
+                    print_status("�одкл�чен�е у�пешно!", "success")
+                    print_status(f"PostgreSQL ве����: {version}", "info")
+                    print_status(f"База данн��: {db_name}", "info")
+                    print_status(f"�ол�зовател�: {db_user}", "info")
                     
-                    # Проверяем таблицы
+                    # ��ове��ем та�л�ц�
                     result = await conn.execute(text("""
                         SELECT table_name 
                         FROM information_schema.tables 
@@ -97,50 +97,50 @@ async def check_database_connection():
                     tables = [row[0] for row in result.fetchall()]
                     
                     if tables:
-                        print_status(f"Найдено таблиц: {len(tables)}", "success")
-                        print_status(f"Таблицы: {', '.join(tables[:5])}{'...' if len(tables) > 5 else ''}", "info")
+                        print_status(f"�айдено та�л�ц: {len(tables)}", "success")
+                        print_status(f"Та�л�ц�: {', '.join(tables[:5])}{'...' if len(tables) > 5 else ''}", "info")
                     else:
-                        print_status("Таблицы не найдены (база данных пустая)", "warning")
+                        print_status("Та�л�ц� не найден� (�аза данн�� пу�та�)", "warning")
                     
                     return True
                 else:
-                    print_status("Не удалось получить информацию о базе данных", "error")
+                    print_status("�е удало�� получ�т� �нфо�мац�� о �азе данн��", "error")
                     return False
                     
         except Exception as e:
-            print_status(f"Ошибка подключения к базе данных: {e}", "error")
-            print_status("Проверьте:", "warning")
-            print_status("  1. Правильность DATABASE_URL в .env файле", "warning")
-            print_status("  2. Настройки групп безопасности в Yandex Cloud", "warning")
-            print_status("  3. Доступность хоста PostgreSQL", "warning")
-            print_status("  4. Правильность пароля и имени пользователя", "warning")
+            print_status(f"Ош��ка подкл�чен�� к �азе данн��: {e}", "error")
+            print_status("��ове��те:", "warning")
+            print_status("  1. ��ав�л�но�т� DATABASE_URL в .env файле", "warning")
+            print_status("  2. �а�т�ойк� ��упп �езопа�но�т� в Yandex Cloud", "warning")
+            print_status("  3. �о�тупно�т� �о�та PostgreSQL", "warning")
+            print_status("  4. ��ав�л�но�т� па�ол� � �мен� пол�зовател�", "warning")
             return False
     
     else:
-        print_status(f"Неизвестный тип базы данных: {db_url[:30]}...", "error")
+        print_status(f"�е�зве�тн�й т�п �аз� данн��: {db_url[:30]}...", "error")
         return False
 
 
 def check_server_info():
-    """Проверить информацию о сервере"""
+    """��ове��т� �нфо�мац�� о �е�ве�е"""
     print("\n" + "="*60)
-    print_status("Информация о сервере", "info")
+    print_status("Инфо�мац�� о �е�ве�е", "info")
     print("="*60)
     
     import socket
     hostname = socket.gethostname()
-    print_status(f"Имя хоста: {hostname}", "info")
+    print_status(f"Им� �о�та: {hostname}", "info")
     
     try:
-        # Пытаемся получить внешний IP
+        # ��таем�� получ�т� внешн�й IP
         import urllib.request
         external_ip = urllib.request.urlopen('https://api.ipify.org').read().decode('utf8')
-        print_status(f"Внешний IP: {external_ip}", "info")
+        print_status(f"�нешн�й IP: {external_ip}", "info")
     except Exception as e:
-        logger.debug(f"Не удалось получить внешний IP: {e}")
+        logger.debug(f"�е удало�� получ�т� внешн�й IP: {e}")
     
-    # Проверяем переменные окружения
-    print_status("Переменные окружения:", "info")
+    # ��ове��ем пе�еменн�е ок�ужен��
+    print_status("�е�еменн�е ок�ужен��:", "info")
     print_status(f"  ENVIRONMENT: {settings.ENVIRONMENT}", "info")
     print_status(f"  HOST: {settings.HOST}", "info")
     print_status(f"  PORT: {settings.port}", "info")
@@ -148,44 +148,44 @@ def check_server_info():
     if settings.BOT_TOKEN:
         print_status(f"  BOT_TOKEN: {'*' * 20}...{settings.BOT_TOKEN[-10:]}", "info")
     else:
-        print_status("  BOT_TOKEN: не установлен", "warning")
+        print_status("  BOT_TOKEN: не у�тановлен", "warning")
     
-    # Используем webapp_url для автоматического определения
+    # И�пол�зуем webapp_url дл� автомат�че�ко�о оп�еделен��
     webapp_url = settings.webapp_url
     print_status(f"  WEBAPP_URL: {webapp_url}", "info")
     if not settings.WEBAPP_URL:
-        print_status("  (автоматически определен)", "info")
+        print_status("  (автомат�че�к� оп�еделен)", "info")
 
 
 async def main():
-    """Основная функция"""
+    """О�новна� функц��"""
     print("\n" + "="*60)
-    print_status("Проверка подключения к Yandex Cloud", "info")
+    print_status("��ове�ка подкл�чен�� к Yandex Cloud", "info")
     print("="*60)
     
-    # Проверяем информацию о сервере
+    # ��ове��ем �нфо�мац�� о �е�ве�е
     check_server_info()
     
-    # Проверяем подключение к базе данных
+    # ��ове��ем подкл�чен�е к �азе данн��
     db_connected = await check_database_connection()
     
-    # Итоговый результат
+    # Ито�ов�й �езул�тат
     print("\n" + "="*60)
-    print_status("Результаты проверки", "info")
+    print_status("�езул�тат� п�ове�к�", "info")
     print("="*60)
     
     if db_connected:
-        print_status("База данных: Подключена к PostgreSQL на Yandex Cloud", "success")
+        print_status("База данн��: �одкл�чена к PostgreSQL на Yandex Cloud", "success")
     else:
-        print_status("База данных: Не подключена или использует SQLite", "error")
+        print_status("База данн��: �е подкл�чена �л� ��пол�зует SQLite", "error")
     
     print("\n" + "="*60)
     
     if db_connected:
-        print_status("Все проверки пройдены успешно! ✅", "success")
+        print_status("��е п�ове�к� п�ойден� у�пешно! ", "success")
         return 0
     else:
-        print_status("Обнаружены проблемы. Проверьте настройки.", "error")
+        print_status("О�на�ужен� п�о�лем�. ��ове��те на�т�ойк�.", "error")
         return 1
 
 
@@ -194,10 +194,10 @@ if __name__ == "__main__":
         exit_code = asyncio.run(main())
         sys.exit(exit_code)
     except KeyboardInterrupt:
-        print_status("\nПроверка прервана пользователем", "warning")
+        print_status("\n��ове�ка п�е�вана пол�зователем", "warning")
         sys.exit(1)
     except Exception as e:
-        print_status(f"Критическая ошибка: {e}", "error")
+        print_status(f"���т�че�ка� ош��ка: {e}", "error")
         import traceback
         traceback.print_exc()
         sys.exit(1)

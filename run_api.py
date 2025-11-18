@@ -1,4 +1,4 @@
-"""Запуск FastAPI сервера"""
+"""Запу�к FastAPI �е�ве�а"""
 import uvicorn
 import asyncio
 import os
@@ -7,23 +7,23 @@ from database import init_db
 
 
 async def startup():
-    """Инициализация при запуске"""
+    """Ин�ц�ал�зац�� п�� запу�ке"""
     await init_db()
     port = settings.port
-    print(f"✓ Database initialized")
-    print(f"✓ API server starting on http://{settings.HOST}:{port}")
-    print(f"✓ Web App available at {settings.webapp_url}")
+    print(f" Database initialized")
+    print(f" API server starting on http://{settings.HOST}:{port}")
+    print(f" Web App available at {settings.webapp_url}")
 
 
 if __name__ == "__main__":
-    # Инициализируем БД
+    # Ин�ц�ал�з��уем Б�
     asyncio.run(startup())
     
-    # Определяем режим (dev/prod)
+    # Оп�едел�ем �еж�м (dev/prod)
     is_dev = os.getenv("ENVIRONMENT", "production") == "development"
     port = settings.port
     
-    # Запускаем сервер
+    # Запу�каем �е�ве�
     uvicorn.run(
         "api.main:app",
         host=settings.HOST,

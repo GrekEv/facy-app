@@ -63,13 +63,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         await generateReferralLink();
                     }
                     if (!referralLink) {
-                        showNotification('Не удалось сгенерировать реферальную ссылку. Попробуйте позже.', 'error');
+                        showNotification('�е удало�� ��ене���оват� �ефе�ал�ну� ���лку. �оп�о�уйте позже.', 'error');
                         return;
                     }
                     try {
                         if (navigator.clipboard && navigator.clipboard.writeText) {
                             await navigator.clipboard.writeText(referralLink);
-                            showNotification('Ссылка приглашения скопирована!', 'success');
+                            showNotification('���лка п���лашен�� �коп��ована!', 'success');
                         } else {
                             const tempInput = document.createElement('input');
                             tempInput.value = referralLink;
@@ -81,10 +81,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             tempInput.setSelectionRange(0, 99999);
                             document.execCommand('copy');
                             document.body.removeChild(tempInput);
-                            showNotification('Ссылка приглашения скопирована!', 'success');
+                            showNotification('���лка п���лашен�� �коп��ована!', 'success');
                         }
                     } catch (err) {
-                        showNotification(`Реферальная ссылка: ${referralLink}`, 'info');
+                        showNotification(`�ефе�ал�на� ���лка: ${referralLink}`, 'info');
                     }
                 }
             } else if (target.id === 'showQRBtn') {
@@ -137,9 +137,9 @@ async function loadUserData(telegramId) {
             if (response.status === 503) {
                 try {
                     const errorData = JSON.parse(errorText);
-                    if (errorData.detail && errorData.detail.includes('база данных')) {
+                    if (errorData.detail && errorData.detail.includes('�аза данн��')) {
                         console.error('Database not configured!');
-                        showNotification('База данных не настроена. Обратитесь к администратору.', 'error');
+                        showNotification('База данн�� не на�т�оена. О��ат�те�� к адм�н��т�ато�у.', 'error');
                     }
                 } catch (e) {
                 }
@@ -148,7 +148,7 @@ async function loadUserData(telegramId) {
     } catch (error) {
         console.error('Error loading user data:', error);
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            showNotification('Не удалось подключиться к серверу. Проверьте подключение к интернету.', 'error');
+            showNotification('�е удало�� подкл�ч�т��� к �е�ве�у. ��ове��те подкл�чен�е к �нте�нету.', 'error');
         }
     }
 }
@@ -222,14 +222,14 @@ async function generateQRCode() {
     const referralQRContainer = document.getElementById('referralQRContainer');
     if (!referralQRCode || !referralQRContainer) {
         console.error('QR code elements not found!');
-        showNotification('Ошибка: элементы QR-кода не найдены', 'error');
+        showNotification('Ош��ка: �лемент� QR-кода не найден�', 'error');
         return;
     }
     const telegramUser = tg?.initDataUnsafe?.user;
     const telegramId = telegramUser?.id;
     if (!telegramId) {
         console.error('Telegram ID not found');
-        showNotification('Не удалось получить данные пользователя из Telegram', 'error');
+        showNotification('�е удало�� получ�т� данн�е пол�зовател� �з Telegram', 'error');
         return;
     }
     console.log('Generating QR code for telegram_id:', telegramId);
@@ -237,7 +237,7 @@ async function generateQRCode() {
         console.log('User data not loaded, loading...');
         await loadUserData(telegramId);
     }
-    referralQRCode.innerHTML = '<div style="color: var(--text-primary); padding: 2rem;">Загрузка QR-кода...</div>';
+    referralQRCode.innerHTML = '<div style="color: var(--text-primary); padding: 2rem;">За��узка QR-кода...</div>';
     referralQRContainer.style.display = 'flex';
     try {
         const qrApiUrl = API_BASE_URL 
@@ -251,11 +251,11 @@ async function generateQRCode() {
             const imageUrl = URL.createObjectURL(blob);
             console.log('QR code image loaded successfully');
             referralQRCode.innerHTML = `<img src="${imageUrl}" alt="QR Code" style="max-width: 100%; height: auto; border-radius: 8px;">`;
-            showNotification('QR-код успешно загружен!', 'success');
+            showNotification('QR-код у�пешно за��ужен!', 'success');
         } else {
             const errorText = await response.text();
             console.error('QR code API error:', errorText);
-            let errorMessage = 'Ошибка генерации QR-кода';
+            let errorMessage = 'Ош��ка �ене�ац�� QR-кода';
             try {
                 const error = JSON.parse(errorText);
                 errorMessage = error.detail || error.message || errorMessage;
@@ -266,8 +266,8 @@ async function generateQRCode() {
         }
     } catch (error) {
         console.error('Error generating QR code:', error);
-        referralQRCode.innerHTML = `<p style="color: var(--text-primary); padding: 1rem; text-align: center;">Ошибка загрузки QR-кода. Попробуйте позже.</p>`;
-        showNotification(`Не удалось загрузить QR-код: ${error.message}`, 'error');
+        referralQRCode.innerHTML = `<p style="color: var(--text-primary); padding: 1rem; text-align: center;">Ош��ка за��узк� QR-кода. �оп�о�уйте позже.</p>`;
+        showNotification(`�е удало�� за��уз�т� QR-код: ${error.message}`, 'error');
     }
 }
 function initHeaderButtons() {
@@ -529,7 +529,7 @@ function initButtons() {
             const telegramUser = tg?.initDataUnsafe?.user;
             const telegramId = telegramUser?.id;
             if (!telegramId) {
-                showNotification('Не удалось получить данные пользователя из Telegram', 'error');
+                showNotification('�е удало�� получ�т� данн�е пол�зовател� �з Telegram', 'error');
                 return;
             }
             console.log('Loading user data before generating referral link...');
@@ -548,7 +548,7 @@ function initButtons() {
             }
             if (!referralLink) {
                 console.error('Failed to generate referral link. userData:', userData);
-                showNotification('Не удалось сгенерировать реферальную ссылку. Попробуйте позже или обратитесь в поддержку.', 'error');
+                showNotification('�е удало�� ��ене���оват� �ефе�ал�ну� ���лку. �оп�о�уйте позже �л� о��ат�те�� в подде�жку.', 'error');
                 return;
             }
             console.log('Copying referral link to clipboard:', referralLink);
@@ -556,7 +556,7 @@ function initButtons() {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     await navigator.clipboard.writeText(referralLink);
                     console.log('Link copied to clipboard successfully');
-                    showNotification('Ссылка приглашения скопирована!', 'success');
+                    showNotification('���лка п���лашен�� �коп��ована!', 'success');
                 } else {
                     const tempInput = document.createElement('input');
                     tempInput.value = referralLink;
@@ -569,11 +569,11 @@ function initButtons() {
                     document.execCommand('copy');
                     document.body.removeChild(tempInput);
                     console.log('Link copied using fallback method');
-                    showNotification('Ссылка приглашения скопирована!', 'success');
+                    showNotification('���лка п���лашен�� �коп��ована!', 'success');
                 }
             } catch (err) {
                 console.error('Error copying to clipboard:', err);
-                showNotification(`Реферальная ссылка: ${referralLink}`, 'info');
+                showNotification(`�ефе�ал�на� ���лка: ${referralLink}`, 'info');
             }
         });
     } else {
@@ -604,7 +604,7 @@ function initButtons() {
             console.log('Payment URL:', paymentUrl);
             if (!paymentUrl || paymentUrl === '') {
                 console.error('Payment URL is empty!');
-                showNotification('Ошибка: ссылка на оплату не настроена. Обратитесь в поддержку.', 'error');
+                showNotification('Ош��ка: ���лка на оплату не на�т�оена. О��ат�те�� в подде�жку.', 'error');
                 return;
             }
             try {
@@ -617,7 +617,7 @@ function initButtons() {
                 }
             } catch (error) {
                 console.error('Error opening payment link:', error);
-                showNotification(`Ошибка при открытии ссылки оплаты: ${error.message}`, 'error');
+                showNotification(`Ош��ка п�� отк��т�� ���лк� оплат�: ${error.message}`, 'error');
             }
         });
     } else {
@@ -655,7 +655,7 @@ function initButtons() {
                     tg.shareUrl(media.src);
                 }
             } else {
-                showNotification('Функция "Поделиться" будет доступна в следующей версии!', 'info');
+                showNotification('Функц�� "�одел�т���" �удет до�тупна в �леду��ей ве����!', 'info');
             }
         });
     }
@@ -663,14 +663,14 @@ function initButtons() {
     if (faqBtn) {
         faqBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            showNotification('FAQ будет доступен в следующей версии', 'info');
+            showNotification('FAQ �удет до�тупен в �леду��ей ве����', 'info');
         });
     }
     const policyBtn = document.getElementById('policyBtn');
     if (policyBtn) {
         policyBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            showNotification('Политика конфиденциальности будет доступна в следующей версии', 'info');
+            showNotification('�ол�т�ка конф�денц�ал�но�т� �удет до�тупна в �леду��ей ве����', 'info');
         });
     }
 }
@@ -689,17 +689,17 @@ async function handleSwapFace() {
     console.log('handleSwapFace called');
     console.log('API_BASE_URL:', API_BASE_URL);
     if (!sourceImageFile) {
-        showNotification('Загрузите фото с лицом', 'error');
+        showNotification('За��уз�те фото � л�цом', 'error');
         return;
     }
     if (!targetVideoFile) {
-        showNotification('Загрузите целевое видео', 'error');
+        showNotification('За��уз�те целевое в�део', 'error');
         return;
     }
     const telegramUser = tg?.initDataUnsafe?.user;
     const telegramId = telegramUser?.id;
     if (!telegramId) {
-        showNotification('Не удалось получить данные пользователя из Telegram', 'error');
+        showNotification('�е удало�� получ�т� данн�е пол�зовател� �з Telegram', 'error');
         return;
     }
     if (!userData) {
@@ -708,7 +708,7 @@ async function handleSwapFace() {
     const apiUrl = API_BASE_URL ? `${API_BASE_URL}/api/deepfake/swap` : '/api/deepfake/swap';
     console.log('Face Swap API URL:', apiUrl);
     console.log('API_BASE_URL:', API_BASE_URL);
-    showLoader('Создаем Face Swap...');
+    showLoader('�оздаем Face Swap...');
     try {
         const formData = new FormData();
         formData.append('telegram_id', telegramId);
@@ -725,18 +725,18 @@ async function handleSwapFace() {
                 showResult(result.video_url, 'video');
                 closeCreateModal();
                 await loadUserData(telegramId);
-                showNotification('Face Swap успешно создан!', 'success');
+                showNotification('Face Swap у�пешно �оздан!', 'success');
             } else {
-                showNotification(result.message || 'Ошибка при создании', 'error');
+                showNotification(result.message || 'Ош��ка п�� �оздан��', 'error');
             }
         } else {
             const error = await response.json();
-            showNotification(error.detail || 'Ошибка сервера', 'error');
+            showNotification(error.detail || 'Ош��ка �е�ве�а', 'error');
         }
     } catch (error) {
         hideLoader();
         console.error('Error:', error);
-        showNotification('Произошла ошибка. Попробуйте позже.', 'error');
+        showNotification('��о�зошла ош��ка. �оп�о�уйте позже.', 'error');
     }
 }
 async function handleGenerateImage() {
@@ -745,16 +745,16 @@ async function handleGenerateImage() {
     const promptInput = document.getElementById('promptInput');
     if (!promptInput) {
         console.error('promptInput not found!');
-        showNotification('Ошибка: поле ввода не найдено', 'error');
+        showNotification('Ош��ка: поле ввода не найдено', 'error');
         return;
     }
     const prompt = promptInput.value.trim();
     if (!prompt) {
-        showNotification('Введите описание сцены', 'error');
+        showNotification('�вед�те оп��ан�е �цен�', 'error');
         return;
     }
     if (!checkContentSafety(prompt)) {
-        showNotification('⛔ Обнаружено недопустимое содержание. Пожалуйста, ознакомьтесь с политикой контента.', 'error');
+        showNotification('� О�на�ужено недопу�т�мое �оде�жан�е. �ожалуй�та, ознаком�те�� � пол�т�кой контента.', 'error');
         return;
     }
     const telegramUser = tg?.initDataUnsafe?.user;
@@ -767,7 +767,7 @@ async function handleGenerateImage() {
     console.log('Starting generation with telegram_id:', telegramId, 'prompt:', prompt);
     console.log('Sending request to:', apiUrl);
     console.log('API_BASE_URL:', API_BASE_URL);
-    showLoader('Генерируем изображение...');
+    showLoader('�ене���уем �зо��ажен�е...');
     try {
         const requestBody = {
             telegram_id: telegramId,
@@ -796,13 +796,13 @@ async function handleGenerateImage() {
             console.error('Response headers:', response.headers);
             hideLoader();
             if (response.status === 405) {
-                showNotification('Метод не разрешен. Проверьте настройки сервера.', 'error');
+                showNotification('�етод не �аз�ешен. ��ове��те на�т�ойк� �е�ве�а.', 'error');
             } else if (response.status === 500) {
-                showNotification('Внутренняя ошибка сервера. Проверьте логи.', 'error');
+                showNotification('�нут�енн�� ош��ка �е�ве�а. ��ове��те ло��.', 'error');
             } else if (text.includes('<!DOCTYPE')) {
-                showNotification('Сервер вернул HTML вместо JSON. Проверьте настройки API.', 'error');
+                showNotification('�е�ве� ве�нул HTML вме�то JSON. ��ове��те на�т�ойк� API.', 'error');
             } else {
-                showNotification(`Ошибка сервера (${response.status}): ${text.substring(0, 100)}`, 'error');
+                showNotification(`Ош��ка �е�ве�а (${response.status}): ${text.substring(0, 100)}`, 'error');
             }
             return;
         }
@@ -816,20 +816,20 @@ async function handleGenerateImage() {
                 if (telegramUser?.id) {
                     await loadUserData(telegramUser.id);
                 }
-                showNotification('Изображение успешно сгенерировано!', 'success');
+                showNotification('Изо��ажен�е у�пешно ��ене���овано!', 'success');
             } else {
                 console.error('Generation failed:', result.message);
-                showNotification(result.message || 'Ошибка при генерации', 'error');
+                showNotification(result.message || 'Ош��ка п�� �ене�ац��', 'error');
             }
         } else {
             console.error('HTTP error:', result);
-            showNotification(result.detail || result.message || 'Ошибка сервера', 'error');
+            showNotification(result.detail || result.message || 'Ош��ка �е�ве�а', 'error');
         }
     } catch (error) {
         hideLoader();
         console.error('Error generating image:', error);
         console.error('Error stack:', error.stack);
-        showNotification(`Произошла ошибка: ${error.message}`, 'error');
+        showNotification(`��о�зошла ош��ка: ${error.message}`, 'error');
     }
 }
 async function handleGenerateVideo() {
@@ -844,17 +844,17 @@ async function handleGenerateVideo() {
     const prompt = videoPromptInput.value.trim();
     const duration = videoDurationSelect ? parseInt(videoDurationSelect.value) : 5;
     if (!prompt) {
-        showNotification('Введите описание видео сцены', 'error');
+        showNotification('�вед�те оп��ан�е в�део �цен�', 'error');
         return;
     }
     if (!checkContentSafety(prompt)) {
-        showNotification('⛔ Обнаружено недопустимое содержание. Пожалуйста, ознакомьтесь с политикой контента.', 'error');
+        showNotification('� О�на�ужено недопу�т�мое �оде�жан�е. �ожалуй�та, ознаком�те�� � пол�т�кой контента.', 'error');
         return;
     }
     const telegramUser = tg?.initDataUnsafe?.user;
     const telegramId = telegramUser?.id;
     if (!telegramId) {
-        showNotification('Не удалось получить данные пользователя из Telegram', 'error');
+        showNotification('�е удало�� получ�т� данн�е пол�зовател� �з Telegram', 'error');
         return;
     }
     if (!userData) {
@@ -863,7 +863,7 @@ async function handleGenerateVideo() {
     const apiUrl = API_BASE_URL ? `${API_BASE_URL}/api/generate/video` : '/api/generate/video';
     console.log('Video generation API URL:', apiUrl);
     console.log('API_BASE_URL:', API_BASE_URL);
-    showLoader('Генерируем видео... Это может занять несколько минут.');
+    showLoader('�ене���уем в�део... �то может зан�т� не�кол�ко м�нут.');
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -886,27 +886,27 @@ async function handleGenerateVideo() {
             const result = await response.json();
             if (result.success) {
                 if (result.task_id) {
-                    showNotification('Генерация видео началась. Проверяем статус...', 'info');
+                    showNotification('�ене�ац�� в�део начала��. ��ове��ем �тату�...', 'info');
                     await checkVideoTaskStatus(result.task_id, result.generation_id);
                 } else if (result.video_url) {
                     showResult(result.video_url, 'video');
                     closeCreateModal();
                     await loadUserData(telegramId);
-                    showNotification('Видео успешно сгенерировано!', 'success');
+                    showNotification('��део у�пешно ��ене���овано!', 'success');
                 } else {
-                    showNotification('Видео генерируется. Проверьте позже.', 'info');
+                    showNotification('��део �ене���ует��. ��ове��те позже.', 'info');
                 }
             } else {
-                showNotification(result.message || 'Ошибка при генерации', 'error');
+                showNotification(result.message || 'Ош��ка п�� �ене�ац��', 'error');
             }
         } else {
             const error = await response.json();
-            showNotification(error.detail || 'Ошибка сервера', 'error');
+            showNotification(error.detail || 'Ош��ка �е�ве�а', 'error');
         }
     } catch (error) {
         hideLoader();
         console.error('Error:', error);
-        showNotification('Произошла ошибка. Попробуйте позже.', 'error');
+        showNotification('��о�зошла ош��ка. �оп�о�уйте позже.', 'error');
     }
 }
 async function checkVideoTaskStatus(taskId, generationId) {
@@ -927,20 +927,20 @@ async function checkVideoTaskStatus(taskId, generationId) {
                     if (telegramId) {
                         await loadUserData(telegramId);
                     }
-                    showNotification('Видео успешно сгенерировано!', 'success');
+                    showNotification('��део у�пешно ��ене���овано!', 'success');
                     return true;
                 } else if (status.status === 'failed') {
                     hideLoader();
-                    showNotification(status.message || 'Ошибка при генерации видео', 'error');
+                    showNotification(status.message || 'Ош��ка п�� �ене�ац�� в�део', 'error');
                     return true;
                 } else if (status.status === 'processing') {
-                    showLoader(`Генерируем видео... Прогресс: ${status.progress || 0}%`);
+                    showLoader(`�ене���уем в�део... ��о��е��: ${status.progress || 0}%`);
                     attempts++;
                     if (attempts < maxAttempts) {
                         setTimeout(checkStatus, 5000);
                     } else {
                         hideLoader();
-                        showNotification('Генерация видео занимает больше времени, чем ожидалось. Проверьте позже.', 'info');
+                        showNotification('�ене�ац�� в�део зан�мает �ол�ше в�емен�, чем ож�дало��. ��ове��те позже.', 'info');
                     }
                     return false;
                 }
@@ -952,7 +952,7 @@ async function checkVideoTaskStatus(taskId, generationId) {
                 setTimeout(checkStatus, 5000);
             } else {
                 hideLoader();
-                showNotification('Не удалось проверить статус генерации. Проверьте позже.', 'error');
+                showNotification('�е удало�� п�ове��т� �тату� �ене�ац��. ��ове��те позже.', 'error');
             }
             return false;
         }
@@ -987,7 +987,7 @@ function showNotification(message, type = 'info') {
         }
         if (tg?.showPopup) {
             tg.showPopup({
-                title: type === 'error' ? 'Ошибка' : type === 'success' ? 'Успех' : 'Информация',
+                title: type === 'error' ? 'Ош��ка' : type === 'success' ? 'У�пе�' : 'Инфо�мац��',
                 message: message,
                 buttons: [{ type: 'ok' }]
             });
@@ -999,7 +999,7 @@ function showNotification(message, type = 'info') {
         alert(message);
     }
 }
-function showLoader(text = 'Загрузка...') {
+function showLoader(text = 'За��узка...') {
     const loader = document.getElementById('loader');
     if (loader) {
         const loaderText = loader.querySelector('.loader-text');
@@ -1033,17 +1033,17 @@ function initEmailAuth() {
         sendCodeBtn.addEventListener('click', async () => {
             const email = emailInput?.value?.trim();
             if (!email) {
-                showNotification('Введите email', 'error');
+                showNotification('�вед�те email', 'error');
                 return;
             }
             const telegramUser = tg?.initDataUnsafe?.user;
             const telegramId = telegramUser?.id;
             if (!telegramId) {
-                showNotification('Не удалось получить данные пользователя из Telegram', 'error');
+                showNotification('�е удало�� получ�т� данн�е пол�зовател� �з Telegram', 'error');
                 return;
             }
             sendCodeBtn.disabled = true;
-            sendCodeBtn.innerHTML = '<span class="btn-text">Отправка...</span>';
+            sendCodeBtn.innerHTML = '<span class="btn-text">Отп�авка...</span>';
             try {
                 const apiUrl = API_BASE_URL 
                     ? `${API_BASE_URL}/api/auth/send-verification-code`
@@ -1060,17 +1060,17 @@ function initEmailAuth() {
                 });
                 const result = await response.json();
                 if (response.ok && result.success) {
-                    showNotification(result.message || 'Код отправлен на ваш email', 'success');
+                    showNotification(result.message || '�од отп�авлен на ваш email', 'success');
                     showEmailAuthStep2(email);
                 } else {
-                    showNotification(result.detail || result.message || 'Ошибка отправки кода', 'error');
+                    showNotification(result.detail || result.message || 'Ош��ка отп�авк� кода', 'error');
                 }
             } catch (error) {
                 console.error('Error sending verification code:', error);
-                showNotification('Ошибка отправки кода. Попробуйте позже.', 'error');
+                showNotification('Ош��ка отп�авк� кода. �оп�о�уйте позже.', 'error');
             } finally {
                 sendCodeBtn.disabled = false;
-                sendCodeBtn.innerHTML = '<span class="btn-text">Отправить код</span>';
+                sendCodeBtn.innerHTML = '<span class="btn-text">Отп�ав�т� код</span>';
             }
         });
     }
@@ -1078,17 +1078,17 @@ function initEmailAuth() {
         verifyCodeBtn.addEventListener('click', async () => {
             const code = codeInput?.value?.trim();
             if (!code || code.length !== 6) {
-                showNotification('Введите 6-значный код', 'error');
+                showNotification('�вед�те 6-значн�й код', 'error');
                 return;
             }
             const telegramUser = tg?.initDataUnsafe?.user;
             const telegramId = telegramUser?.id;
             if (!telegramId) {
-                showNotification('Не удалось получить данные пользователя из Telegram', 'error');
+                showNotification('�е удало�� получ�т� данн�е пол�зовател� �з Telegram', 'error');
                 return;
             }
             verifyCodeBtn.disabled = true;
-            verifyCodeBtn.innerHTML = '<span class="btn-text">Проверка...</span>';
+            verifyCodeBtn.innerHTML = '<span class="btn-text">��ове�ка...</span>';
             try {
                 const apiUrl = API_BASE_URL 
                     ? `${API_BASE_URL}/api/auth/verify-email-code`
@@ -1105,18 +1105,18 @@ function initEmailAuth() {
                 });
                 const result = await response.json();
                 if (response.ok && result.success) {
-                    showNotification(result.message || 'Email успешно подтвержден!', 'success');
+                    showNotification(result.message || 'Email у�пешно подтве�жден!', 'success');
                     await loadUserData(telegramId);
                     hideEmailAuthModal();
                 } else {
-                    showNotification(result.detail || result.message || 'Неверный код', 'error');
+                    showNotification(result.detail || result.message || '�еве�н�й код', 'error');
                 }
             } catch (error) {
                 console.error('Error verifying code:', error);
-                showNotification('Ошибка проверки кода. Попробуйте позже.', 'error');
+                showNotification('Ош��ка п�ове�к� кода. �оп�о�уйте позже.', 'error');
             } finally {
                 verifyCodeBtn.disabled = false;
-                verifyCodeBtn.innerHTML = '<span class="btn-text">Подтвердить</span><span class="btn-icon">✓</span>';
+                verifyCodeBtn.innerHTML = '<span class="btn-text">�одтве�д�т�</span><span class="btn-icon"></span>';
             }
         });
     }
@@ -1124,7 +1124,7 @@ function initEmailAuth() {
         resendCodeBtn.addEventListener('click', async () => {
             const email = emailInput?.value?.trim();
             if (!email) {
-                showNotification('Введите email', 'error');
+                showNotification('�вед�те email', 'error');
                 return;
             }
             showEmailAuthStep1();
@@ -1170,8 +1170,8 @@ function showEmailAuthStep2(email) {
 }
 function checkContentSafety(text) {
     const bannedKeywords = [
-        'porn', 'порно', 'xxx', 'sex', 'секс', 'nude', 'голый', 'голая',
-        'nsfw', '18+', 'adult', 'эротика', 'erotic', 'naked', 'обнаженн'
+        'porn', 'по�но', 'xxx', 'sex', '�ек�', 'nude', '�ол�й', '�ола�',
+        'nsfw', '18+', 'adult', '��от�ка', 'erotic', 'naked', 'о�наженн'
     ];
     const textLower = text.toLowerCase();
     for (const keyword of bannedKeywords) {

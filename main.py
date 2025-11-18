@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 async def set_bot_commands(bot: Bot):
     try:
         commands = [
-            BotCommand(command="start", description="Главное меню"),
-            BotCommand(command="balance", description="Мой баланс"),
-            BotCommand(command="help", description="Помощь"),
+            BotCommand(command="start", description="�лавное мен�"),
+            BotCommand(command="balance", description="�ой �алан�"),
+            BotCommand(command="help", description="�омо��"),
         ]
         await bot.set_my_commands(commands)
         logger.info("Bot commands set successfully")

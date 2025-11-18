@@ -91,16 +91,16 @@ class VideoGenerationService:
         }
     async def get_available_video_models(self) -> list:
         return [
-            {"id": "minimax", "name": "Minimax Video-01", "description": "Генерация видео через Replicate"},
-            {"id": "runway", "name": "RunwayML", "description": "Высококачественная генерация видео"},
-            {"id": "pika", "name": "Pika Labs", "description": "Быстрая генерация видео"}
+            {"id": "minimax", "name": "Minimax Video-01", "description": "�ене�ац�� в�део че�ез Replicate"},
+            {"id": "runway", "name": "RunwayML", "description": "���ококаче�твенна� �ене�ац�� в�део"},
+            {"id": "pika", "name": "Pika Labs", "description": "Б��т�а� �ене�ац�� в�део"}
         ]
     async def get_available_video_styles(self) -> list:
         return [
-            {"id": "realistic", "name": "Реалистичный"},
-            {"id": "cinematic", "name": "Кинематографичный"},
-            {"id": "anime", "name": "Аниме"},
-            {"id": "cartoon", "name": "Мультяшный"}
+            {"id": "realistic", "name": "�еал��т�чн�й"},
+            {"id": "cinematic", "name": "��немато��аф�чн�й"},
+            {"id": "anime", "name": "�н�ме"},
+            {"id": "cartoon", "name": "�ул�т�шн�й"}
         ]
     async def _generate_with_replicate(self, prompt: str, duration: int, width: int, height: int) -> Dict[str, Any]:
         try:

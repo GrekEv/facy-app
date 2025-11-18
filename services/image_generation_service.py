@@ -233,9 +233,9 @@ class ImageGenerationService:
         try:
             if not self.api_key:
                 return [
-                    {"id": "flux", "name": "FLUX", "description": "Быстрая и качественная генерация"},
-                    {"id": "sdxl", "name": "Stable Diffusion XL", "description": "Высокое качество"},
-                    {"id": "midjourney", "name": "Midjourney Style", "description": "Художественный стиль"}
+                    {"id": "flux", "name": "FLUX", "description": "Б��т�а� � каче�твенна� �ене�ац��"},
+                    {"id": "sdxl", "name": "Stable Diffusion XL", "description": "���окое каче�тво"},
+                    {"id": "midjourney", "name": "Midjourney Style", "description": "�удоже�твенн�й �т�л�"}
                 ]
             async with aiohttp.ClientSession() as session:
                 headers = {
@@ -254,10 +254,10 @@ class ImageGenerationService:
             return []
     async def get_available_styles(self) -> List[Dict[str, Any]]:
         return [
-            {"id": "realistic", "name": "Реалистичный", "preview": "realistic.jpg"},
-            {"id": "anime", "name": "Аниме", "preview": "anime.jpg"},
-            {"id": "artistic", "name": "Художественный", "preview": "artistic.jpg"},
-            {"id": "fantasy", "name": "Фэнтези", "preview": "fantasy.jpg"},
-            {"id": "cyberpunk", "name": "Киберпанк", "preview": "cyberpunk.jpg"},
+            {"id": "realistic", "name": "�еал��т�чн�й", "preview": "realistic.jpg"},
+            {"id": "anime", "name": "�н�ме", "preview": "anime.jpg"},
+            {"id": "artistic", "name": "�удоже�твенн�й", "preview": "artistic.jpg"},
+            {"id": "fantasy", "name": "Ф�нтез�", "preview": "fantasy.jpg"},
+            {"id": "cyberpunk", "name": "���е�панк", "preview": "cyberpunk.jpg"},
         ]
 image_generation_service = ImageGenerationService()

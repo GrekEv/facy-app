@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Тестовый скрипт для проверки генерации изображений через OpenAI"""
+"""Те�тов�й �к��пт дл� п�ове�к� �ене�ац�� �зо��ажен�й че�ез OpenAI"""
 import asyncio
 import sys
 from pathlib import Path
@@ -10,36 +10,36 @@ from services.image_generation_service import image_generation_service
 from config import settings
 
 async def test_generation():
-    """Тест генерации изображения"""
+    """Те�т �ене�ац�� �зо��ажен��"""
     print("=" * 60)
-    print("Тест генерации изображений через OpenAI")
+    print("Те�т �ене�ац�� �зо��ажен�й че�ез OpenAI")
     print("=" * 60)
     
-    # Проверка настроек
-    print(f"\nПроверка настроек:")
-    print(f"  OPENAI_API_KEY: {'Установлен' if settings.OPENAI_API_KEY else 'НЕ УСТАНОВЛЕН'}")
+    # ��ове�ка на�т�оек
+    print(f"\n��ове�ка на�т�оек:")
+    print(f"  OPENAI_API_KEY: {'У�тановлен' if settings.OPENAI_API_KEY else '�Е У�Т��О�ЛЕ�'}")
     if settings.OPENAI_API_KEY:
-        print(f"  Ключ начинается с: {settings.OPENAI_API_KEY[:20]}...")
+        print(f"  �л�ч нач�нает�� �: {settings.OPENAI_API_KEY[:20]}...")
     print(f"  IMAGE_GENERATION_PROVIDER: {settings.IMAGE_GENERATION_PROVIDER}")
-    print(f"  Провайдер в сервисе: {image_generation_service.provider}")
-    print(f"  OpenAI ключ в сервисе: {'Есть' if image_generation_service.openai_key else 'НЕТ'}")
+    print(f"  ��овайде� в �е�в��е: {image_generation_service.provider}")
+    print(f"  OpenAI кл�ч в �е�в��е: {'Е�т�' if image_generation_service.openai_key else '�ЕТ'}")
     
     if not settings.OPENAI_API_KEY:
-        print("\n❌ ОШИБКА: OPENAI_API_KEY не установлен в .env файле!")
+        print("\n О�ИБ��: OPENAI_API_KEY не у�тановлен в .env файле!")
         return
     
     if settings.IMAGE_GENERATION_PROVIDER != "openai":
-        print(f"\n⚠️  ВНИМАНИЕ: IMAGE_GENERATION_PROVIDER={settings.IMAGE_GENERATION_PROVIDER}, должен быть 'openai'")
+        print(f"\n  ��И���ИЕ: IMAGE_GENERATION_PROVIDER={settings.IMAGE_GENERATION_PROVIDER}, должен ��т� 'openai'")
     
-    # Тестовая генерация
+    # Те�това� �ене�ац��
     print(f"\n{'=' * 60}")
-    print("Запуск генерации изображения...")
+    print("Запу�к �ене�ац�� �зо��ажен��...")
     print(f"{'=' * 60}")
     
     test_prompt = "A beautiful sunset over the ocean, realistic photo"
     
-    print(f"\nПромпт: {test_prompt}")
-    print("Ожидайте...\n")
+    print(f"\n��омпт: {test_prompt}")
+    print("Ож�дайте...\n")
     
     try:
         result = await image_generation_service.generate_image(
@@ -49,23 +49,23 @@ async def test_generation():
             height=1024
         )
         
-        print(f"\nРезультат:")
-        print(f"  Статус: {result.get('status')}")
-        print(f"  Сообщение: {result.get('message')}")
+        print(f"\n�езул�тат:")
+        print(f"  �тату�: {result.get('status')}")
+        print(f"  �оо��ен�е: {result.get('message')}")
         
         if result.get("status") == "success":
             images = result.get("images", [])
             if images:
-                print(f"\n✅ УСПЕХ! Изображение сгенерировано:")
+                print(f"\n У��Е�! Изо��ажен�е ��ене���овано:")
                 print(f"  URL: {images[0]}")
             else:
-                print(f"\n⚠️  Статус успех, но нет URL изображения")
+                print(f"\n  �тату� у�пе�, но нет URL �зо��ажен��")
         else:
-            print(f"\n❌ ОШИБКА генерации:")
+            print(f"\n О�ИБ�� �ене�ац��:")
             print(f"  {result.get('message', 'Unknown error')}")
             
     except Exception as e:
-        print(f"\n❌ ИСКЛЮЧЕНИЕ при генерации:")
+        print(f"\n И��ЛЮ�Е�ИЕ п�� �ене�ац��:")
         print(f"  {type(e).__name__}: {e}")
         import traceback
         traceback.print_exc()

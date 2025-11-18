@@ -1,4 +1,4 @@
-"""Модуль базы данных"""
+"""�одул� �аз� данн��"""
 from .models import Base, User, Generation, Transaction
 from .database import init_db, get_session
 

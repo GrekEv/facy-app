@@ -1,4 +1,4 @@
-"""Сервис для обработки платежей"""
+"""�е�в�� дл� о��а�отк� платежей"""
 import logging
 import json
 import uuid
@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class PaymentService:
-    """Сервис для работы с платежами"""
+    """�е�в�� дл� �а�от� � платежам�"""
     
-    # Пакеты поинтов
+    # �акет� по�нтов
     POINT_PACKAGES = {
         "100": {"points": 100, "price": 99.0},
         "500": {"points": 500, "price": 399.0},
@@ -33,28 +33,28 @@ class PaymentService:
         promo_code: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Создать платеж
+        �оздат� платеж
         
         Args:
-            session: Сессия БД
-            user_id: ID пользователя
-            package_key: Ключ пакета (100, 500, 1000, 2500)
-            payment_provider: Провайдер платежа (telegram, stripe, yookassa, crypto, google_pay, samsung_pay)
-            promo_code: Промокод (опционально)
+            session: �е���� Б�
+            user_id: ID пол�зовател�
+            package_key: �л�ч пакета (100, 500, 1000, 2500)
+            payment_provider: ��овайде� платежа (telegram, stripe, yookassa, crypto, google_pay, samsung_pay)
+            promo_code: ��омокод (опц�онал�но)
             
         Returns:
-            Словарь с данными платежа
+            �лова�� � данн�м� платежа
         """
         if package_key not in PaymentService.POINT_PACKAGES:
-            raise ValueError(f"Неверный пакет: {package_key}")
+            raise ValueError(f"�еве�н�й пакет: {package_key}")
         
         package = PaymentService.POINT_PACKAGES[package_key]
         user = await UserService.get_user_by_id(session, user_id)
         
         if not user:
-            raise ValueError("Пользователь не найден")
+            raise ValueError("�ол�зовател� не найден")
         
-        # Проверка промокода
+        # ��ове�ка п�омокода
         discount_amount = 0.0
         promo_code_obj = None
         
@@ -72,7 +72,7 @@ class PaymentService:
         
         final_price = package["price"] - discount_amount
         
-        # Создание транзакции
+        # �оздан�е т�анзакц��
         transaction = Transaction(
             user_id=user_id,
             amount=package["points"],
@@ -82,7 +82,7 @@ class PaymentService:
             payment_provider=payment_provider,
             promo_code_id=promo_code_obj.id if promo_code_obj else None,
             discount_amount=discount_amount,
-            expires_at=datetime.utcnow() + timedelta(hours=24)  # Для криптоплатежей
+            expires_at=datetime.utcnow() + timedelta(hours=24)  # �л� к��птоплатежей
         )
         
         session.add(transaction)
@@ -107,7 +107,7 @@ class PaymentService:
         code: str,
         order_amount: float
     ) -> Optional[PromoCode]:
-        """Валидация промокода"""
+        """�ал�дац�� п�омокода"""
         result = await session.execute(
             select(PromoCode).where(PromoCode.code == code.upper())
         )
@@ -119,18 +119,18 @@ class PaymentService:
         if not promo.is_active:
             return None
         
-        # Проверка срока действия
+        # ��ове�ка ��ока дей�тв��
         now = datetime.utcnow()
         if promo.valid_from and now < promo.valid_from:
             return None
         if promo.valid_until and now > promo.valid_until:
             return None
         
-        # Проверка минимальной суммы
+        # ��ове�ка м�н�мал�ной �умм�
         if promo.min_amount and order_amount < promo.min_amount:
             return None
         
-        # Проверка максимального количества использований
+        # ��ове�ка мак��мал�но�о кол�че�тва ��пол�зован�й
         if promo.max_uses and promo.used_count >= promo.max_uses:
             return None
         
@@ -143,7 +143,7 @@ class PaymentService:
         payment_id: str,
         provider_payment_charge_id: str
     ) -> bool:
-        """Обработка платежа через Telegram Payments"""
+        """О��а�отка платежа че�ез Telegram Payments"""
         result = await session.execute(
             select(Transaction).where(Transaction.id == transaction_id)
         )
@@ -155,12 +155,12 @@ class PaymentService:
         if transaction.status != "pending":
             return False
         
-        # Обновление транзакции
+        # О�новлен�е т�анзакц��
         transaction.status = "completed"
         transaction.payment_id = provider_payment_charge_id
         transaction.completed_at = datetime.utcnow()
         
-        # Начисление поинтов пользователю
+        # �ач��лен�е по�нтов пол�зовател�
         user = await UserService.get_user_by_id(session, transaction.user_id)
         if user:
             user.balance += transaction.amount
@@ -182,16 +182,16 @@ class PaymentService:
         crypto_address: str,
         crypto_amount: float
     ) -> Dict[str, Any]:
-        """Создание криптоплатежа"""
+        """�оздан�е к��птоплатежа"""
         result = await session.execute(
             select(Transaction).where(Transaction.id == transaction_id)
         )
         transaction = result.scalar_one_or_none()
         
         if not transaction:
-            raise ValueError("Транзакция не найдена")
+            raise ValueError("Т�анзакц�� не найдена")
         
-        # Обновление транзакции с данными крипты
+        # О�новлен�е т�анзакц�� � данн�м� к��пт�
         transaction.crypto_currency = crypto_currency
         transaction.crypto_address = crypto_address
         transaction.crypto_amount = crypto_amount
@@ -213,7 +213,7 @@ class PaymentService:
         transaction_id: int,
         tx_hash: str
     ) -> bool:
-        """Проверка криптоплатежа по хешу транзакции"""
+        """��ове�ка к��птоплатежа по �ешу т�анзакц��"""
         result = await session.execute(
             select(Transaction).where(Transaction.id == transaction_id)
         )
@@ -222,13 +222,13 @@ class PaymentService:
         if not transaction:
             return False
         
-        # Здесь должна быть проверка транзакции через блокчейн API
-        # Пока что просто обновляем статус
+        # Зде�� должна ��т� п�ове�ка т�анзакц�� че�ез �локчейн API
+        # �ока что п�о�то о�новл�ем �тату�
         transaction.crypto_tx_hash = tx_hash
         transaction.status = "completed"
         transaction.completed_at = datetime.utcnow()
         
-        # Начисление поинтов
+        # �ач��лен�е по�нтов
         user = await UserService.get_user_by_id(session, transaction.user_id)
         if user:
             user.balance += transaction.amount
@@ -243,7 +243,7 @@ class PaymentService:
         session: AsyncSession,
         transaction_id: int
     ) -> Optional[Dict[str, Any]]:
-        """Получить статус платежа"""
+        """�олуч�т� �тату� платежа"""
         result = await session.execute(
             select(Transaction).where(Transaction.id == transaction_id)
         )

@@ -1,4 +1,4 @@
-"""API endpoints для платежей"""
+"""API endpoints дл� платежей"""
 from fastapi import APIRouter, Depends, HTTPException, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
@@ -12,14 +12,14 @@ router = APIRouter(prefix="/api/payments", tags=["payments"])
 
 
 class CreatePaymentRequest(BaseModel):
-    """Запрос на создание платежа"""
+    """Зап�о� на �оздан�е платежа"""
     package_key: str  # 100, 500, 1000, 2500
     payment_provider: str  # telegram, stripe, yookassa, crypto, google_pay, samsung_pay
     promo_code: Optional[str] = None
 
 
 class PaymentResponse(BaseModel):
-    """Ответ с данными платежа"""
+    """Ответ � данн�м� платежа"""
     transaction_id: int
     amount: int
     price: float
@@ -37,14 +37,14 @@ async def create_payment(
     telegram_id: int = Form(...),
     session: AsyncSession = Depends(get_session)
 ):
-    """Создать платеж"""
+    """�оздат� платеж"""
     try:
-        # Получаем пользователя
+        # �олучаем пол�зовател�
         user = await UserService.get_user_by_telegram_id(session, telegram_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # Создаем платеж
+        # �оздаем платеж
         payment_data = await PaymentService.create_payment(
             session=session,
             user_id=user.id,
@@ -53,10 +53,10 @@ async def create_payment(
             promo_code=request.promo_code
         )
         
-        # Если криптоплатеж, получаем адрес
+        # Е�л� к��птоплатеж, получаем ад�е�
         if request.payment_provider == "crypto":
-            # Здесь должна быть логика получения адреса кошелька
-            # Пока возвращаем базовые данные
+            # Зде�� должна ��т� ло��ка получен�� ад�е�а кошел�ка
+            # �ока возв�а�аем �азов�е данн�е
             pass
         
         return PaymentResponse(
@@ -79,7 +79,7 @@ async def verify_crypto_payment(
     tx_hash: str = Form(...),
     session: AsyncSession = Depends(get_session)
 ):
-    """Проверить криптоплатеж"""
+    """��ове��т� к��птоплатеж"""
     try:
         success = await PaymentService.verify_crypto_payment(
             session=session,
@@ -101,7 +101,7 @@ async def get_payment_status(
     transaction_id: int,
     session: AsyncSession = Depends(get_session)
 ):
-    """Получить статус платежа"""
+    """�олуч�т� �тату� платежа"""
     status = await PaymentService.get_payment_status(session, transaction_id)
     
     if not status:
@@ -112,21 +112,21 @@ async def get_payment_status(
 
 @router.post("/webhook/telegram")
 async def telegram_payment_webhook():
-    """Webhook для Telegram Payments"""
-    # Здесь должна быть обработка webhook от Telegram Payments
+    """Webhook дл� Telegram Payments"""
+    # Зде�� должна ��т� о��а�отка webhook от Telegram Payments
     pass
 
 
 @router.post("/webhook/stripe")
 async def stripe_payment_webhook():
-    """Webhook для Stripe"""
-    # Здесь должна быть обработка webhook от Stripe
+    """Webhook дл� Stripe"""
+    # Зде�� должна ��т� о��а�отка webhook от Stripe
     pass
 
 
 @router.post("/webhook/yookassa")
 async def yookassa_payment_webhook():
-    """Webhook для YooKassa"""
-    # Здесь должна быть обработка webhook от YooKassa
+    """Webhook дл� YooKassa"""
+    # Зде�� должна ��т� о��а�отка webhook от YooKassa
     pass
 

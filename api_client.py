@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Клиентский скрипт для работы с API приложения
-Позволяет генерировать изображения и видео, получать результаты
+�л�ент�к�й �к��пт дл� �а�от� � API п��ложен��
+�озвол�ет �ене���оват� �зо��ажен�� � в�део, получат� �езул�тат�
 """
 import asyncio
 import aiohttp
@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any
 import json
 
-# Цвета для вывода
+# Цвета дл� в�вода
 GREEN = '\033[0;32m'
 RED = '\033[0;31m'
 YELLOW = '\033[1;33m'
@@ -22,42 +22,42 @@ NC = '\033[0m'  # No Color
 
 
 class APIClient:
-    """Клиент для работы с API"""
+    """�л�ент дл� �а�от� � API"""
     
     def __init__(self, base_url: str = "http://localhost:8000"):
         """
-        Инициализация клиента
+        Ин�ц�ал�зац�� кл�ента
         
         Args:
-            base_url: Базовый URL API сервера
+            base_url: Базов�й URL API �е�ве�а
         """
         self.base_url = base_url.rstrip('/')
         self.session: Optional[aiohttp.ClientSession] = None
     
     async def __aenter__(self):
-        """Асинхронный контекстный менеджер - вход"""
+        """���н��онн�й контек�тн�й менедже� - в�од"""
         self.session = aiohttp.ClientSession()
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Асинхронный контекстный менеджер - выход"""
+        """���н��онн�й контек�тн�й менедже� - в��од"""
         if self.session:
             await self.session.close()
     
     def _print_success(self, message: str):
-        """Вывести сообщение об успехе"""
+        """��ве�т� �оо��ен�е о� у�пе�е"""
         print(f"{GREEN}[OK] {message}{NC}")
     
     def _print_error(self, message: str):
-        """Вывести сообщение об ошибке"""
+        """��ве�т� �оо��ен�е о� ош��ке"""
         print(f"{RED}[ERROR] {message}{NC}")
     
     def _print_info(self, message: str):
-        """Вывести информационное сообщение"""
+        """��ве�т� �нфо�мац�онное �оо��ен�е"""
         print(f"{BLUE}[INFO] {message}{NC}")
     
     def _print_warning(self, message: str):
-        """Вывести предупреждение"""
+        """��ве�т� п�едуп�ежден�е"""
         print(f"{YELLOW}[WARN] {message}{NC}")
     
     async def generate_image(
@@ -71,21 +71,21 @@ class APIClient:
         height: int = 1024
     ) -> Dict[str, Any]:
         """
-        Генерировать изображение
+        �ене���оват� �зо��ажен�е
         
         Args:
-            telegram_id: ID пользователя Telegram
-            prompt: Текстовое описание изображения
-            model: Модель для генерации
-            style: Стиль изображения
-            negative_prompt: Негативный промпт
-            width: Ширина изображения
-            height: Высота изображения
+            telegram_id: ID пол�зовател� Telegram
+            prompt: Тек�товое оп��ан�е �зо��ажен��
+            model: �одел� дл� �ене�ац��
+            style: �т�л� �зо��ажен��
+            negative_prompt: �е�ат�вн�й п�омпт
+            width: ����на �зо��ажен��
+            height: ���ота �зо��ажен��
             
         Returns:
-            Результат генерации
+            �езул�тат �ене�ац��
         """
-        self._print_info(f"Генерация изображения: {prompt[:50]}...")
+        self._print_info(f"�ене�ац�� �зо��ажен��: {prompt[:50]}...")
         
         url = f"{self.base_url}/api/generate/image"
         payload = {
@@ -106,18 +106,18 @@ class APIClient:
                 if response.status == 200:
                     result = await response.json()
                     if result.get("success"):
-                        self._print_success(f"Изображение сгенерировано!")
+                        self._print_success(f"Изо��ажен�е ��ене���овано!")
                         self._print_info(f"URL: {result.get('image_url')}")
                         return result
                     else:
-                        self._print_error(f"Ошибка: {result.get('message', 'Unknown error')}")
+                        self._print_error(f"Ош��ка: {result.get('message', 'Unknown error')}")
                         return result
                 else:
                     error_text = await response.text()
                     self._print_error(f"HTTP {response.status}: {error_text}")
                     return {"success": False, "message": error_text}
         except Exception as e:
-            self._print_error(f"Ошибка запроса: {e}")
+            self._print_error(f"Ош��ка зап�о�а: {e}")
             return {"success": False, "message": str(e)}
     
     async def generate_video(
@@ -133,23 +133,23 @@ class APIClient:
         height: int = 720
     ) -> Dict[str, Any]:
         """
-        Генерировать видео
+        �ене���оват� в�део
         
         Args:
-            telegram_id: ID пользователя Telegram
-            prompt: Текстовое описание видео
-            model: Модель для генерации
-            style: Стиль видео
-            negative_prompt: Негативный промпт
-            duration: Длительность в секундах
-            fps: Кадров в секунду
-            width: Ширина видео
-            height: Высота видео
+            telegram_id: ID пол�зовател� Telegram
+            prompt: Тек�товое оп��ан�е в�део
+            model: �одел� дл� �ене�ац��
+            style: �т�л� в�део
+            negative_prompt: �е�ат�вн�й п�омпт
+            duration: �л�тел�но�т� в �екунда�
+            fps: �ад�ов в �екунду
+            width: ����на в�део
+            height: ���ота в�део
             
         Returns:
-            Результат генерации
+            �езул�тат �ене�ац��
         """
-        self._print_info(f"Генерация видео: {prompt[:50]}...")
+        self._print_info(f"�ене�ац�� в�део: {prompt[:50]}...")
         
         url = f"{self.base_url}/api/generate/video"
         payload = {
@@ -172,32 +172,32 @@ class APIClient:
                 if response.status == 200:
                     result = await response.json()
                     if result.get("success"):
-                        self._print_success(f"Генерация видео запущена!")
+                        self._print_success(f"�ене�ац�� в�део запу�ена!")
                         if result.get("video_url"):
                             self._print_info(f"URL: {result.get('video_url')}")
                         if result.get("task_id"):
                             self._print_info(f"Task ID: {result.get('task_id')}")
                         return result
                     else:
-                        self._print_error(f"Ошибка: {result.get('message', 'Unknown error')}")
+                        self._print_error(f"Ош��ка: {result.get('message', 'Unknown error')}")
                         return result
                 else:
                     error_text = await response.text()
                     self._print_error(f"HTTP {response.status}: {error_text}")
                     return {"success": False, "message": error_text}
         except Exception as e:
-            self._print_error(f"Ошибка запроса: {e}")
+            self._print_error(f"Ош��ка зап�о�а: {e}")
             return {"success": False, "message": str(e)}
     
     async def check_video_task_status(self, task_id: str) -> Dict[str, Any]:
         """
-        Проверить статус задачи генерации видео
+        ��ове��т� �тату� задач� �ене�ац�� в�део
         
         Args:
-            task_id: ID задачи
+            task_id: ID задач�
             
         Returns:
-            Статус задачи
+            �тату� задач�
         """
         url = f"{self.base_url}/api/video/task/{task_id}"
         
@@ -209,15 +209,15 @@ class APIClient:
                     progress = result.get("progress", 0)
                     
                     if status == "completed":
-                        self._print_success(f"Видео готово! Прогресс: {progress}%")
+                        self._print_success(f"��део �отово! ��о��е��: {progress}%")
                         if result.get("video_url"):
                             self._print_info(f"URL: {result.get('video_url')}")
                     elif status == "processing":
-                        self._print_info(f"Обработка... Прогресс: {progress}%")
+                        self._print_info(f"О��а�отка... ��о��е��: {progress}%")
                     elif status == "failed":
-                        self._print_error(f"Ошибка: {result.get('message', 'Unknown error')}")
+                        self._print_error(f"Ош��ка: {result.get('message', 'Unknown error')}")
                     else:
-                        self._print_warning(f"Статус: {status}")
+                        self._print_warning(f"�тату�: {status}")
                     
                     return result
                 else:
@@ -225,18 +225,18 @@ class APIClient:
                     self._print_error(f"HTTP {response.status}: {error_text}")
                     return {"status": "error", "message": error_text}
         except Exception as e:
-            self._print_error(f"Ошибка запроса: {e}")
+            self._print_error(f"Ош��ка зап�о�а: {e}")
             return {"status": "error", "message": str(e)}
     
     async def get_user_info(self, telegram_id: int) -> Dict[str, Any]:
         """
-        Получить информацию о пользователе
+        �олуч�т� �нфо�мац�� о пол�зователе
         
         Args:
-            telegram_id: ID пользователя Telegram
+            telegram_id: ID пол�зовател� Telegram
             
         Returns:
-            Информация о пользователе
+            Инфо�мац�� о пол�зователе
         """
         url = f"{self.base_url}/api/user/{telegram_id}"
         
@@ -244,18 +244,18 @@ class APIClient:
             async with self.session.get(url) as response:
                 if response.status == 200:
                     result = await response.json()
-                    self._print_success("Информация о пользователе получена")
+                    self._print_success("Инфо�мац�� о пол�зователе получена")
                     return result
                 else:
                     error_text = await response.text()
                     self._print_error(f"HTTP {response.status}: {error_text}")
                     return {}
         except Exception as e:
-            self._print_error(f"Ошибка запроса: {e}")
+            self._print_error(f"Ош��ка зап�о�а: {e}")
             return {}
     
     async def get_models(self) -> Dict[str, Any]:
-        """Получить список доступных моделей для изображений"""
+        """�олуч�т� �п��ок до�тупн�� моделей дл� �зо��ажен�й"""
         url = f"{self.base_url}/api/models"
         
         try:
@@ -264,11 +264,11 @@ class APIClient:
                     return await response.json()
                 return {"models": []}
         except Exception as e:
-            self._print_error(f"Ошибка запроса: {e}")
+            self._print_error(f"Ош��ка зап�о�а: {e}")
             return {"models": []}
     
     async def get_video_models(self) -> Dict[str, Any]:
-        """Получить список доступных моделей для видео"""
+        """�олуч�т� �п��ок до�тупн�� моделей дл� в�део"""
         url = f"{self.base_url}/api/video/models"
         
         try:
@@ -277,48 +277,48 @@ class APIClient:
                     return await response.json()
                 return {"models": []}
         except Exception as e:
-            self._print_error(f"Ошибка запроса: {e}")
+            self._print_error(f"Ош��ка зап�о�а: {e}")
             return {"models": []}
     
     async def download_file(self, url: str, output_path: Path) -> bool:
         """
-        Скачать файл по URL
+        �качат� файл по URL
         
         Args:
-            url: URL файла (может быть относительным или абсолютным)
-            output_path: Путь для сохранения файла
+            url: URL файла (может ��т� отно��тел�н�м �л� а��ол�тн�м)
+            output_path: �ут� дл� �о��анен�� файла
             
         Returns:
-            True если успешно
+            True е�л� у�пешно
         """
-        # Если URL относительный, добавляем базовый URL
+        # Е�л� URL отно��тел�н�й, до�авл�ем �азов�й URL
         if url.startswith('/'):
             url = f"{self.base_url}{url}"
         
-        self._print_info(f"Скачивание файла: {url}")
+        self._print_info(f"�кач�ван�е файла: {url}")
         
         try:
             async with self.session.get(url) as response:
                 if response.status == 200:
-                    # Создаем директорию если нужно
+                    # �оздаем д��екто��� е�л� нужно
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     
-                    # Сохраняем файл
+                    # �о��ан�ем файл
                     with open(output_path, 'wb') as f:
                         async for chunk in response.content.iter_chunked(8192):
                             f.write(chunk)
                     
-                    self._print_success(f"Файл сохранен: {output_path}")
+                    self._print_success(f"Файл �о��анен: {output_path}")
                     return True
                 else:
-                    self._print_error(f"HTTP {response.status}: Не удалось скачать файл")
+                    self._print_error(f"HTTP {response.status}: �е удало�� �качат� файл")
                     return False
         except Exception as e:
-            self._print_error(f"Ошибка скачивания: {e}")
+            self._print_error(f"Ош��ка �кач�ван��: {e}")
             return False
     
     async def health_check(self) -> bool:
-        """Проверить доступность API"""
+        """��ове��т� до�тупно�т� API"""
         url = f"{self.base_url}/health"
         
         try:
@@ -326,46 +326,46 @@ class APIClient:
                 if response.status == 200:
                     result = await response.json()
                     if result.get("status") == "healthy":
-                        self._print_success("API доступен")
+                        self._print_success("API до�тупен")
                         return True
                     else:
-                        self._print_warning(f"API вернул: {result}")
+                        self._print_warning(f"API ве�нул: {result}")
                         return False
                 else:
                     self._print_error(f"HTTP {response.status}")
                     return False
         except asyncio.TimeoutError:
-            self._print_error("Таймаут подключения к API")
+            self._print_error("Таймаут подкл�чен�� к API")
             return False
         except Exception as e:
-            self._print_error(f"Ошибка подключения: {e}")
+            self._print_error(f"Ош��ка подкл�чен��: {e}")
             return False
 
 
 async def main():
-    """Основная функция"""
+    """О�новна� функц��"""
     parser = argparse.ArgumentParser(
-        description="Клиент для работы с API генерации изображений и видео",
+        description="�л�ент дл� �а�от� � API �ене�ац�� �зо��ажен�й � в�део",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Примеры использования:
+���ме�� ��пол�зован��:
 
-  # Генерация изображения
-  python api_client.py image --telegram-id 123456789 --prompt "Красивый закат над морем"
+  # �ене�ац�� �зо��ажен��
+  python api_client.py image --telegram-id 123456789 --prompt "��а��в�й закат над мо�ем"
 
-  # Генерация видео
-  python api_client.py video --telegram-id 123456789 --prompt "Кот играет с мячом"
+  # �ене�ац�� в�део
+  python api_client.py video --telegram-id 123456789 --prompt "�от ���ает � м�чом"
 
-  # Проверка статуса видео
+  # ��ове�ка �тату�а в�део
   python api_client.py status --task-id task_123
 
-  # Получение информации о пользователе
+  # �олучен�е �нфо�мац�� о пол�зователе
   python api_client.py user --telegram-id 123456789
 
-  # Скачивание файла
+  # �кач�ван�е файла
   python api_client.py download --url /generated/video.mp4 --output ./downloads/video.mp4
 
-  # Проверка доступности API
+  # ��ове�ка до�тупно�т� API
   python api_client.py health
         """
     )
@@ -373,54 +373,54 @@ async def main():
     parser.add_argument(
         '--base-url',
         default=os.getenv('API_BASE_URL', 'http://localhost:8000'),
-        help='Базовый URL API (по умолчанию: http://localhost:8000)'
+        help='Базов�й URL API (по умолчан��: http://localhost:8000)'
     )
     
-    subparsers = parser.add_subparsers(dest='command', help='Команды')
+    subparsers = parser.add_subparsers(dest='command', help='�оманд�')
     
-    # Команда генерации изображения
-    image_parser = subparsers.add_parser('image', help='Генерировать изображение')
-    image_parser.add_argument('--telegram-id', type=int, required=True, help='ID пользователя Telegram')
-    image_parser.add_argument('--prompt', required=True, help='Текстовое описание изображения')
-    image_parser.add_argument('--model', default='flux', help='Модель (по умолчанию: flux)')
-    image_parser.add_argument('--style', help='Стиль изображения')
-    image_parser.add_argument('--negative-prompt', help='Негативный промпт')
-    image_parser.add_argument('--width', type=int, default=1024, help='Ширина (по умолчанию: 1024)')
-    image_parser.add_argument('--height', type=int, default=1024, help='Высота (по умолчанию: 1024)')
-    image_parser.add_argument('--download', action='store_true', help='Скачать изображение')
-    image_parser.add_argument('--output', type=Path, default=Path('./downloads'), help='Директория для сохранения')
+    # �оманда �ене�ац�� �зо��ажен��
+    image_parser = subparsers.add_parser('image', help='�ене���оват� �зо��ажен�е')
+    image_parser.add_argument('--telegram-id', type=int, required=True, help='ID пол�зовател� Telegram')
+    image_parser.add_argument('--prompt', required=True, help='Тек�товое оп��ан�е �зо��ажен��')
+    image_parser.add_argument('--model', default='flux', help='�одел� (по умолчан��: flux)')
+    image_parser.add_argument('--style', help='�т�л� �зо��ажен��')
+    image_parser.add_argument('--negative-prompt', help='�е�ат�вн�й п�омпт')
+    image_parser.add_argument('--width', type=int, default=1024, help='����на (по умолчан��: 1024)')
+    image_parser.add_argument('--height', type=int, default=1024, help='���ота (по умолчан��: 1024)')
+    image_parser.add_argument('--download', action='store_true', help='�качат� �зо��ажен�е')
+    image_parser.add_argument('--output', type=Path, default=Path('./downloads'), help='���екто��� дл� �о��анен��')
     
-    # Команда генерации видео
-    video_parser = subparsers.add_parser('video', help='Генерировать видео')
-    video_parser.add_argument('--telegram-id', type=int, required=True, help='ID пользователя Telegram')
-    video_parser.add_argument('--prompt', required=True, help='Текстовое описание видео')
-    video_parser.add_argument('--model', default='runway', help='Модель (по умолчанию: runway)')
-    video_parser.add_argument('--style', help='Стиль видео')
-    video_parser.add_argument('--negative-prompt', help='Негативный промпт')
-    video_parser.add_argument('--duration', type=int, default=5, help='Длительность в секундах (по умолчанию: 5)')
-    video_parser.add_argument('--fps', type=int, default=24, help='Кадров в секунду (по умолчанию: 24)')
-    video_parser.add_argument('--width', type=int, default=1280, help='Ширина (по умолчанию: 1280)')
-    video_parser.add_argument('--height', type=int, default=720, help='Высота (по умолчанию: 720)')
+    # �оманда �ене�ац�� в�део
+    video_parser = subparsers.add_parser('video', help='�ене���оват� в�део')
+    video_parser.add_argument('--telegram-id', type=int, required=True, help='ID пол�зовател� Telegram')
+    video_parser.add_argument('--prompt', required=True, help='Тек�товое оп��ан�е в�део')
+    video_parser.add_argument('--model', default='runway', help='�одел� (по умолчан��: runway)')
+    video_parser.add_argument('--style', help='�т�л� в�део')
+    video_parser.add_argument('--negative-prompt', help='�е�ат�вн�й п�омпт')
+    video_parser.add_argument('--duration', type=int, default=5, help='�л�тел�но�т� в �екунда� (по умолчан��: 5)')
+    video_parser.add_argument('--fps', type=int, default=24, help='�ад�ов в �екунду (по умолчан��: 24)')
+    video_parser.add_argument('--width', type=int, default=1280, help='����на (по умолчан��: 1280)')
+    video_parser.add_argument('--height', type=int, default=720, help='���ота (по умолчан��: 720)')
     
-    # Команда проверки статуса
-    status_parser = subparsers.add_parser('status', help='Проверить статус задачи генерации видео')
-    status_parser.add_argument('--task-id', required=True, help='ID задачи')
+    # �оманда п�ове�к� �тату�а
+    status_parser = subparsers.add_parser('status', help='��ове��т� �тату� задач� �ене�ац�� в�део')
+    status_parser.add_argument('--task-id', required=True, help='ID задач�')
     
-    # Команда получения информации о пользователе
-    user_parser = subparsers.add_parser('user', help='Получить информацию о пользователе')
-    user_parser.add_argument('--telegram-id', type=int, required=True, help='ID пользователя Telegram')
+    # �оманда получен�� �нфо�мац�� о пол�зователе
+    user_parser = subparsers.add_parser('user', help='�олуч�т� �нфо�мац�� о пол�зователе')
+    user_parser.add_argument('--telegram-id', type=int, required=True, help='ID пол�зовател� Telegram')
     
-    # Команда скачивания файла
-    download_parser = subparsers.add_parser('download', help='Скачать файл')
-    download_parser.add_argument('--url', required=True, help='URL файла (может быть относительным)')
-    download_parser.add_argument('--output', type=Path, required=True, help='Путь для сохранения файла')
+    # �оманда �кач�ван�� файла
+    download_parser = subparsers.add_parser('download', help='�качат� файл')
+    download_parser.add_argument('--url', required=True, help='URL файла (может ��т� отно��тел�н�м)')
+    download_parser.add_argument('--output', type=Path, required=True, help='�ут� дл� �о��анен�� файла')
     
-    # Команда проверки здоровья
-    subparsers.add_parser('health', help='Проверить доступность API')
+    # �оманда п�ове�к� здо�ов��
+    subparsers.add_parser('health', help='��ове��т� до�тупно�т� API')
     
-    # Команда списка моделей
-    models_parser = subparsers.add_parser('models', help='Получить список моделей')
-    models_parser.add_argument('--type', choices=['image', 'video'], default='image', help='Тип моделей')
+    # �оманда �п��ка моделей
+    models_parser = subparsers.add_parser('models', help='�олуч�т� �п��ок моделей')
+    models_parser.add_argument('--type', choices=['image', 'video'], default='image', help='Т�п моделей')
     
     args = parser.parse_args()
     
@@ -446,7 +446,7 @@ async def main():
             if result.get("success") and args.download:
                 image_url = result.get("image_url")
                 if image_url:
-                    # Определяем имя файла
+                    # Оп�едел�ем �м� файла
                     filename = image_url.split('/')[-1]
                     if not filename or '.' not in filename:
                         filename = f"image_{result.get('generation_id', 'unknown')}.png"
@@ -468,7 +468,7 @@ async def main():
             )
             
             if result.get("success"):
-                print(f"\n{CYAN}Для проверки статуса используйте:{NC}")
+                print(f"\n{CYAN}�л� п�ове�к� �тату�а ��пол�зуйте:{NC}")
                 print(f"python api_client.py status --task-id {result.get('task_id')}")
         
         elif args.command == 'status':
@@ -477,7 +477,7 @@ async def main():
         elif args.command == 'user':
             result = await client.get_user_info(args.telegram_id)
             if result:
-                print(f"\n{CYAN}Информация о пользователе:{NC}")
+                print(f"\n{CYAN}Инфо�мац�� о пол�зователе:{NC}")
                 print(json.dumps(result, indent=2, ensure_ascii=False))
         
         elif args.command == 'download':
@@ -490,24 +490,24 @@ async def main():
                 result = await client.get_video_models()
             
             if result.get("models"):
-                print(f"\n{CYAN}Доступные модели ({args.type}):{NC}")
+                print(f"\n{CYAN}�о�тупн�е модел� ({args.type}):{NC}")
                 for model in result["models"]:
                     if isinstance(model, dict):
                         print(f"  - {model.get('id', model.get('name', 'Unknown'))}: {model.get('description', '')}")
                     else:
                         print(f"  - {model}")
             else:
-                print(f"{YELLOW}Модели не найдены{NC}")
+                print(f"{YELLOW}�одел� не найден�{NC}")
 
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print(f"\n{YELLOW}Прервано пользователем{NC}")
+        print(f"\n{YELLOW}��е�вано пол�зователем{NC}")
         sys.exit(1)
     except Exception as e:
-        print(f"{RED}Критическая ошибка: {e}{NC}")
+        print(f"{RED}���т�че�ка� ош��ка: {e}{NC}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

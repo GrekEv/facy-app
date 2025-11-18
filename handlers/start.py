@@ -11,19 +11,19 @@ def get_main_keyboard() -> InlineKeyboardMarkup:
     webapp_url = settings.webapp_url
     builder.row(
         InlineKeyboardButton(
-            text="Открыть приложение",
+            text="Отк��т� п��ложен�е",
             web_app=WebAppInfo(url=webapp_url)
         )
     )
     builder.row(
-        InlineKeyboardButton(text="Мой баланс", callback_data="balance"),
-        InlineKeyboardButton(text="Статистика", callback_data="stats")
+        InlineKeyboardButton(text="�ой �алан�", callback_data="balance"),
+        InlineKeyboardButton(text="�тат��т�ка", callback_data="stats")
     )
     builder.row(
-        InlineKeyboardButton(text="Купить поинты", callback_data="buy_points"),
+        InlineKeyboardButton(text="�уп�т� по�нт�", callback_data="buy_points"),
     )
     builder.row(
-        InlineKeyboardButton(text="Помощь", callback_data="help")
+        InlineKeyboardButton(text="�омо��", callback_data="help")
     )
     return builder.as_markup()
 @router.message(CommandStart())
@@ -76,7 +76,7 @@ async def cmd_start(message: Message):
 @router.callback_query(F.data == "back_to_main")
 async def back_to_main(callback):
     await callback.message.edit_text(
-        "<b>Главное меню</b>\n\nВыберите действие:",
+        "<b>�лавное мен�</b>\n\n���е��те дей�тв�е:",
         reply_markup=get_main_keyboard()
     )
     await callback.answer()

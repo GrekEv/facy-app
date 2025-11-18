@@ -1,10 +1,10 @@
-"""Схемы данных API"""
+"""��ем� данн�� API"""
 from pydantic import BaseModel
 from typing import Optional
 
 
 class GenerateImageRequest(BaseModel):
-    """Запрос на генерацию изображения"""
+    """Зап�о� на �ене�ац�� �зо��ажен��"""
     telegram_id: int
     prompt: str
     model: Optional[str] = "flux"
@@ -15,7 +15,7 @@ class GenerateImageRequest(BaseModel):
 
 
 class GenerateImageResponse(BaseModel):
-    """Ответ на генерацию изображения"""
+    """Ответ на �ене�ац�� �зо��ажен��"""
     success: bool
     message: str
     image_url: Optional[str] = None
@@ -23,7 +23,7 @@ class GenerateImageResponse(BaseModel):
 
 
 class SwapFaceResponse(BaseModel):
-    """Ответ на замену лица"""
+    """Ответ на замену л�ца"""
     success: bool
     message: str
     video_url: Optional[str] = None
@@ -31,7 +31,7 @@ class SwapFaceResponse(BaseModel):
 
 
 class UserResponse(BaseModel):
-    """Информация о пользователе"""
+    """Инфо�мац�� о пол�зователе"""
     id: int
     telegram_id: int
     username: Optional[str]
@@ -50,14 +50,14 @@ class UserResponse(BaseModel):
 
 
 class ActivatePlanResponse(BaseModel):
-    """Ответ на активацию тарифа"""
+    """Ответ на акт�вац�� та��фа"""
     success: bool
     message: str
     plan_type: Optional[str] = None
 
 
 class RegisterRequest(BaseModel):
-    """Запрос на регистрацию"""
+    """Зап�о� на �е���т�ац��"""
     telegram_id: int
     username: Optional[str] = None
     first_name: Optional[str] = None
@@ -67,34 +67,34 @@ class RegisterRequest(BaseModel):
 
 
 class RegisterResponse(BaseModel):
-    """Ответ на регистрацию"""
+    """Ответ на �е���т�ац��"""
     success: bool
     message: str
     user: Optional[UserResponse] = None
 
 
 class LoginRequest(BaseModel):
-    """Запрос на вход"""
+    """Зап�о� на в�од"""
     telegram_id: Optional[int] = None
     username: Optional[str] = None
     password: Optional[str] = None
 
 
 class LoginResponse(BaseModel):
-    """Ответ на вход"""
+    """Ответ на в�од"""
     success: bool
     message: str
     user: Optional[UserResponse] = None
 
 
 class LogoutResponse(BaseModel):
-    """Ответ на выход"""
+    """Ответ на в��од"""
     success: bool
     message: str
 
 
 class GenerateVideoRequest(BaseModel):
-    """Запрос на генерацию видео"""
+    """Зап�о� на �ене�ац�� в�део"""
     telegram_id: int
     prompt: str
     model: Optional[str] = "runway"
@@ -107,7 +107,7 @@ class GenerateVideoRequest(BaseModel):
 
 
 class GenerateVideoResponse(BaseModel):
-    """Ответ на генерацию видео"""
+    """Ответ на �ене�ац�� в�део"""
     success: bool
     message: str
     video_url: Optional[str] = None
@@ -116,7 +116,7 @@ class GenerateVideoResponse(BaseModel):
 
 
 class StatsResponse(BaseModel):
-    """Статистика системы"""
+    """�тат��т�ка ���тем�"""
     total_users: int
     total_generations: int
     total_deepfakes: int
@@ -124,25 +124,25 @@ class StatsResponse(BaseModel):
 
 
 class SendVerificationCodeRequest(BaseModel):
-    """Запрос на отправку кода подтверждения"""
+    """Зап�о� на отп�авку кода подтве�жден��"""
     telegram_id: int
     email: str
 
 
 class SendVerificationCodeResponse(BaseModel):
-    """Ответ на отправку кода подтверждения"""
+    """Ответ на отп�авку кода подтве�жден��"""
     success: bool
     message: str
 
 
 class VerifyEmailCodeRequest(BaseModel):
-    """Запрос на проверку кода подтверждения"""
+    """Зап�о� на п�ове�ку кода подтве�жден��"""
     telegram_id: int
     code: str
 
 
 class VerifyEmailCodeResponse(BaseModel):
-    """Ответ на проверку кода подтверждения"""
+    """Ответ на п�ове�ку кода подтве�жден��"""
     success: bool
     message: str
     email_verified: bool = False

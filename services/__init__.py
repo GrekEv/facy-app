@@ -1,4 +1,4 @@
-"""Модуль сервисов"""
+"""�одул� �е�в��ов"""
 from .deepface_service import deepface_service
 from .image_generation_service import image_generation_service
 from .video_generation_service import video_generation_service

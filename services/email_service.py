@@ -1,4 +1,4 @@
-"""Сервис для отправки email"""
+"""�е�в�� дл� отп�авк� email"""
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -10,47 +10,47 @@ logger = logging.getLogger(__name__)
 
 
 class EmailService:
-    """Сервис для отправки email"""
+    """�е�в�� дл� отп�авк� email"""
     
     @staticmethod
     async def send_verification_code(email: str, code: str) -> bool:
         """
-        Отправить код подтверждения на email
+        Отп�ав�т� код подтве�жден�� на email
         
         Args:
-            email: Email получателя
-            code: Код подтверждения
+            email: Email получател�
+            code: �од подтве�жден��
             
         Returns:
-            True если отправлено успешно, False в противном случае
+            True е�л� отп�авлено у�пешно, False в п�от�вном �лучае
         """
         try:
-            # Проверяем настройки SMTP
+            # ��ове��ем на�т�ойк� SMTP
             if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
                 logger.error("SMTP credentials not configured. Set SMTP_USER and SMTP_PASSWORD in .env")
                 return False
             
-            # Формируем сообщение
+            # Фо�м��уем �оо��ен�е
             msg = MIMEMultipart()
             msg['From'] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_FROM_EMAIL or settings.SMTP_USER}>"
             msg['To'] = email
-            msg['Subject'] = "Код подтверждения OnlyFace"
+            msg['Subject'] = "�од подтве�жден�� OnlyFace"
             
-            # Текст письма
+            # Тек�т п���ма
             body = f"""
             <html>
             <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <h2 style="color: #6366f1;">Код подтверждения OnlyFace</h2>
-                    <p>Здравствуйте!</p>
-                    <p>Ваш код подтверждения для входа в OnlyFace:</p>
+                    <h2 style="color: #6366f1;">�од подтве�жден�� OnlyFace</h2>
+                    <p>Зд�ав�твуйте!</p>
+                    <p>�аш код подтве�жден�� дл� в�ода в OnlyFace:</p>
                     <div style="background-color: #f3f4f6; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px;">
                         <h1 style="color: #6366f1; font-size: 32px; letter-spacing: 5px; margin: 0;">{code}</h1>
                     </div>
-                    <p>Введите этот код в приложении для подтверждения вашего email.</p>
-                    <p>Код действителен в течение 10 минут.</p>
+                    <p>�вед�те �тот код в п��ложен�� дл� подтве�жден�� ваше�о email.</p>
+                    <p>�од дей�тв�телен в течен�е 10 м�нут.</p>
                     <p style="color: #666; font-size: 12px; margin-top: 30px;">
-                        Если вы не запрашивали этот код, просто проигнорируйте это письмо.
+                        Е�л� в� не зап�аш�вал� �тот код, п�о�то п�о��но���уйте �то п���мо.
                     </p>
                 </div>
             </body>
@@ -59,7 +59,7 @@ class EmailService:
             
             msg.attach(MIMEText(body, 'html'))
             
-            # Отправляем через SMTP
+            # Отп�авл�ем че�ез SMTP
             with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
                 server.starttls()
                 server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
@@ -75,13 +75,13 @@ class EmailService:
     @staticmethod
     def validate_email(email: str) -> bool:
         """
-        Простая валидация email
+        ��о�та� вал�дац�� email
         
         Args:
-            email: Email для проверки
+            email: Email дл� п�ове�к�
             
         Returns:
-            True если email валиден
+            True е�л� email вал�ден
         """
         import re
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'

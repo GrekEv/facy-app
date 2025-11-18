@@ -6,10 +6,10 @@ router = Router()
 async def show_help(callback: CallbackQuery):
     builder = InlineKeyboardBuilder()
     builder.row(
-        InlineKeyboardButton(text="Политика контента", callback_data="content_policy")
+        InlineKeyboardButton(text="�ол�т�ка контента", callback_data="content_policy")
     )
     builder.row(
-        InlineKeyboardButton(text="Назад", callback_data="back_to_main")
+        InlineKeyboardButton(text="�азад", callback_data="back_to_main")
     )
     await callback.message.edit_text(
         help_text,

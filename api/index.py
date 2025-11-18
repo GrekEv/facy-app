@@ -1,6 +1,6 @@
 """
-Vercel Serverless Function для FastAPI приложения
-Этот файл адаптирует FastAPI для работы на Vercel
+Vercel Serverless Function дл� FastAPI п��ложен��
+�тот файл адапт��ует FastAPI дл� �а�от� на Vercel
 """
 import sys
 import os
@@ -8,32 +8,32 @@ import logging
 from pathlib import Path
 from mangum import Mangum
 
-# Настройка логирования
+# �а�т�ойка ло���ован��
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 try:
-    # Добавляем корневую директорию в путь
+    # �о�авл�ем ко�неву� д��екто��� в пут�
     BASE_DIR = Path(__file__).resolve().parent.parent
     sys.path.insert(0, str(BASE_DIR))
     
-    # Убеждаемся, что DATABASE_URL настроен (для serverless нужен PostgreSQL)
+    # У�еждаем��, что DATABASE_URL на�т�оен (дл� serverless нужен PostgreSQL)
     if not os.getenv("DATABASE_URL"):
         logger.warning("DATABASE_URL not set. Using default PostgreSQL connection string.")
-        # Можно установить дефолтное значение или выбросить ошибку
+        # �ожно у�танов�т� дефолтное значен�е �л� в���о��т� ош��ку
         # os.environ["DATABASE_URL"] = "postgresql+asyncpg://..."
     
-    # Импортируем приложение FastAPI
+    # Импо�т��уем п��ложен�е FastAPI
     from api.main import app
     
-    # Mangum адаптирует ASGI приложение (FastAPI) для AWS Lambda/Vercel
+    # Mangum адапт��ует ASGI п��ложен�е (FastAPI) дл� AWS Lambda/Vercel
     handler = Mangum(app, lifespan="off")
     
     logger.info("FastAPI app initialized successfully")
     
 except Exception as e:
     logger.error(f"Error initializing FastAPI app: {e}", exc_info=True)
-    # Создаем минимальный handler для обработки ошибок
+    # �оздаем м�н�мал�н�й handler дл� о��а�отк� ош��ок
     from fastapi import FastAPI
     error_app = FastAPI()
     
@@ -47,9 +47,9 @@ except Exception as e:
         }
     
     handler = Mangum(error_app, lifespan="off")
-    app = error_app  # Для локального тестирования
+    app = error_app  # �л� локал�но�о те�т��ован��
 
-# Для локального тестирования
+# �л� локал�но�о те�т��ован��
 if __name__ == "__main__":
     import uvicorn
     try:

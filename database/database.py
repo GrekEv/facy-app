@@ -1,4 +1,4 @@
-"""Работа с базой данных"""
+"""�а�ота � �азой данн��"""
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
@@ -9,16 +9,16 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Ленивая инициализация движка базы данных
+# Лен�ва� �н�ц�ал�зац�� дв�жка �аз� данн��
 _engine = None
 _AsyncSessionLocal = None
 
 def _init_engine():
-    """Инициализировать движок базы данных"""
+    """Ин�ц�ал�з��оват� дв�жок �аз� данн��"""
     global _engine, _AsyncSessionLocal
     
     if _engine is not None:
-        return  # Уже инициализирован
+        return  # Уже �н�ц�ал�з��ован
     
     if not settings.DATABASE_URL:
         logger.warning(
@@ -26,25 +26,25 @@ def _init_engine():
             "Please set DATABASE_URL environment variable. "
             "For Vercel serverless, use PostgreSQL: postgresql+asyncpg://user:password@host:port/dbname"
         )
-        # Создаем заглушку чтобы не падать при импорте
+        # �оздаем за�лушку что�� не падат� п�� �мпо�те
         return
     
-    # Автоматическое преобразование стандартного PostgreSQL URL для asyncpg
+    # �втомат�че�кое п�ео��азован�е �танда�тно�о PostgreSQL URL дл� asyncpg
     database_url = settings.DATABASE_URL
     ssl_required = False
     
-    # Проверяем наличие sslmode=require в URL
+    # ��ове��ем нал�ч�е sslmode=require в URL
     if "sslmode=require" in database_url:
         ssl_required = True
-        # Убираем параметр sslmode из URL (asyncpg не поддерживает его в URL)
+        # У���аем па�амет� sslmode �з URL (asyncpg не подде�ж�вает е�о в URL)
         database_url = database_url.replace("?sslmode=require", "").replace("&sslmode=require", "")
     
     if database_url.startswith("postgresql://") and not database_url.startswith("postgresql+asyncpg://"):
-        # Преобразуем стандартный PostgreSQL URL для asyncpg
+        # ��ео��азуем �танда�тн�й PostgreSQL URL дл� asyncpg
         database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
         logger.info("Converted PostgreSQL URL to asyncpg format for Neon/Postgres compatibility")
     
-    # Настройка SSL для Neon и других провайдеров, требующих SSL
+    # �а�т�ойка SSL дл� Neon � д�у��� п�овайде�ов, т�е�у���� SSL
     connect_args = {}
     if ssl_required:
         import ssl
@@ -69,25 +69,25 @@ def _init_engine():
         logger.error(f"Failed to initialize database engine: {e}")
         raise
 
-# Инициализируем при импорте модуля (но только если DATABASE_URL установлен)
+# Ин�ц�ал�з��уем п�� �мпо�те модул� (но тол�ко е�л� DATABASE_URL у�тановлен)
 _init_engine()
 
-# Для обратной совместимости - используем функции вместо прямого доступа
+# �л� о��атной �овме�т�мо�т� - ��пол�зуем функц�� вме�то п��мо�о до�тупа
 def get_engine():
-    """Получить движок базы данных"""
+    """�олуч�т� дв�жок �аз� данн��"""
     _init_engine()
     if _engine is None:
         raise ValueError("DATABASE_URL not set. Cannot initialize database engine.")
     return _engine
 
 def get_session_factory():
-    """Получить фабрику сессий"""
+    """�олуч�т� фа���ку �е���й"""
     _init_engine()
     if _AsyncSessionLocal is None:
         raise ValueError("DATABASE_URL not set. Cannot initialize session factory.")
     return _AsyncSessionLocal
 
-# Для обратной совместимости - свойства
+# �л� о��атной �овме�т�мо�т� - �вой�тва
 class _EngineProxy:
     def __getattr__(self, name):
         return getattr(get_engine(), name)
@@ -103,27 +103,27 @@ AsyncSessionLocal = _SessionFactoryProxy()
 
 
 async def apply_security_policies():
-    """Применить правила безопасности из SQL файла (только для PostgreSQL)"""
+    """���мен�т� п�ав�ла �езопа�но�т� �з SQL файла (тол�ко дл� PostgreSQL)"""
     if not settings.DATABASE_URL.startswith("postgresql"):
-        logger.info("Правила безопасности применяются только для PostgreSQL. Пропускаем.")
+        logger.info("��ав�ла �езопа�но�т� п��мен��т�� тол�ко дл� PostgreSQL. ��опу�каем.")
         return
     
     sql_file_path = os.path.join(os.path.dirname(__file__), "security_policies.sql")
     
     if not os.path.exists(sql_file_path):
-        logger.warning(f"Файл правил безопасности не найден: {sql_file_path}")
+        logger.warning(f"Файл п�ав�л �езопа�но�т� не найден: {sql_file_path}")
         return
     
     try:
         with open(sql_file_path, "r", encoding="utf-8") as f:
             sql_content = f.read()
         
-        # Убираем многострочные комментарии /* ... */
+        # У���аем мно�о�т�очн�е коммента��� /* ... */
         import re
         sql_content = re.sub(r'/\*.*?\*/', '', sql_content, flags=re.DOTALL)
         
-        # Разделяем на команды по точке с запятой
-        # Учитываем, что точка с запятой может быть внутри строк, функций или dollar-quoted блоков
+        # �аздел�ем на команд� по точке � зап�той
+        # Уч�т�ваем, что точка � зап�той может ��т� внут�� �т�ок, функц�й �л� dollar-quoted �локов
         commands = []
         current_command = []
         in_string = False
@@ -138,45 +138,45 @@ async def apply_security_policies():
             char = sql_content[i]
             next_chars = sql_content[i:i+10] if i + 10 < content_length else sql_content[i:]
             
-            # Проверяем начало dollar-quoted строки ($$ или $tag$)
+            # ��ове��ем начало dollar-quoted �т�ок� ($$ �л� $tag$)
             if char == '$' and not in_string and not in_dollar_quote:
-                # Ищем закрывающий $ для определения тега
+                # И�ем зак��ва���й $ дл� оп�еделен�� те�а
                 tag_start = i
                 tag_end = i + 1
-                # Ищем первый $ после открывающего
+                # И�ем пе�в�й $ по�ле отк��ва��е�о
                 while tag_end < content_length and sql_content[tag_end] != '$':
                     tag_end += 1
                 
                 if tag_end < content_length:
                     tag = sql_content[tag_start:tag_end+1]
                     if not dollar_tag:
-                        # Начало dollar-quoted блока
+                        # �ачало dollar-quoted �лока
                         dollar_tag = tag
                         in_dollar_quote = True
-                        # Добавляем весь тег сразу
+                        # �о�авл�ем ве�� те� ��азу
                         for j in range(tag_start, tag_end + 1):
                             current_command.append(sql_content[j])
                         i = tag_end + 1
                         continue
                     elif tag == dollar_tag:
-                        # Конец dollar-quoted блока
+                        # �онец dollar-quoted �лока
                         dollar_tag = None
                         in_dollar_quote = False
-                        # Добавляем весь тег сразу
+                        # �о�авл�ем ве�� те� ��азу
                         for j in range(tag_start, tag_end + 1):
                             current_command.append(sql_content[j])
                         i = tag_end + 1
                         continue
             
-            # Если мы внутри dollar-quoted блока, ищем его закрытие
+            # Е�л� м� внут�� dollar-quoted �лока, ��ем е�о зак��т�е
             if in_dollar_quote and char == '$' and dollar_tag:
-                # Проверяем, не это ли закрывающий тег
+                # ��ове��ем, не �то л� зак��ва���й те�
                 tag_len = len(dollar_tag)
                 if i + tag_len - 1 < content_length:
                     potential_tag = sql_content[i:i+tag_len]
                     if potential_tag == dollar_tag:
-                        # Конец dollar-quoted блока
-                        # Добавляем весь тег
+                        # �онец dollar-quoted �лока
+                        # �о�авл�ем ве�� те�
                         for j in range(i, i + tag_len):
                             current_command.append(sql_content[j])
                         i += tag_len
@@ -184,14 +184,14 @@ async def apply_security_policies():
                         in_dollar_quote = False
                         continue
             
-            # Обрабатываем обычные строки (только если не в dollar-quote)
+            # О��а�ат�ваем о��чн�е �т�ок� (тол�ко е�л� не в dollar-quote)
             if not in_dollar_quote:
                 if char in ("'", '"') and (not in_string or char == string_char):
                     in_string = not in_string
                     string_char = char if in_string else None
                     current_command.append(char)
                 elif char == ";" and not in_string:
-                    # Конец команды
+                    # �онец команд�
                     cmd = "".join(current_command).strip()
                     if cmd:
                         commands.append(cmd)
@@ -199,18 +199,18 @@ async def apply_security_policies():
                 else:
                     current_command.append(char)
             else:
-                # Внутри dollar-quoted блока - добавляем все символы как есть
+                # �нут�� dollar-quoted �лока - до�авл�ем в�е ��мвол� как е�т�
                 current_command.append(char)
             
             i += 1
         
-        # Добавляем последнюю команду если есть
+        # �о�авл�ем по�ледн�� команду е�л� е�т�
         if current_command:
             cmd = "".join(current_command).strip()
             if cmd:
                 commands.append(cmd)
         
-        # Выполняем SQL команды
+        # ��полн�ем SQL команд�
         db_engine = get_engine()
         async with db_engine.begin() as conn:
             applied_count = 0
@@ -224,52 +224,52 @@ async def apply_security_policies():
                 try:
                     await conn.execute(text(command))
                     applied_count += 1
-                    logger.debug(f"✅ Применена команда: {command[:60]}...")
+                    logger.debug(f" ���менена команда: {command[:60]}...")
                 except Exception as e:
                     error_msg = str(e).lower()
-                    # Игнорируем ошибки "уже существует" для политик и индексов
+                    # И�но���уем ош��к� "уже �у�е�твует" дл� пол�т�к � �ндек�ов
                     if any(keyword in error_msg for keyword in [
                         "already exists", "duplicate", "does not exist"
                     ]):
                         skipped_count += 1
-                        logger.debug(f"⏭️  Пропущена команда (уже существует): {command[:60]}...")
+                        logger.debug(f"  ��опу�ена команда (уже �у�е�твует): {command[:60]}...")
                     else:
-                        logger.warning(f"⚠️  Ошибка при выполнении команды безопасности: {e}")
-                        logger.debug(f"Команда: {command[:200]}")
+                        logger.warning(f"  Ош��ка п�� в�полнен�� команд� �езопа�но�т�: {e}")
+                        logger.debug(f"�оманда: {command[:200]}")
             
-            logger.info(f"✅ Правила безопасности применены: {applied_count} команд, пропущено: {skipped_count}")
+            logger.info(f" ��ав�ла �езопа�но�т� п��менен�: {applied_count} команд, п�опу�ено: {skipped_count}")
     except Exception as e:
-        logger.error(f"❌ Ошибка при применении правил безопасности: {e}")
-        # Не прерываем инициализацию, если не удалось применить правила
+        logger.error(f" Ош��ка п�� п��менен�� п�ав�л �езопа�но�т�: {e}")
+        # �е п�е��ваем �н�ц�ал�зац��, е�л� не удало�� п��мен�т� п�ав�ла
 
 
 async def init_db():
-    """Инициализация базы данных"""
-    # Создаем директорию для SQLite если используется SQLite
+    """Ин�ц�ал�зац�� �аз� данн��"""
+    # �оздаем д��екто��� дл� SQLite е�л� ��пол�зует�� SQLite
     if settings.DATABASE_URL.startswith("sqlite"):
         db_dir = os.path.dirname(settings.DATABASE_URL.replace("sqlite+aiosqlite:///", ""))
         if db_dir and not os.path.exists(db_dir):
             os.makedirs(db_dir, exist_ok=True)
     
-    # Создаем все таблицы
+    # �оздаем в�е та�л�ц�
     db_engine = get_engine()
     async with db_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     
-    # Применяем правила безопасности (только для PostgreSQL)
+    # ���мен�ем п�ав�ла �езопа�но�т� (тол�ко дл� PostgreSQL)
     await apply_security_policies()
 
 
 async def get_session() -> AsyncSession:
-    """Получить сессию базы данных"""
+    """�олуч�т� �е���� �аз� данн��"""
     try:
         session_factory = get_session_factory()
         async with session_factory() as session:
             yield session
     except ValueError as e:
-        # Если база данных не инициализирована, создаем заглушку
+        # Е�л� �аза данн�� не �н�ц�ал�з��ована, �оздаем за�лушку
         logger.error(f"Database session error: {e}")
-        # В production лучше поднять ошибку, но для разработки можно вернуть None
-        # и обработать в endpoint
-        raise ValueError(f"База данных не настроена: {e}")
+        # � production лучше подн�т� ош��ку, но дл� �аз�а�отк� можно ве�нут� None
+        # � о��а�отат� в endpoint
+        raise ValueError(f"База данн�� не на�т�оена: {e}")
 
