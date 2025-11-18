@@ -58,7 +58,11 @@ class UserService:
                         break
                     new_referral_code = UserService.generate_referral_code()
                 user.referral_code = new_referral_code
-            await session.commit()
+                await session.commit()
+                await session.refresh(user)  # Обновляем объект после commit
+                logger.info(f"Generated referral_code {new_referral_code} for existing user {telegram_id}")
+            else:
+                await session.commit()
             return user
         
         # Генерируем уникальный реферальный код для нового пользователя
