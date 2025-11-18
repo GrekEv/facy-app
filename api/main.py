@@ -1,7 +1,7 @@
 """Главный файл FastAPI приложения"""
-from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from pathlib import Path
@@ -9,6 +9,8 @@ from datetime import datetime
 import logging
 import uuid
 import os
+import io
+import qrcode
 
 from database import get_session, User, Generation
 from services import deepface_service, image_generation_service, video_generation_service, user_service, content_moderation
@@ -529,6 +531,61 @@ async def activate_basic_plan(
         message="Базовый тариф успешно активирован!",
         plan_type="basic"
     )
+
+
+@app.get("/api/referral/qr")
+async def generate_referral_qr(
+    telegram_id: int = Query(..., description="Telegram ID пользователя"),
+    session: AsyncSession = Depends(get_session)
+):
+    """Генерация QR-кода для реферальной ссылки"""
+    try:
+        # Получаем пользователя
+        user = await user_service.get_user_by_telegram_id(session, telegram_id)
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Получаем реферальный код
+        referral_code = user.referral_code
+        if not referral_code:
+            raise HTTPException(status_code=400, detail="Referral code not found")
+        
+        # Формируем реферальную ссылку
+        webapp_url = settings.WEBAPP_URL or "https://facy-app.vercel.app"
+        referral_link = f"{webapp_url}?ref={referral_code}"
+        
+        # Генерируем QR-код
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(referral_link)
+        qr.make(fit=True)
+        
+        # Создаем изображение
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Конвертируем в bytes
+        img_byte_arr = io.BytesIO()
+        img.save(img_byte_arr, format='PNG')
+        img_byte_arr.seek(0)
+        
+        return Response(
+            content=img_byte_arr.getvalue(),
+            media_type="image/png",
+            headers={
+                "Cache-Control": "public, max-age=3600"
+            }
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating QR code: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/health")

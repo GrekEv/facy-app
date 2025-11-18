@@ -133,49 +133,47 @@ function generateReferralLink() {
     return referralLink;
 }
 
-// Генерация QR-кода
-function generateQRCode() {
+// Генерация QR-кода через API
+async function generateQRCode() {
     const referralQRCode = document.getElementById('referralQRCode');
     const referralQRContainer = document.getElementById('referralQRContainer');
     
     if (!referralQRCode || !referralQRContainer) return;
     
-    // Генерируем ссылку если еще не сгенерирована
-    if (!referralLink) {
-        generateReferralLink();
-    }
+    // Получаем telegram_id из Telegram Web App
+    const telegramUser = tg?.initDataUnsafe?.user;
+    const telegramId = telegramUser?.id;
     
-    if (!referralLink) {
-        showNotification('Не удалось сгенерировать реферальную ссылку', 'error');
+    if (!telegramId) {
+        showNotification('Не удалось получить данные пользователя из Telegram', 'error');
         return;
     }
     
-    // Очищаем предыдущий QR-код
-    referralQRCode.innerHTML = '';
-    
-    // Генерируем QR-код
-    if (typeof QRCode !== 'undefined') {
-        QRCode.toCanvas(referralQRCode, referralLink, {
-            width: 180,
-            margin: 2,
-            color: {
-                dark: '#000000',
-                light: '#FFFFFF'
-            }
-        }, function (error) {
-            if (error) {
-                console.error('Error generating QR code:', error);
-                // Fallback - показываем ссылку текстом
-                referralQRCode.innerHTML = `<p style="color: var(--text-primary); word-break: break-all; padding: 1rem; font-size: 0.8rem;">${referralLink}</p>`;
-            }
-        });
-    } else {
-        // Если библиотека не загрузилась, показываем ссылку текстом
-        referralQRCode.innerHTML = `<p style="color: var(--text-primary); word-break: break-all; padding: 1rem; font-size: 0.8rem;">${referralLink}</p>`;
-    }
-    
-    // Показываем контейнер с QR-кодом
+    // Показываем лоадер
+    referralQRCode.innerHTML = '<div style="color: var(--text-primary); padding: 2rem;">Загрузка QR-кода...</div>';
     referralQRContainer.style.display = 'flex';
+    
+    try {
+        // Запрашиваем QR-код с сервера
+        const qrUrl = `${API_BASE_URL}/api/referral/qr?telegram_id=${telegramId}`;
+        const response = await fetch(qrUrl);
+        
+        if (response.ok) {
+            // Получаем изображение как blob
+            const blob = await response.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            
+            // Отображаем QR-код
+            referralQRCode.innerHTML = `<img src="${imageUrl}" alt="QR Code" style="max-width: 100%; height: auto; border-radius: 8px;">`;
+        } else {
+            const error = await response.json();
+            throw new Error(error.detail || 'Ошибка генерации QR-кода');
+        }
+    } catch (error) {
+        console.error('Error generating QR code:', error);
+        referralQRCode.innerHTML = `<p style="color: var(--text-primary); padding: 1rem; text-align: center;">Ошибка загрузки QR-кода. Попробуйте позже.</p>`;
+        showNotification('Не удалось загрузить QR-код', 'error');
+    }
 }
 
 // Инициализация кнопок хедера (убрана кнопка создания видео)
