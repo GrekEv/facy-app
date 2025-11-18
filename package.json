@@ -4,6 +4,8 @@
   "description": "Static frontend for OnlyFace Telegram Mini App",
   "scripts": {
     "build": "echo 'Static site - no build needed'"
+  },
+  "dependencies": {
+    "replicate": "^1.4.0"
   }
 }
-
