@@ -1,6 +1,6 @@
 #!/bin/bash
-# Полный скрипт развертывания OnlyFace.art
-# Включает все исправления и настройки
+# �олн�й �к��пт �азве�т�ван�� OnlyFace.art
+# �кл�чает в�е ��п�авлен�� � на�т�ойк�
 
 set -e
 
@@ -12,129 +12,129 @@ NC='\033[0m'
 
 DOMAIN="onlyface.art"
 
-echo -e "${BLUE}🚀 Полное развертывание OnlyFace.art${NC}"
+echo -e "${BLUE} �олное �азве�т�ван�е OnlyFace.art${NC}"
 echo "=========================================="
 echo ""
 
 cd ~/facy-app || cd /home/ubuntu/facy-app || exit 1
 
-echo -e "${BLUE}📋 Шаг 1: Исправление всех проблем в коде...${NC}"
+echo -e "${BLUE} �а� 1: И�п�авлен�е в�е� п�о�лем в коде...${NC}"
 
 # 1. Config.py - ENVIRONMENT
 if ! grep -q "ENVIRONMENT: str" config.py; then
-    echo "  ✓ Добавляю ENVIRONMENT..."
+    echo "   �о�авл�� ENVIRONMENT..."
     sed -i '/WEBAPP_URL: str/a\    \n    # Environment\n    ENVIRONMENT: str = "production"  # development, production' config.py
 fi
 
 # 2. Config.py - extra = "ignore"
 if ! grep -q 'extra = "ignore"' config.py; then
-    echo "  ✓ Добавляю extra = ignore..."
-    sed -i '/case_sensitive = True/a\        extra = "ignore"  # Игнорировать дополнительные поля из .env' config.py
+    echo "   �о�авл�� extra = ignore..."
+    sed -i '/case_sensitive = True/a\        extra = "ignore"  # И�но���оват� дополн�тел�н�е пол� �з .env' config.py
 fi
 
-# 3. api/main.py - импорты
-echo "  ✓ Исправляю импорты в api/main.py..."
+# 3. api/main.py - �мпо�т�
+echo "   И�п�авл�� �мпо�т� в api/main.py..."
 sed -i 's/from \.schemas import/from api.schemas import/g' api/main.py
 sed -i 's/from \. import payments/from api import payments/g' api/main.py
 
-# 4. docker-compose.yml - удаляем version
+# 4. docker-compose.yml - удал�ем version
 sed -i '/^version:/d' docker-compose.yml
 
 # 5. models.py - DeclarativeBase
 if grep -q "declarative_base" database/models.py; then
-    echo "  ✓ Обновляю Base на DeclarativeBase..."
+    echo "   О�новл�� Base на DeclarativeBase..."
     sed -i 's/from sqlalchemy.ext.declarative import declarative_base/from sqlalchemy.orm import DeclarativeBase, relationship/g' database/models.py
-    sed -i 's/^Base = declarative_base()$/class Base(DeclarativeBase):\n    """Базовый класс для всех моделей"""\n    pass/g' database/models.py
+    sed -i 's/^Base = declarative_base()$/class Base(DeclarativeBase):\n    """Базов�й кла�� дл� в�е� моделей"""\n    pass/g' database/models.py
 fi
 
-# 6. КРИТИЧЕСКОЕ: metadata -> transaction_metadata
+# 6. ��ИТИ�Е��ОЕ: metadata -> transaction_metadata
 if grep -q "^    metadata = Column" database/models.py; then
-    echo "  ✓ Исправляю metadata -> transaction_metadata..."
+    echo "   И�п�авл�� metadata -> transaction_metadata..."
     sed -i 's/^    metadata = Column(Text, nullable=True)/    transaction_metadata = Column(Text, nullable=True)/g' database/models.py
 fi
 
 # 7. docker-compose.prod.yml - healthcheck
 if ! grep -q "start_period" docker-compose.prod.yml; then
-    echo "  ✓ Обновляю healthcheck..."
+    echo "   О�новл�� healthcheck..."
     sed -i '/retries: 3$/a\      start_period: 40s' docker-compose.prod.yml 2>/dev/null || sed -i '/retries: 5$/a\      start_period: 40s' docker-compose.prod.yml
     sed -i 's/retries: 3/retries: 5/g' docker-compose.prod.yml
 fi
 
-echo -e "${GREEN}✅ Все файлы исправлены!${NC}"
+echo -e "${GREEN} ��е файл� ��п�авлен�!${NC}"
 
 echo ""
-echo -e "${BLUE}📋 Шаг 2: Проверка .env файла...${NC}"
+echo -e "${BLUE} �а� 2: ��ове�ка .env файла...${NC}"
 
 if [ ! -f .env ]; then
-    echo -e "${RED}❌ Файл .env не найден!${NC}"
-    echo -e "${YELLOW}Создайте файл .env с необходимыми переменными (см. DEPLOY_COMPLETE.md)${NC}"
+    echo -e "${RED} Файл .env не найден!${NC}"
+    echo -e "${YELLOW}�оздайте файл .env � нео��од�м�м� пе�еменн�м� (�м. DEPLOY_COMPLETE.md)${NC}"
     exit 1
 fi
 
-# Проверяем наличие обязательных переменных
+# ��ове��ем нал�ч�е о��зател�н�� пе�еменн��
 if ! grep -q "BOT_TOKEN=" .env; then
-    echo -e "${RED}❌ BOT_TOKEN не найден в .env!${NC}"
+    echo -e "${RED} BOT_TOKEN не найден в .env!${NC}"
     exit 1
 fi
 
 if ! grep -q "DATABASE_URL=" .env; then
-    echo -e "${RED}❌ DATABASE_URL не найден в .env!${NC}"
+    echo -e "${RED} DATABASE_URL не найден в .env!${NC}"
     exit 1
 fi
 
-# Обновляем WEBAPP_URL если нужно
+# О�новл�ем WEBAPP_URL е�л� нужно
 if ! grep -q "WEBAPP_URL=https://$DOMAIN" .env; then
-    echo "  ✓ Обновляю WEBAPP_URL на https://$DOMAIN..."
+    echo "   О�новл�� WEBAPP_URL на https://$DOMAIN..."
     sed -i "s|WEBAPP_URL=.*|WEBAPP_URL=https://$DOMAIN|g" .env
 fi
 
-echo -e "${GREEN}✅ .env файл проверен!${NC}"
+echo -e "${GREEN} .env файл п�ове�ен!${NC}"
 
 echo ""
-echo -e "${BLUE}📋 Шаг 3: Сборка Docker образов...${NC}"
+echo -e "${BLUE} �а� 3: ��о�ка Docker о��азов...${NC}"
 docker compose -f docker-compose.prod.yml build --no-cache
 
 echo ""
-echo -e "${BLUE}📋 Шаг 4: Запуск приложения...${NC}"
+echo -e "${BLUE} �а� 4: Запу�к п��ложен��...${NC}"
 docker compose -f docker-compose.prod.yml down 2>/dev/null || true
 docker compose -f docker-compose.prod.yml up -d
 
 echo ""
-echo -e "${BLUE}⏳ Ожидание запуска (30 секунд)...${NC}"
+echo -e "${BLUE} Ож�дан�е запу�ка (30 �екунд)...${NC}"
 sleep 30
 
 echo ""
-echo -e "${BLUE}📊 Проверка статуса контейнеров...${NC}"
+echo -e "${BLUE} ��ове�ка �тату�а контейне�ов...${NC}"
 docker compose -f docker-compose.prod.yml ps
 
 echo ""
-echo -e "${BLUE}📋 Проверка логов API...${NC}"
+echo -e "${BLUE} ��ове�ка ло�ов API...${NC}"
 docker compose -f docker-compose.prod.yml logs api --tail=30
 
 echo ""
-echo -e "${BLUE}🔍 Проверка health endpoint...${NC}"
+echo -e "${BLUE} ��ове�ка health endpoint...${NC}"
 sleep 5
 if curl -f http://localhost:8000/health > /dev/null 2>&1; then
-    echo -e "${GREEN}✅ API работает!${NC}"
+    echo -e "${GREEN} API �а�отает!${NC}"
 else
-    echo -e "${YELLOW}⚠️  API еще запускается или есть проблемы${NC}"
-    echo -e "${YELLOW}Проверьте логи: docker compose -f docker-compose.prod.yml logs api${NC}"
+    echo -e "${YELLOW}  API е�е запу�кает�� �л� е�т� п�о�лем�${NC}"
+    echo -e "${YELLOW}��ове��те ло��: docker compose -f docker-compose.prod.yml logs api${NC}"
 fi
 
 echo ""
-echo -e "${BLUE}📋 Шаг 5: Настройка Nginx и SSL...${NC}"
-echo -e "${YELLOW}⚠️  Убедитесь, что DNS для $DOMAIN настроен и указывает на ваш IP!${NC}"
-read -p "Нажмите Enter когда DNS настроен, или Ctrl+C для пропуска..."
+echo -e "${BLUE} �а� 5: �а�т�ойка Nginx � SSL...${NC}"
+echo -e "${YELLOW}  У�ед�те��, что DNS дл� $DOMAIN на�т�оен � указ�вает на ваш IP!${NC}"
+read -p "�ажм�те Enter ко�да DNS на�т�оен, �л� Ctrl+C дл� п�опу�ка..."
 
-# Установка Nginx
+# У�тановка Nginx
 if ! command -v nginx &> /dev/null; then
-    echo "  ✓ Установка Nginx..."
+    echo "   У�тановка Nginx..."
     sudo apt update
     sudo apt install -y nginx
 fi
 
-# Создание конфигурации Nginx
-echo "  ✓ Создание конфигурации Nginx..."
+# �оздан�е конф��у�ац�� Nginx
+echo "   �оздан�е конф��у�ац�� Nginx..."
 sudo tee /etc/nginx/sites-available/onlyface > /dev/null <<EOF
 server {
     listen 80;
@@ -183,50 +183,50 @@ server {
 }
 EOF
 
-# Активация
+# �кт�вац��
 sudo ln -sf /etc/nginx/sites-available/onlyface /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 
-echo -e "${GREEN}✅ Nginx настроен!${NC}"
+echo -e "${GREEN} Nginx на�т�оен!${NC}"
 
-# Установка SSL
+# У�тановка SSL
 if ! command -v certbot &> /dev/null; then
-    echo "  ✓ Установка Certbot..."
+    echo "   У�тановка Certbot..."
     sudo apt install -y certbot python3-certbot-nginx
 fi
 
-echo "  ✓ Получение SSL сертификата..."
+echo "   �олучен�е SSL �е�т�ф�ката..."
 sudo certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos --email "admin@$DOMAIN" || {
-    echo -e "${YELLOW}⚠️  Не удалось получить сертификат. Проверьте DNS и попробуйте позже:${NC}"
+    echo -e "${YELLOW}  �е удало�� получ�т� �е�т�ф�кат. ��ове��те DNS � поп�о�уйте позже:${NC}"
     echo "sudo certbot --nginx -d $DOMAIN"
 }
 
-# Настройка firewall
-echo "  ✓ Настройка firewall..."
+# �а�т�ойка firewall
+echo "   �а�т�ойка firewall..."
 sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw --force enable || true
 
 echo ""
-echo -e "${GREEN}✅ Развертывание завершено!${NC}"
+echo -e "${GREEN} �азве�т�ван�е заве�шено!${NC}"
 echo ""
-echo -e "${BLUE}📋 Информация:${NC}"
-echo "  - Веб-сайт: https://$DOMAIN"
+echo -e "${BLUE} Инфо�мац��:${NC}"
+echo "  - �е�-�айт: https://$DOMAIN"
 echo "  - API Health: https://$DOMAIN/health"
-echo "  - Статус контейнеров: docker compose -f docker-compose.prod.yml ps"
-echo "  - Логи: docker compose -f docker-compose.prod.yml logs -f"
+echo "  - �тату� контейне�ов: docker compose -f docker-compose.prod.yml ps"
+echo "  - Ло��: docker compose -f docker-compose.prod.yml logs -f"
 echo ""
-echo -e "${BLUE}📝 Следующие шаги:${NC}"
-echo "1. Настройте Menu Button в BotFather:"
+echo -e "${BLUE} �леду���е ша��:${NC}"
+echo "1. �а�т�ойте Menu Button в BotFather:"
 echo "   URL: https://$DOMAIN"
 echo ""
-echo "2. Проверьте работу:"
+echo "2. ��ове��те �а�оту:"
 echo "   curl https://$DOMAIN/health"
 echo ""
-echo -e "${GREEN}🎉 Готово! OnlyFace.art развернут!${NC}"
+echo -e "${GREEN} �отово! OnlyFace.art �азве�нут!${NC}"
 
 

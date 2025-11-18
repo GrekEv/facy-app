@@ -1,75 +1,75 @@
 #!/bin/bash
-# Полный скрипт для исправления всех проблем на сервере
+# �олн�й �к��пт дл� ��п�авлен�� в�е� п�о�лем на �е�ве�е
 
 set -e
 
 cd ~/facy-app || cd /home/ubuntu/facy-app || exit 1
 
-echo "🔧 Исправление всех проблем..."
+echo " И�п�авлен�е в�е� п�о�лем..."
 
-# 1. Исправляем config.py - добавляем ENVIRONMENT поле
+# 1. И�п�авл�ем config.py - до�авл�ем ENVIRONMENT поле
 if ! grep -q "ENVIRONMENT: str" config.py; then
-    echo "  ✓ Добавляю поле ENVIRONMENT в config.py..."
+    echo "   �о�авл�� поле ENVIRONMENT в config.py..."
     sed -i '/WEBAPP_URL: str/a\    \n    # Environment\n    ENVIRONMENT: str = "production"  # development, production' config.py
 else
-    echo "  ✓ Поле ENVIRONMENT уже существует"
+    echo "   �оле ENVIRONMENT уже �у�е�твует"
 fi
 
-# 2. Добавляем extra = "ignore" в Config класс
+# 2. �о�авл�ем extra = "ignore" в Config кла��
 if ! grep -q 'extra = "ignore"' config.py; then
-    echo "  ✓ Добавляю extra = \"ignore\" в Config класс..."
-    sed -i '/case_sensitive = True/a\        extra = "ignore"  # Игнорировать дополнительные поля из .env' config.py
+    echo "   �о�авл�� extra = \"ignore\" в Config кла��..."
+    sed -i '/case_sensitive = True/a\        extra = "ignore"  # И�но���оват� дополн�тел�н�е пол� �з .env' config.py
 else
-    echo "  ✓ extra = \"ignore\" уже настроен"
+    echo "   extra = \"ignore\" уже на�т�оен"
 fi
 
-# 3. Исправляем импорты в api/main.py
-echo "  ✓ Исправляю импорты в api/main.py..."
+# 3. И�п�авл�ем �мпо�т� в api/main.py
+echo "   И�п�авл�� �мпо�т� в api/main.py..."
 sed -i 's/from \.schemas import/from api.schemas import/g' api/main.py
 sed -i 's/from \. import payments/from api import payments/g' api/main.py
 
-# 4. Удаляем устаревший version из docker-compose.yml
+# 4. Удал�ем у�та�евш�й version �з docker-compose.yml
 if grep -q "^version:" docker-compose.yml; then
-    echo "  ✓ Удаляю устаревший version из docker-compose.yml..."
+    echo "   Удал�� у�та�евш�й version �з docker-compose.yml..."
     sed -i '/^version:/d' docker-compose.yml
 else
-    echo "  ✓ version уже удален"
+    echo "   version уже удален"
 fi
 
 echo ""
-echo "✅ Все файлы исправлены!"
+echo " ��е файл� ��п�авлен�!"
 echo ""
-echo "🔄 Останавливаю контейнеры..."
+echo "� О�танавл�ва� контейне��..."
 docker compose -f docker-compose.prod.yml down 2>/dev/null || true
 docker compose down 2>/dev/null || true
 
 echo ""
-echo "🔨 Пересобираю образы..."
+echo " �е�е�о���а� о��аз�..."
 docker compose -f docker-compose.prod.yml build
 
 echo ""
-echo "🚀 Запускаю контейнеры..."
+echo " Запу�ка� контейне��..."
 docker compose -f docker-compose.prod.yml up -d
 
 echo ""
-echo "⏳ Ожидание запуска (15 секунд)..."
+echo " Ож�дан�е запу�ка (15 �екунд)..."
 sleep 15
 
 echo ""
-echo "📊 Статус контейнеров:"
+echo " �тату� контейне�ов:"
 docker compose -f docker-compose.prod.yml ps
 
 echo ""
-echo "📋 Последние логи API:"
+echo " �о�ледн�е ло�� API:"
 docker compose -f docker-compose.prod.yml logs api --tail=30
 
 echo ""
-echo "✅ Готово!"
+echo " �отово!"
 echo ""
-echo "Проверка:"
+echo "��ове�ка:"
 echo "  - API Health: http://158.160.96.182:8000/health"
 echo "  - Web App: http://158.160.96.182:8000"
 echo ""
-echo "Просмотр логов:"
+echo "��о�мот� ло�ов:"
 echo "  docker compose -f docker-compose.prod.yml logs -f"
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Скрипт настройки веб-приложения для onlyface.art
+# �к��пт на�т�ойк� ве�-п��ложен�� дл� onlyface.art
 
 set -e
 
@@ -13,23 +13,23 @@ DOMAIN="onlyface.art"
 
 cd ~/facy-app || cd /home/ubuntu/facy-app || exit 1
 
-echo -e "${BLUE}🌐 Настройка веб-приложения для $DOMAIN${NC}"
+echo -e "${BLUE} �а�т�ойка ве�-п��ложен�� дл� $DOMAIN${NC}"
 echo "=========================================="
 echo ""
 
-echo -e "${YELLOW}⚠️  Убедитесь, что DNS запись для $DOMAIN указывает на 158.160.96.182${NC}"
-echo -e "${YELLOW}Нажмите Enter когда DNS настроен, или Ctrl+C для отмены...${NC}"
+echo -e "${YELLOW}  У�ед�те��, что DNS зап��� дл� $DOMAIN указ�вает на 158.160.96.182${NC}"
+echo -e "${YELLOW}�ажм�те Enter ко�да DNS на�т�оен, �л� Ctrl+C дл� отмен�...${NC}"
 read -r
 
 echo ""
-echo -e "${BLUE}📦 Установка Nginx...${NC}"
+echo -e "${BLUE}� У�тановка Nginx...${NC}"
 sudo apt update
 sudo apt install -y nginx
 
 echo ""
-echo -e "${BLUE}🔧 Создание конфигурации Nginx...${NC}"
+echo -e "${BLUE} �оздан�е конф��у�ац�� Nginx...${NC}"
 
-# Создаем конфигурацию
+# �оздаем конф��у�ац��
 sudo tee /etc/nginx/sites-available/onlyface > /dev/null <<EOF
 server {
     listen 80;
@@ -78,75 +78,75 @@ server {
 }
 EOF
 
-# Активация
+# �кт�вац��
 sudo ln -sf /etc/nginx/sites-available/onlyface /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 
 echo ""
-echo -e "${BLUE}🔍 Проверка конфигурации...${NC}"
+echo -e "${BLUE} ��ове�ка конф��у�ац��...${NC}"
 sudo nginx -t
 
 echo ""
-echo -e "${BLUE}🔄 Перезапуск Nginx...${NC}"
+echo -e "${BLUE}� �е�езапу�к Nginx...${NC}"
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 
 echo ""
-echo -e "${GREEN}✅ Nginx настроен!${NC}"
+echo -e "${GREEN} Nginx на�т�оен!${NC}"
 
 echo ""
-echo -e "${BLUE}🔐 Установка SSL сертификата (Let's Encrypt)...${NC}"
+echo -e "${BLUE} У�тановка SSL �е�т�ф�ката (Let's Encrypt)...${NC}"
 sudo apt install -y certbot python3-certbot-nginx
 
 echo ""
-echo -e "${BLUE}Получение SSL сертификата...${NC}"
+echo -e "${BLUE}�олучен�е SSL �е�т�ф�ката...${NC}"
 sudo certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos --email "admin@$DOMAIN" || {
-    echo -e "${RED}❌ Не удалось получить сертификат!${NC}"
-    echo -e "${YELLOW}Проверьте DNS настройки и попробуйте позже:${NC}"
+    echo -e "${RED} �е удало�� получ�т� �е�т�ф�кат!${NC}"
+    echo -e "${YELLOW}��ове��те DNS на�т�ойк� � поп�о�уйте позже:${NC}"
     echo "sudo certbot --nginx -d $DOMAIN"
     exit 1
 }
 
-# Обновление .env
+# О�новлен�е .env
 if [ -f .env ]; then
     echo ""
-    echo -e "${BLUE}Обновление WEBAPP_URL в .env...${NC}"
+    echo -e "${BLUE}О�новлен�е WEBAPP_URL в .env...${NC}"
     sed -i "s|WEBAPP_URL=.*|WEBAPP_URL=https://$DOMAIN|g" .env
-    echo -e "${GREEN}✅ WEBAPP_URL обновлен на https://$DOMAIN${NC}"
+    echo -e "${GREEN} WEBAPP_URL о�новлен на https://$DOMAIN${NC}"
 else
     echo ""
-    echo -e "${YELLOW}⚠️  Файл .env не найден. Создайте его вручную.${NC}"
+    echo -e "${YELLOW}  Файл .env не найден. �оздайте е�о в�учну�.${NC}"
 fi
 
-# Настройка firewall
+# �а�т�ойка firewall
 echo ""
-echo -e "${BLUE}🔥 Настройка firewall...${NC}"
+echo -e "${BLUE} �а�т�ойка firewall...${NC}"
 sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw --force enable || true
 
 echo ""
-echo -e "${GREEN}✅ Веб-приложение настроено!${NC}"
+echo -e "${GREEN} �е�-п��ложен�е на�т�оено!${NC}"
 echo ""
-echo -e "${BLUE}📋 Информация:${NC}"
+echo -e "${BLUE} Инфо�мац��:${NC}"
 echo "  - HTTPS: https://$DOMAIN"
 echo "  - HTTP: http://$DOMAIN"
 echo "  - API Health: https://$DOMAIN/health"
 echo ""
-echo -e "${BLUE}📝 Следующие шаги:${NC}"
-echo "1. Настройте Menu Button в BotFather:"
-echo "   - Откройте @BotFather"
-echo "   - /mybots → выберите бота"
-echo "   - Bot Settings → Menu Button"
+echo -e "${BLUE} �леду���е ша��:${NC}"
+echo "1. �а�т�ойте Menu Button в BotFather:"
+echo "   - Отк�ойте @BotFather"
+echo "   - /mybots � в��е��те �ота"
+echo "   - Bot Settings � Menu Button"
 echo "   - URL: https://$DOMAIN"
 echo ""
-echo "2. Перезапустите приложение:"
+echo "2. �е�езапу�т�те п��ложен�е:"
 echo "   docker compose -f docker-compose.prod.yml restart"
 echo ""
-echo "3. Проверьте работу:"
+echo "3. ��ове��те �а�оту:"
 echo "   curl https://$DOMAIN/health"
 echo ""
-echo -e "${GREEN}🎉 Готово! Ваше приложение доступно на https://$DOMAIN${NC}"
+echo -e "${GREEN} �отово! �аше п��ложен�е до�тупно на https://$DOMAIN${NC}"
 
 

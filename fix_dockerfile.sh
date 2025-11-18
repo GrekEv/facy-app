@@ -1,15 +1,15 @@
 #!/bin/bash
-# Скрипт для быстрого исправления Dockerfile на сервере
+# �к��пт дл� ���т�о�о ��п�авлен�� Dockerfile на �е�ве�е
 
-# Переход в директорию проекта
+# �е�е�од в д��екто��� п�оекта
 cd ~/facy-app || cd /home/ubuntu/facy-app || exit 1
 
-# Создание резервной копии
+# �оздан�е �езе�вной коп��
 cp Dockerfile Dockerfile.backup
 
 # Замена libgl1-mesa-glx на libgl1
 sed -i 's/libgl1-mesa-glx/libgl1/g' Dockerfile
 
-echo "✅ Dockerfile исправлен!"
-echo "Теперь запустите: docker compose build"
+echo " Dockerfile ��п�авлен!"
+echo "Тепе�� запу�т�те: docker compose build"
 

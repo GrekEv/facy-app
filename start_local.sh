@@ -8,7 +8,7 @@ export PORT=8000
 
 mkdir -p data
 
-echo "🚀 Запуск сервера на http://127.0.0.1:8000"
+echo " Запу�к �е�ве�а на http://127.0.0.1:8000"
 python3 -m uvicorn api.main:app --host 127.0.0.1 --port 8000
 
 

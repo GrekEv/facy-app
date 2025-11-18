@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Скрипт для запуска приложения с ngrok туннелем
-# Использование: ./start_with_ngrok.sh
+# �к��пт дл� запу�ка п��ложен�� � ngrok туннелем
+# И�пол�зован�е: ./start_with_ngrok.sh
 
 set -e
 
@@ -11,51 +11,51 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 Запуск Telegram Mini App с ngrok${NC}"
+echo -e "${BLUE} Запу�к Telegram Mini App � ngrok${NC}"
 echo ""
 
-# Проверка наличия ngrok
+# ��ове�ка нал�ч�� ngrok
 if ! command -v ngrok &> /dev/null; then
-    echo -e "${RED}❌ ngrok не установлен!${NC}"
+    echo -e "${RED} ngrok не у�тановлен!${NC}"
     echo ""
-    echo "Установите ngrok:"
+    echo "У�танов�те ngrok:"
     echo "  macOS: brew install ngrok"
     echo "  Linux: wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz"
     echo "  Windows: https://ngrok.com/download"
     echo ""
-    echo "Зарегистрируйтесь на https://ngrok.com и получите токен"
-    echo "Затем выполните: ngrok config add-authtoken ваш_токен"
+    echo "За�е���т���уйте�� на https://ngrok.com � получ�те токен"
+    echo "Затем в�полн�те: ngrok config add-authtoken ваш_токен"
     exit 1
 fi
 
-# Проверка наличия Python
+# ��ове�ка нал�ч�� Python
 if ! command -v python &> /dev/null; then
-    echo -e "${RED}❌ Python не установлен!${NC}"
+    echo -e "${RED} Python не у�тановлен!${NC}"
     exit 1
 fi
 
-# Проверка переменных окружения
+# ��ове�ка пе�еменн�� ок�ужен��
 if [ -z "$BOT_TOKEN" ]; then
-    echo -e "${YELLOW}⚠️  BOT_TOKEN не установлен${NC}"
-    echo "Установите переменную окружения:"
-    echo "  export BOT_TOKEN=ваш_токен_бота"
+    echo -e "${YELLOW}  BOT_TOKEN не у�тановлен${NC}"
+    echo "У�танов�те пе�еменну� ок�ужен��:"
+    echo "  export BOT_TOKEN=ваш_токен_�ота"
     exit 1
 fi
 
-# Проверка файла .env
+# ��ове�ка файла .env
 if [ ! -f .env ]; then
-    echo -e "${YELLOW}⚠️  Файл .env не найден${NC}"
-    echo "Создайте файл .env на основе ENV_EXAMPLE.txt"
+    echo -e "${YELLOW}  Файл .env не найден${NC}"
+    echo "�оздайте файл .env на о�нове ENV_EXAMPLE.txt"
     exit 1
 fi
 
-# Создание директорий
+# �оздан�е д��екто��й
 mkdir -p data uploads generated temp
 
-# Функция очистки при выходе
+# Функц�� оч��тк� п�� в��оде
 cleanup() {
     echo ""
-    echo -e "${YELLOW}🛑 Остановка приложения...${NC}"
+    echo -e "${YELLOW}�� О�тановка п��ложен��...${NC}"
     if [ ! -z "$API_PID" ]; then
         kill $API_PID 2>/dev/null || true
     fi
@@ -67,32 +67,32 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
-# Запуск API в фоне
-echo -e "${BLUE}📡 Запуск API сервера...${NC}"
+# Запу�к API в фоне
+echo -e "${BLUE} Запу�к API �е�ве�а...${NC}"
 python run_api.py > api.log 2>&1 &
 API_PID=$!
 
-# Ждем запуска API
-echo -e "${BLUE}⏳ Ожидание запуска API (5 секунд)...${NC}"
+# Ждем запу�ка API
+echo -e "${BLUE} Ож�дан�е запу�ка API (5 �екунд)...${NC}"
 sleep 5
 
-# Проверка, что API запущен
+# ��ове�ка, что API запу�ен
 if ! kill -0 $API_PID 2>/dev/null; then
-    echo -e "${RED}❌ API не запустился! Проверьте api.log${NC}"
+    echo -e "${RED} API не запу�т�л��! ��ове��те api.log${NC}"
     exit 1
 fi
 
-# Запуск ngrok
-echo -e "${BLUE}🌐 Запуск ngrok туннеля...${NC}"
+# Запу�к ngrok
+echo -e "${BLUE} Запу�к ngrok туннел�...${NC}"
 ngrok http 8000 --log=stdout > ngrok.log 2>&1 &
 NGROK_PID=$!
 
-# Ждем запуска ngrok
-echo -e "${BLUE}⏳ Ожидание запуска ngrok (5 секунд)...${NC}"
+# Ждем запу�ка ngrok
+echo -e "${BLUE} Ож�дан�е запу�ка ngrok (5 �екунд)...${NC}"
 sleep 5
 
-# Получение URL из ngrok API
-echo -e "${BLUE}🔍 Получение ngrok URL...${NC}"
+# �олучен�е URL �з ngrok API
+echo -e "${BLUE} �олучен�е ngrok URL...${NC}"
 MAX_RETRIES=10
 RETRY_COUNT=0
 NGROK_URL=""
@@ -109,36 +109,36 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
 done
 
 if [ -z "$NGROK_URL" ]; then
-    echo -e "${RED}❌ Не удалось получить ngrok URL!${NC}"
-    echo "Проверьте ngrok.log"
+    echo -e "${RED} �е удало�� получ�т� ngrok URL!${NC}"
+    echo "��ове��те ngrok.log"
     cleanup
     exit 1
 fi
 
 echo ""
-echo -e "${GREEN}✅ API запущен на http://localhost:8000${NC}"
-echo -e "${GREEN}✅ ngrok туннель: ${NGROK_URL}${NC}"
+echo -e "${GREEN} API запу�ен на http://localhost:8000${NC}"
+echo -e "${GREEN} ngrok туннел�: ${NGROK_URL}${NC}"
 echo ""
-echo -e "${YELLOW}📝 ВАЖНО: Обновите WEBAPP_URL в BotFather:${NC}"
-echo -e "${BLUE}   1. Откройте @BotFather в Telegram${NC}"
-echo -e "${BLUE}   2. /mybots → выберите бота${NC}"
-echo -e "${BLUE}   3. Bot Settings → Menu Button${NC}"
+echo -e "${YELLOW} ��Ж�О: О�нов�те WEBAPP_URL в BotFather:${NC}"
+echo -e "${BLUE}   1. Отк�ойте @BotFather в Telegram${NC}"
+echo -e "${BLUE}   2. /mybots � в��е��те �ота${NC}"
+echo -e "${BLUE}   3. Bot Settings � Menu Button${NC}"
 echo -e "${BLUE}   4. URL: ${NGROK_URL}${NC}"
 echo ""
-echo -e "${YELLOW}📝 Также обновите WEBAPP_URL в переменных окружения:${NC}"
+echo -e "${YELLOW} Также о�нов�те WEBAPP_URL в пе�еменн�� ок�ужен��:${NC}"
 echo -e "${BLUE}   export WEBAPP_URL=${NGROK_URL}${NC}"
 echo ""
 
-# Установка WEBAPP_URL для бота
+# У�тановка WEBAPP_URL дл� �ота
 export WEBAPP_URL=$NGROK_URL
 
-# Запуск бота
-echo -e "${BLUE}🤖 Запуск Telegram бота...${NC}"
-echo -e "${YELLOW}⚠️  Для остановки нажмите Ctrl+C${NC}"
+# Запу�к �ота
+echo -e "${BLUE}�� Запу�к Telegram �ота...${NC}"
+echo -e "${YELLOW}  �л� о�тановк� нажм�те Ctrl+C${NC}"
 echo ""
 
 python main.py
 
-# Очистка при выходе
+# Оч��тка п�� в��оде
 cleanup
 

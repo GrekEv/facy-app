@@ -1,12 +1,12 @@
 #!/bin/bash
-# Скрипт для обновления изображений "До" и "После" из 1.jpg и 2.jpg
+# �к��пт дл� о�новлен�� �зо��ажен�й "�о" � "�о�ле" �з 1.jpg � 2.jpg
 
-echo "Обновление изображений 'До' и 'После'..."
+echo "О�новлен�е �зо��ажен�й '�о' � '�о�ле'..."
 
-# Ищем файлы в разных местах
+# И�ем файл� в �азн�� ме�та�
 find_file() {
     local filename=$1
-    # Проверяем в разных местах
+    # ��ове��ем в �азн�� ме�та�
     if [ -f "images/$filename" ]; then
         echo "images/$filename"
     elif [ -f "$filename" ]; then
@@ -16,7 +16,7 @@ find_file() {
     elif [ -f "$HOME/Desktop/$filename" ]; then
         echo "$HOME/Desktop/$filename"
     else
-        # Ищем файл в проекте
+        # И�ем файл в п�оекте
         local found=$(find . -maxdepth 3 -name "$filename" -type f 2>/dev/null | head -1)
         if [ -n "$found" ]; then
             echo "$found"
@@ -26,50 +26,50 @@ find_file() {
     fi
 }
 
-# Ищем файлы
+# И�ем файл�
 SOURCE_1=$(find_file "1.jpg")
 SOURCE_2=$(find_file "2.jpg")
 
-# Проверяем наличие файлов
+# ��ове��ем нал�ч�е файлов
 if [ -z "$SOURCE_1" ]; then
-    echo "Ошибка: Файл 1.jpg не найден!"
-    echo "   Искал в: images/1.jpg, ./1.jpg, ~/Downloads/1.jpg, ~/Desktop/1.jpg"
+    echo "Ош��ка: Файл 1.jpg не найден!"
+    echo "   И�кал в: images/1.jpg, ./1.jpg, ~/Downloads/1.jpg, ~/Desktop/1.jpg"
     echo ""
-    echo "Поместите файл 1.jpg в одну из этих папок или укажите полный путь:"
-    echo "   python3 process_demo_image.py <путь_к_1.jpg> before"
+    echo "�оме�т�те файл 1.jpg в одну �з �т�� папок �л� укаж�те полн�й пут�:"
+    echo "   python3 process_demo_image.py <пут�_к_1.jpg> before"
     exit 1
 fi
 
 if [ -z "$SOURCE_2" ]; then
-    echo "Ошибка: Файл 2.jpg не найден!"
-    echo "   Искал в: images/2.jpg, ./2.jpg, ~/Downloads/2.jpg, ~/Desktop/2.jpg"
+    echo "Ош��ка: Файл 2.jpg не найден!"
+    echo "   И�кал в: images/2.jpg, ./2.jpg, ~/Downloads/2.jpg, ~/Desktop/2.jpg"
     echo ""
-    echo "Поместите файл 2.jpg в одну из этих папок или укажите полный путь:"
-    echo "   python3 process_demo_image.py <путь_к_2.jpg> after"
+    echo "�оме�т�те файл 2.jpg в одну �з �т�� папок �л� укаж�те полн�й пут�:"
+    echo "   python3 process_demo_image.py <пут�_к_2.jpg> after"
     exit 1
 fi
 
-echo "Найдены файлы:"
-echo "   ДО: $SOURCE_1"
-echo "   ПОСЛЕ: $SOURCE_2"
+echo "�айден� файл�:"
+echo "   �О: $SOURCE_1"
+echo "   �О�ЛЕ: $SOURCE_2"
 
 echo ""
-echo "Обработка изображений (удаление белых полей)..."
+echo "О��а�отка �зо��ажен�й (удален�е �ел�� полей)..."
 
 python3 process_demo_image.py "$SOURCE_1" before
 if [ $? -ne 0 ]; then
-    echo "Ошибка обработки 1.jpg (ДО)"
+    echo "Ош��ка о��а�отк� 1.jpg (�О)"
     exit 1
 fi
 
 python3 process_demo_image.py "$SOURCE_2" after
 if [ $? -ne 0 ]; then
-    echo "Ошибка обработки 2.jpg (ПОСЛЕ)"
+    echo "Ош��ка о��а�отк� 2.jpg (�О�ЛЕ)"
     exit 1
 fi
 
 echo ""
-echo "Изображения успешно обновлены!"
-echo "   ДО: static/images/demo-before-1.png"
-echo "   ПОСЛЕ: static/images/demo-after-1.png"
+echo "Изо��ажен�� у�пешно о�новлен�!"
+echo "   �О: static/images/demo-before-1.png"
+echo "   �О�ЛЕ: static/images/demo-after-1.png"
 

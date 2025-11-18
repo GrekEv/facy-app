@@ -1,5 +1,5 @@
 #!/bin/bash
-# Скрипт для настройки веб-приложения с Nginx и HTTPS
+# �к��пт дл� на�т�ойк� ве�-п��ложен�� � Nginx � HTTPS
 
 set -e
 
@@ -8,49 +8,49 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${BLUE}🌐 Настройка веб-приложения${NC}"
+echo -e "${BLUE} �а�т�ойка ве�-п��ложен��${NC}"
 echo "================================"
 echo ""
 
-# Проверка, что мы на сервере
+# ��ове�ка, что м� на �е�ве�е
 if [ "$EUID" -eq 0 ]; then 
-    echo -e "${YELLOW}⚠️  Не запускайте скрипт от root. Используйте обычного пользователя.${NC}"
+    echo -e "${YELLOW}  �е запу�кайте �к��пт от root. И�пол�зуйте о��чно�о пол�зовател�.${NC}"
     exit 1
 fi
 
 cd ~/facy-app || cd /home/ubuntu/facy-app || exit 1
 
-# Запрос домена
-echo -e "${BLUE}Введите ваш домен (или нажмите Enter для использования IP):${NC}"
+# Зап�о� домена
+echo -e "${BLUE}�вед�те ваш домен (�л� нажм�те Enter дл� ��пол�зован�� IP):${NC}"
 read -r DOMAIN
 
 if [ -z "$DOMAIN" ]; then
     DOMAIN="158.160.96.182"
     USE_IP=true
-    echo -e "${YELLOW}Используется IP адрес: $DOMAIN${NC}"
+    echo -e "${YELLOW}И�пол�зует�� IP ад�е�: $DOMAIN${NC}"
 else
     USE_IP=false
-    echo -e "${GREEN}Используется домен: $DOMAIN${NC}"
+    echo -e "${GREEN}И�пол�зует�� домен: $DOMAIN${NC}"
 fi
 
 echo ""
-echo -e "${BLUE}📦 Установка Nginx...${NC}"
+echo -e "${BLUE}� У�тановка Nginx...${NC}"
 sudo apt update
 sudo apt install -y nginx
 
 echo ""
-echo -e "${BLUE}🔧 Создание конфигурации Nginx...${NC}"
+echo -e "${BLUE} �оздан�е конф��у�ац�� Nginx...${NC}"
 
-# Создаем конфигурацию Nginx
+# �оздаем конф��у�ац�� Nginx
 sudo tee /etc/nginx/sites-available/facy > /dev/null <<EOF
 server {
     listen 80;
     server_name $DOMAIN;
 
-    # Увеличение размера загружаемых файлов
+    # Увел�чен�е �азме�а за��ужаем�� файлов
     client_max_body_size 100M;
 
-    # Основное приложение
+    # О�новное п��ложен�е
     location / {
         proxy_pass http://localhost:8000;
         proxy_set_header Host \$host;
@@ -58,32 +58,32 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
         
-        # Для WebSocket (если используется)
+        # �л� WebSocket (е�л� ��пол�зует��)
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
         
-        # Таймауты
+        # Таймаут�
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
         proxy_read_timeout 60s;
     }
 
-    # Статические файлы
+    # �тат�че�к�е файл�
     location /static/ {
         alias $(pwd)/static/;
         expires 30d;
         add_header Cache-Control "public, immutable";
     }
     
-    # Загруженные файлы
+    # За��уженн�е файл�
     location /uploads/ {
         alias $(pwd)/uploads/;
         expires 7d;
         add_header Cache-Control "public";
     }
     
-    # Сгенерированные файлы
+    # ��ене���ованн�е файл�
     location /generated/ {
         alias $(pwd)/generated/;
         expires 7d;
@@ -98,89 +98,89 @@ server {
 }
 EOF
 
-# Активируем конфигурацию
+# �кт�в��уем конф��у�ац��
 sudo ln -sf /etc/nginx/sites-available/facy /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 
-# Проверяем конфигурацию
+# ��ове��ем конф��у�ац��
 echo ""
-echo -e "${BLUE}🔍 Проверка конфигурации Nginx...${NC}"
+echo -e "${BLUE} ��ове�ка конф��у�ац�� Nginx...${NC}"
 sudo nginx -t
 
-# Перезапускаем Nginx
+# �е�езапу�каем Nginx
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 
 echo ""
-echo -e "${GREEN}✅ Nginx настроен!${NC}"
+echo -e "${GREEN} Nginx на�т�оен!${NC}"
 
-# Настройка SSL (только если есть домен)
+# �а�т�ойка SSL (тол�ко е�л� е�т� домен)
 if [ "$USE_IP" = false ]; then
     echo ""
-    echo -e "${BLUE}🔐 Настройка SSL сертификата...${NC}"
-    echo -e "${YELLOW}Убедитесь, что DNS запись для $DOMAIN указывает на IP: 158.160.96.182${NC}"
-    echo -e "${YELLOW}Нажмите Enter когда DNS будет настроен, или Ctrl+C для пропуска...${NC}"
+    echo -e "${BLUE} �а�т�ойка SSL �е�т�ф�ката...${NC}"
+    echo -e "${YELLOW}У�ед�те��, что DNS зап��� дл� $DOMAIN указ�вает на IP: 158.160.96.182${NC}"
+    echo -e "${YELLOW}�ажм�те Enter ко�да DNS �удет на�т�оен, �л� Ctrl+C дл� п�опу�ка...${NC}"
     read -r
     
     echo ""
-    echo -e "${BLUE}Установка Certbot...${NC}"
+    echo -e "${BLUE}У�тановка Certbot...${NC}"
     sudo apt install -y certbot python3-certbot-nginx
     
     echo ""
-    echo -e "${BLUE}Получение SSL сертификата...${NC}"
+    echo -e "${BLUE}�олучен�е SSL �е�т�ф�ката...${NC}"
     sudo certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email admin@$DOMAIN || {
-        echo -e "${YELLOW}⚠️  Не удалось получить сертификат. Проверьте DNS настройки.${NC}"
-        echo -e "${YELLOW}Вы можете настроить SSL позже командой:${NC}"
+        echo -e "${YELLOW}  �е удало�� получ�т� �е�т�ф�кат. ��ове��те DNS на�т�ойк�.${NC}"
+        echo -e "${YELLOW}�� можете на�т�о�т� SSL позже командой:${NC}"
         echo "sudo certbot --nginx -d $DOMAIN"
     }
     
-    # Обновляем WEBAPP_URL в .env
+    # О�новл�ем WEBAPP_URL в .env
     if [ -f .env ]; then
         echo ""
-        echo -e "${BLUE}Обновление WEBAPP_URL в .env...${NC}"
+        echo -e "${BLUE}О�новлен�е WEBAPP_URL в .env...${NC}"
         sed -i "s|WEBAPP_URL=.*|WEBAPP_URL=https://$DOMAIN|g" .env
-        echo -e "${GREEN}✅ WEBAPP_URL обновлен на https://$DOMAIN${NC}"
+        echo -e "${GREEN} WEBAPP_URL о�новлен на https://$DOMAIN${NC}"
     fi
 else
     echo ""
-    echo -e "${YELLOW}⚠️  Для Telegram Mini App требуется HTTPS.${NC}"
-    echo -e "${YELLOW}Рекомендуется настроить домен и SSL сертификат.${NC}"
+    echo -e "${YELLOW}  �л� Telegram Mini App т�е�ует�� HTTPS.${NC}"
+    echo -e "${YELLOW}�екомендует�� на�т�о�т� домен � SSL �е�т�ф�кат.${NC}"
     echo ""
-    echo -e "${BLUE}Текущий URL: http://$DOMAIN${NC}"
+    echo -e "${BLUE}Теку��й URL: http://$DOMAIN${NC}"
     if [ -f .env ]; then
         sed -i "s|WEBAPP_URL=.*|WEBAPP_URL=http://$DOMAIN|g" .env
     fi
 fi
 
-# Настройка firewall
+# �а�т�ойка firewall
 echo ""
-echo -e "${BLUE}🔥 Настройка firewall...${NC}"
+echo -e "${BLUE} �а�т�ойка firewall...${NC}"
 sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw --force enable || true
 
 echo ""
-echo -e "${GREEN}✅ Веб-приложение настроено!${NC}"
+echo -e "${GREEN} �е�-п��ложен�е на�т�оено!${NC}"
 echo ""
-echo -e "${BLUE}📋 Информация:${NC}"
+echo -e "${BLUE} Инфо�мац��:${NC}"
 echo "  - HTTP: http://$DOMAIN"
 if [ "$USE_IP" = false ]; then
     echo "  - HTTPS: https://$DOMAIN"
 fi
 echo "  - API Health: http://$DOMAIN/health"
 echo ""
-echo -e "${BLUE}📝 Следующие шаги:${NC}"
-echo "1. Обновите WEBAPP_URL в BotFather:"
-echo "   - Откройте @BotFather"
-echo "   - /mybots → выберите бота"
-echo "   - Bot Settings → Menu Button"
-echo "   - URL: http://$DOMAIN (или https://$DOMAIN если настроен SSL)"
+echo -e "${BLUE} �леду���е ша��:${NC}"
+echo "1. О�нов�те WEBAPP_URL в BotFather:"
+echo "   - Отк�ойте @BotFather"
+echo "   - /mybots � в��е��те �ота"
+echo "   - Bot Settings � Menu Button"
+echo "   - URL: http://$DOMAIN (�л� https://$DOMAIN е�л� на�т�оен SSL)"
 echo ""
-echo "2. Перезапустите приложение:"
+echo "2. �е�езапу�т�те п��ложен�е:"
 echo "   docker compose -f docker-compose.prod.yml restart"
 echo ""
-echo "3. Проверьте работу:"
+echo "3. ��ове��те �а�оту:"
 echo "   curl http://$DOMAIN/health"
 
 
