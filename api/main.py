@@ -112,6 +112,26 @@ async def read_root(request: Request):
     except Exception as e:
         logger.error(f"Failed to write env log: {e}")
     
+    print("\n" + "="*80)
+    print("ENVIRONMENT VARIABLES CHECK")
+    print("="*80)
+    print(f"\nTimestamp: {env_info['timestamp']}")
+    print(f"Request URL: {env_info['request_url']}")
+    print(f"Request Method: {env_info['request_method']}")
+    print("\n--- os.getenv values ---")
+    for key, value in env_info['os_getenv'].items():
+        if 'TOKEN' in key or 'KEY' in key or 'PASSWORD' in key:
+            print(f"  {key}: {'SET' if value and value != 'NOT SET' else 'NOT SET'}")
+        else:
+            print(f"  {key}: {value}")
+    print("\n--- settings values ---")
+    for key, value in env_info['settings'].items():
+        if 'TOKEN' in key or 'KEY' in key or 'PASSWORD' in key or 'DATABASE_URL' in key:
+            print(f"  {key}: {'SET' if value and value != 'NOT SET' else 'NOT SET'}")
+        else:
+            print(f"  {key}: {value}")
+    print("="*80 + "\n")
+    
     template_path = BASE_DIR / "templates" / "index.html"
     if template_path.exists():
         with open(template_path, "r", encoding="utf-8") as f:
