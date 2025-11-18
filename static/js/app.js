@@ -27,9 +27,9 @@ const getApiBaseUrl = () => {
         return '';
     }
     
-    // Если на Vercel - используем API на onlyface.art (бэкенд там)
+    // Если на Vercel - используем относительные пути (API через serverless функции)
     if (currentHost.includes('vercel.app')) {
-        return 'https://onlyface.art';
+        return '';
     }
     
     // Если на другом домене - используем API на Yandex Cloud
