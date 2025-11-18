@@ -117,6 +117,13 @@ async def read_root():
         with open(template_path, "r", encoding="utf-8") as f:
             html_content = f.read()
             
+            # Подставляем переменные окружения
+            api_base_url = os.getenv("API_BASE_URL", "")
+            webapp_url = settings.WEBAPP_URL or ""
+            
+            html_content = html_content.replace("{{API_BASE_URL}}", api_base_url)
+            html_content = html_content.replace("{{WEBAPP_URL}}", webapp_url)
+            
             # Вставляем ссылку на оплату в JavaScript
             payment_url = settings.STANDARD_PLAN_PAYMENT_URL or "https://web.tribute.tg/p/n1Q"
             logger.info(f"Setting STANDARD_PLAN_PAYMENT_URL to: {payment_url}")
