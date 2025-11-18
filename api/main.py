@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
 from pathlib import Path
 from datetime import datetime
+from urllib.parse import urlparse
 import logging
 import uuid
 import os
@@ -93,6 +94,9 @@ async def read_root(request: Request):
         "os_getenv": {
             "API_BASE_URL": os.getenv("API_BASE_URL", "NOT SET"),
             "WEBAPP_URL": os.getenv("WEBAPP_URL", "NOT SET"),
+            "VERCEL": os.getenv("VERCEL", "NOT SET"),
+            "VERCEL_URL": os.getenv("VERCEL_URL", "NOT SET"),
+            "VERCEL_ENV": os.getenv("VERCEL_ENV", "NOT SET"),
             "DATABASE_URL": "SET" if os.getenv("DATABASE_URL") else "NOT SET",
             "BOT_TOKEN": "SET" if os.getenv("BOT_TOKEN") else "NOT SET",
             "REPLICATE_API_KEY": "SET" if os.getenv("REPLICATE_API_KEY") else "NOT SET",
@@ -136,13 +140,103 @@ async def read_root(request: Request):
     if template_path.exists():
         with open(template_path, "r", encoding="utf-8") as f:
             html_content = f.read()
-            api_base_url = os.getenv("API_BASE_URL", "")
-            webapp_url = settings.WEBAPP_URL or ""
+            # Получаем API_BASE_URL из переменных окружения или определяем автоматически
+            api_base_url_env = os.getenv("API_BASE_URL", "")
+            logger.info(f"API_BASE_URL from environment: '{api_base_url_env}' (empty={not api_base_url_env})")
+            
+            api_base_url = api_base_url_env
             if not api_base_url:
-                api_base_url = ""
+                # Определяем автоматически на основе текущего запроса и окружения
+                parsed = urlparse(str(request.url))
+                hostname = parsed.netloc.lower()
+                
+                # Проверяем, является ли это Vercel deployment
+                is_vercel = (
+                    "vercel.app" in hostname or
+                    os.getenv("VERCEL") == "1" or
+                    os.getenv("VERCEL_URL") is not None
+                )
+                
+                # Проверяем другие платформы, где API и фронтенд на одном домене
+                is_same_domain = (
+                    is_vercel or
+                    "onlyface.art" in hostname or
+                    "onlyface" in hostname or
+                    hostname in ["localhost", "127.0.0.1"] or
+                    ":" in hostname  # Локальный порт
+                )
+                
+                if is_same_domain:
+                    # API и фронтенд на одном домене - используем относительные пути
+                    api_base_url = ""
+                    platform = "Vercel" if is_vercel else "same domain"
+                    logger.info(
+                        f"API_BASE_URL not set, detected {platform} deployment. "
+                        f"Using relative paths (empty string). Hostname: {hostname}"
+                    )
+                    print(f"\n[API_BASE_URL] Auto-detected {platform} deployment")
+                    print(f"[API_BASE_URL] Hostname: {hostname}")
+                    print(f"[API_BASE_URL] Using empty string for relative paths")
+                    print(f"[API_BASE_URL] Final value: '{api_base_url}'\n")
+                else:
+                    # API на отдельном сервере - используем базовый URL текущего запроса
+                    # Но это не рекомендуется, лучше установить API_BASE_URL явно
+                    api_base_url = f"{parsed.scheme}://{parsed.netloc}"
+                    logger.warning(
+                        f"API_BASE_URL not set and different domain detected. "
+                        f"Using request URL as fallback: {api_base_url}. "
+                        f"Consider setting API_BASE_URL explicitly if API is on separate server."
+                    )
+            else:
+                logger.info(f"Using API_BASE_URL from environment: '{api_base_url}'")
+                print(f"\n[API_BASE_URL] Using value from environment: '{api_base_url}'\n")
+            
+            webapp_url = settings.WEBAPP_URL or ""
+            if not webapp_url:
+                # Определяем автоматически на основе текущего запроса
+                parsed = urlparse(str(request.url))
+                webapp_url = f"{parsed.scheme}://{parsed.netloc}"
+                logger.info(f"WEBAPP_URL not set, using request URL: '{webapp_url}'")
+            
+            # Гарантируем, что значения установлены (не None)
+            api_base_url = api_base_url or ""
+            webapp_url = webapp_url or ""
+            
             logger.info(f"Injecting API_BASE_URL: '{api_base_url}', WEBAPP_URL: '{webapp_url}'")
+            logger.info(f"Before replacement - API_BASE_URL placeholder exists: {'{{API_BASE_URL}}' in html_content}")
+            logger.info(f"Before replacement - WEBAPP_URL placeholder exists: {'{{WEBAPP_URL}}' in html_content}")
+            
+            # Заменяем плейсхолдеры (множественная замена на случай, если есть несколько вхождений)
             html_content = html_content.replace("{{API_BASE_URL}}", api_base_url)
             html_content = html_content.replace("{{WEBAPP_URL}}", webapp_url)
+            
+            # Проверяем, что замена произошла
+            if "{{API_BASE_URL}}" in html_content:
+                logger.error("CRITICAL: API_BASE_URL placeholder was NOT replaced! This will cause errors.")
+                # Принудительно заменяем еще раз
+                html_content = html_content.replace("{{API_BASE_URL}}", api_base_url)
+            
+            if "{{WEBAPP_URL}}" in html_content:
+                logger.error("CRITICAL: WEBAPP_URL placeholder was NOT replaced! This will cause errors.")
+                # Принудительно заменяем еще раз
+                html_content = html_content.replace("{{WEBAPP_URL}}", webapp_url)
+            
+            logger.info(f"After replacement - API_BASE_URL placeholder exists: {'{{API_BASE_URL}}' in html_content}")
+            logger.info(f"After replacement - WEBAPP_URL placeholder exists: {'{{WEBAPP_URL}}' in html_content}")
+            
+            # Выводим в консоль для отладки
+            print(f"\n[REPLACEMENT] API_BASE_URL replaced: {'{{API_BASE_URL}}' not in html_content}")
+            print(f"[REPLACEMENT] WEBAPP_URL replaced: {'{{WEBAPP_URL}}' not in html_content}")
+            print(f"[REPLACEMENT] Final API_BASE_URL value: '{api_base_url}'")
+            print(f"[REPLACEMENT] Final WEBAPP_URL value: '{webapp_url}'\n")
+            
+            # Критическая проверка - если плейсхолдеры все еще есть, это серьезная проблема
+            if "{{API_BASE_URL}}" in html_content or "{{WEBAPP_URL}}" in html_content:
+                print("="*80)
+                print("ERROR: Placeholders were NOT replaced!")
+                print(f"API_BASE_URL placeholder exists: {'{{API_BASE_URL}}' in html_content}")
+                print(f"WEBAPP_URL placeholder exists: {'{{WEBAPP_URL}}' in html_content}")
+                print("="*80)
             payment_url = settings.STANDARD_PLAN_PAYMENT_URL or "https://web.tribute.tg/p/n1Q"
             logger.info(f"Setting STANDARD_PLAN_PAYMENT_URL to: {payment_url}")
             payment_url_escaped = payment_url.replace('"', '\\"').replace("'", "\\'")
@@ -689,3 +783,4 @@ async def api_health_check():
             "status": "error",
             "error": str(e)
         }
+
