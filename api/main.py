@@ -12,6 +12,7 @@ import os
 
 from database import get_session, User, Generation
 from services import deepface_service, image_generation_service, video_generation_service, user_service, content_moderation
+from config import settings
 from api.schemas import (
     GenerateImageRequest,
     GenerateImageResponse,
@@ -19,7 +20,8 @@ from api.schemas import (
     GenerateVideoResponse,
     SwapFaceResponse,
     UserResponse,
-    StatsResponse
+    StatsResponse,
+    ActivatePlanResponse
 )
 
 # Импорт платежного модуля (опционально)
@@ -89,7 +91,19 @@ async def read_root():
     
     if template_path.exists():
         with open(template_path, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
+            html_content = f.read()
+            
+            # Вставляем ссылку на оплату в JavaScript
+            payment_url = settings.STANDARD_PLAN_PAYMENT_URL or "https://web.tribute.tg/p/n1Q"
+            script_injection = f"""
+            <script>
+                window.STANDARD_PLAN_PAYMENT_URL = "{payment_url}";
+            </script>
+            """
+            # Вставляем скрипт перед закрывающим тегом head
+            html_content = html_content.replace("</head>", script_injection + "</head>")
+            
+            return HTMLResponse(content=html_content)
     
     return HTMLResponse(content="<h1>Web App</h1><p>Template not found</p>")
 
@@ -119,6 +133,9 @@ async def get_user(
         total_generations=user.total_generations,
         total_deepfakes=user.total_deepfakes,
         is_premium=user.is_premium,
+        plan_type=getattr(user, 'plan_type', 'basic'),
+        images_used=getattr(user, 'images_used', 0),
+        videos_used=getattr(user, 'videos_used', 0),
         referral_code=user.referral_code
     )
 
@@ -150,14 +167,24 @@ async def generate_image(
         telegram_id=request.telegram_id
     )
     
-    # Создаем запись о генерации (без проверки баланса - бесплатный доступ)
+    # Проверка ограничений тарифа
+    plan_type = getattr(user, 'plan_type', 'basic')
+    if plan_type == 'basic':
+        images_used = getattr(user, 'images_used', 0)
+        if images_used >= 5:
+            raise HTTPException(
+                status_code=403,
+                detail="Достигнут лимит базового тарифа: максимум 5 изображений. Обновите тариф до Стандарт для неограниченного использования."
+            )
+    
+    # Создаем запись о генерации
     generation = Generation(
         user_id=user.id,
         generation_type="image",
         prompt=request.prompt,
         model=request.model,
         style=request.style,
-        cost=0,  # Бесплатно
+        cost=0,
         status="processing"
     )
     session.add(generation)
@@ -184,8 +211,11 @@ async def generate_image(
                 await session.commit()
                 raise HTTPException(status_code=500, detail="No image URL received from generation service")
             
-            # Обновляем статистику без списания средств
+            # Обновляем статистику и счетчики тарифа
             user.total_generations += 1
+            plan_type = getattr(user, 'plan_type', 'basic')
+            if plan_type == 'basic':
+                user.images_used = getattr(user, 'images_used', 0) + 1
             generation.status = "completed"
             generation.result_file = image_url
             
@@ -233,6 +263,16 @@ async def swap_face(
         telegram_id=telegram_id
     )
     
+    # Проверка ограничений тарифа для Face Swap (считается как видео)
+    plan_type = getattr(user, 'plan_type', 'basic')
+    if plan_type == 'basic':
+        videos_used = getattr(user, 'videos_used', 0)
+        if videos_used >= 2:
+            raise HTTPException(
+                status_code=403,
+                detail="Достигнут лимит базового тарифа: максимум 2 видео. Обновите тариф до Стандарт для неограниченного использования."
+            )
+    
     try:
         # Сохраняем загруженные файлы
         uploads_dir = BASE_DIR / "uploads"
@@ -271,8 +311,11 @@ async def swap_face(
         )
         
         if result["status"] == "success":
-            # Обновляем статистику без списания средств
+            # Обновляем статистику и счетчики тарифа
             user.total_deepfakes += 1
+            plan_type = getattr(user, 'plan_type', 'basic')
+            if plan_type == 'basic':
+                user.videos_used = getattr(user, 'videos_used', 0) + 1
             generation.status = "completed"
             generation.result_file = str(output_path)
             
@@ -348,14 +391,24 @@ async def generate_video(
         telegram_id=request.telegram_id
     )
     
-    # Создаем запись о генерации (без проверки баланса - бесплатный доступ)
+    # Проверка ограничений тарифа
+    plan_type = getattr(user, 'plan_type', 'basic')
+    if plan_type == 'basic':
+        videos_used = getattr(user, 'videos_used', 0)
+        if videos_used >= 2:
+            raise HTTPException(
+                status_code=403,
+                detail="Достигнут лимит базового тарифа: максимум 2 видео. Обновите тариф до Стандарт для неограниченного использования."
+            )
+    
+    # Создаем запись о генерации
     generation = Generation(
         user_id=user.id,
         generation_type="video",
         prompt=request.prompt,
         model=request.model,
         style=request.style,
-        cost=0,  # Бесплатно
+        cost=0,
         status="processing"
     )
     session.add(generation)
@@ -375,8 +428,11 @@ async def generate_video(
         )
         
         if result["status"] == "success":
-            # Обновляем статистику без списания средств
+            # Обновляем статистику и счетчики тарифа
             user.total_generations += 1
+            plan_type = getattr(user, 'plan_type', 'basic')
+            if plan_type == 'basic':
+                user.videos_used = getattr(user, 'videos_used', 0) + 1
             generation.status = "completed"
             generation.result_file = result.get("video_url") or result.get("video")
             
@@ -445,6 +501,34 @@ async def get_stats(
     except Exception as e:
         logger.error(f"Error getting stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/user/{telegram_id}/activate-basic-plan", response_model=ActivatePlanResponse)
+async def activate_basic_plan(
+    telegram_id: int,
+    session: AsyncSession = Depends(get_session)
+):
+    """Активация базового тарифа (бесплатный)"""
+    user = await user_service.get_user_by_telegram_id(session, telegram_id)
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Активируем базовый тариф
+    user.plan_type = "basic"
+    user.plan_activated_at = datetime.utcnow()
+    user.images_used = 0
+    user.videos_used = 0
+    
+    await session.commit()
+    
+    logger.info(f"Activated basic plan for user {telegram_id}")
+    
+    return ActivatePlanResponse(
+        success=True,
+        message="Базовый тариф успешно активирован!",
+        plan_type="basic"
+    )
 
 
 @app.get("/health")

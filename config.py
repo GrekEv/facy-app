@@ -118,6 +118,9 @@ class Settings(BaseSettings):
     WITHDRAWAL_FEE_PERCENT: float = 5.0  # Комиссия на вывод (%)
     REFERRAL_COMMISSION_PERCENT: float = 50.0  # Комиссия реферальной программы (%)
     
+    # Subscription payment URL
+    STANDARD_PLAN_PAYMENT_URL: str = ""  # Ссылка на оплату тарифа Стандарт ($20)
+    
     @property
     def admin_ids_list(self) -> List[int]:
         """Получить список ID администраторов"""

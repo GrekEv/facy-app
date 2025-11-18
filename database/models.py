@@ -27,6 +27,12 @@ class User(Base):
     # Подписка
     is_premium = Column(Boolean, default=False)
     premium_until = Column(DateTime, nullable=True)
+    plan_type = Column(String, default="basic")  # basic или standard
+    plan_activated_at = Column(DateTime, nullable=True)
+    
+    # Ограничения тарифа (для базового тарифа)
+    images_used = Column(Integer, default=0)  # Использовано изображений
+    videos_used = Column(Integer, default=0)  # Использовано видео
     
     # Статистика
     total_generations = Column(Integer, default=0)

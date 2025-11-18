@@ -101,24 +101,48 @@
         <!-- Тарифы -->
         <section class="pricing">
             <h2 class="section-title">Тарифы</h2>
+            
+            <!-- Базовый тариф (бесплатный) -->
             <div class="pricing-card">
                 <div class="pricing-header">
                     <h3 class="pricing-name">Базовый</h3>
+                    <div class="pricing-badge">Бесплатно</div>
+                </div>
+                <ul class="pricing-features">
+                    <li>✓ Face Swap + AI видео + AI картинки</li>
+                    <li>✓ До 5 изображений</li>
+                    <li>✓ До 2 видео</li>
+                    <li>✓ Среднее качество</li>
+                    <li>✓ Приватность</li>
+                </ul>
+                <div class="pricing-price">
+                    <span class="price-amount">0</span>
+                    <span class="price-currency">$</span>
+                </div>
+                <button class="btn btn-pricing" id="activateBasicBtn">
+                    <span class="btn-text">Активировать</span>
+                </button>
+            </div>
+
+            <!-- Стандарт тариф ($20) -->
+            <div class="pricing-card" style="margin-top: 2rem;">
+                <div class="pricing-header">
+                    <h3 class="pricing-name">Стандарт</h3>
                     <div class="pricing-badge">Популярный</div>
                 </div>
                 <ul class="pricing-features">
                     <li>✓ Face Swap + AI видео + AI картинки</li>
+                    <li>✓ Неограниченное использование</li>
                     <li>✓ Высокое качество</li>
                     <li>✓ Скорость максимальная</li>
-                    <li>✓ Безлимит</li>
                     <li>✓ Приватность</li>
                 </ul>
                 <div class="pricing-price">
-                    <span class="price-amount" id="priceAmount">XXX</span>
-                    <span class="price-currency">₽</span>
+                    <span class="price-amount">20</span>
+                    <span class="price-currency">$</span>
                 </div>
-                <button class="btn btn-pricing" id="activateBtn">
-                    <span class="btn-text">Активировать</span>
+                <button class="btn btn-pricing" id="activateStandardBtn">
+                    <span class="btn-text">Оплатить</span>
                 </button>
             </div>
         </section>

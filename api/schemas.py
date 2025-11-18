@@ -41,7 +41,17 @@ class UserResponse(BaseModel):
     total_generations: int
     total_deepfakes: int
     is_premium: bool
+    plan_type: Optional[str] = "basic"
+    images_used: Optional[int] = 0
+    videos_used: Optional[int] = 0
     referral_code: Optional[str] = None
+
+
+class ActivatePlanResponse(BaseModel):
+    """Ответ на активацию тарифа"""
+    success: bool
+    message: str
+    plan_type: Optional[str] = None
 
 
 class RegisterRequest(BaseModel):
