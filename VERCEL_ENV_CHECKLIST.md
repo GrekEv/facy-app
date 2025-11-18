@@ -39,19 +39,24 @@ PORT=8000
 
 **Важно:** Если ваш `DATABASE_URL` начинается с `postgresql://`, нужно преобразовать в `postgresql+asyncpg://`
 
-#### Если у вас Neon:
+#### Если у вас Neon (как у вас):
 
 Текущий формат (из Neon):
 ```
-postgresql://user:password@ep-xxx-xxx.region.aws.neon.tech/dbname?sslmode=require
+postgresql://neondb_owner:npg_DB2lLYWyVSv5@ep-sweet-thunder-a45uh81b-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require
 ```
 
-Правильный формат для Vercel:
+**Правильный формат для Vercel:**
 ```
-postgresql+asyncpg://user:password@ep-xxx-xxx.region.aws.neon.tech/dbname?sslmode=require
+postgresql+asyncpg://neondb_owner:npg_DB2lLYWyVSv5@ep-sweet-thunder-a45uh81b-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require
 ```
 
 **Просто добавьте `+asyncpg` после `postgresql`**
+
+**Скопируйте это значение в Vercel:**
+```
+DATABASE_URL=postgresql+asyncpg://neondb_owner:npg_DB2lLYWyVSv5@ep-sweet-thunder-a45uh81b-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require
+```
 
 #### Если у вас другой провайдер:
 

@@ -1,0 +1,14 @@
+# Правильный DATABASE_URL для Vercel (Neon)
+
+# Для Vercel Environment Variables используйте:
+
+DATABASE_URL=postgresql+asyncpg://neondb_owner:npg_DB2lLYWyVSv5@ep-sweet-thunder-a45uh81b-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require
+
+# Важно:
+# - Добавлен +asyncpg после postgresql
+# - Оставлен ?sslmode=require для SSL
+# - Используется pooler версия (рекомендуется)
+
+# Альтернатива (без pooler, если нужна прямая связь):
+# DATABASE_URL=postgresql+asyncpg://neondb_owner:npg_DB2lLYWyVSv5@ep-sweet-thunder-a45uh81b.us-east-1.aws.neon.tech/neondb?sslmode=require
+
