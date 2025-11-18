@@ -45,6 +45,8 @@ let statsData = null;
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('OnlyFace App initialized');
+    console.log('Window location:', window.location.href);
+    console.log('API_BASE_URL:', API_BASE_URL);
     
     // Инициализируем обработчики сразу
     initHeaderButtons();
@@ -53,6 +55,76 @@ document.addEventListener('DOMContentLoaded', async () => {
     initDemoToggles();
     initButtons();
     initSmoothScroll();
+    
+    // Также используем делегирование событий для кнопок реферальной программы
+    // на случай если они динамически создаются или обработчики не привязались
+    const referralSection = document.querySelector('.referral-section');
+    if (referralSection) {
+        console.log('Setting up event delegation for referral section');
+        referralSection.addEventListener('click', async (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            
+            // Проверяем, есть ли уже обработчик на кнопке
+            // Если обработчик уже есть, он сработает сам
+            // Если нет - обрабатываем здесь
+            if (target.id === 'copyReferralLinkBtn') {
+                // Проверяем, есть ли обработчик
+                if (!target.hasAttribute('data-handler-attached')) {
+                    console.log('Copy referral link clicked via delegation (no handler attached)');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Если userData еще не загружен, загружаем его
+                    const telegramUser = tg?.initDataUnsafe?.user;
+                    const telegramId = telegramUser?.id;
+                    
+                    if (!userData && telegramId) {
+                        await loadUserData(telegramId);
+                    }
+                    
+                    // Генерируем ссылку если еще не сгенерирована
+                    if (!referralLink) {
+                        generateReferralLink();
+                    }
+                    
+                    if (!referralLink) {
+                        showNotification('Не удалось сгенерировать реферальную ссылку. Попробуйте позже.', 'error');
+                        return;
+                    }
+                    
+                    // Копируем ссылку
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            await navigator.clipboard.writeText(referralLink);
+                            showNotification('Ссылка приглашения скопирована!', 'success');
+                        } else {
+                            const tempInput = document.createElement('input');
+                            tempInput.value = referralLink;
+                            tempInput.style.position = 'fixed';
+                            tempInput.style.opacity = '0';
+                            tempInput.style.left = '-9999px';
+                            document.body.appendChild(tempInput);
+                            tempInput.select();
+                            tempInput.setSelectionRange(0, 99999);
+                            document.execCommand('copy');
+                            document.body.removeChild(tempInput);
+                            showNotification('Ссылка приглашения скопирована!', 'success');
+                        }
+                    } catch (err) {
+                        showNotification(`Реферальная ссылка: ${referralLink}`, 'info');
+                    }
+                }
+            } else if (target.id === 'showQRBtn') {
+                if (!target.hasAttribute('data-handler-attached')) {
+                    console.log('Show QR clicked via delegation (no handler attached)');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    generateQRCode();
+                }
+            }
+        });
+    }
     
     // Загружаем данные пользователя в фоне (не блокируем интерфейс)
     const telegramUser = tg?.initDataUnsafe?.user;
@@ -118,35 +190,59 @@ let referralLink = null;
 
 // Генерация реферальной ссылки для регистрации
 function generateReferralLink() {
-    if (!userData || !userData.referral_code) {
-        console.warn('User data or referral code not available');
+    console.log('generateReferralLink called, userData:', userData);
+    
+    if (!userData) {
+        console.warn('User data not available');
+        return null;
+    }
+    
+    if (!userData.referral_code) {
+        console.warn('Referral code not available in userData:', userData);
         return null;
     }
     
     // Получаем реферальный код пользователя
     const referralCode = userData.referral_code;
+    console.log('Referral code:', referralCode);
     
     // Формируем реферальную ссылку на Web App с параметром ref для регистрации
     const webappUrl = window.location.origin || 'https://facy-app.vercel.app';
     referralLink = `${webappUrl}?ref=${referralCode}`;
+    console.log('Generated referral link:', referralLink);
     
     return referralLink;
 }
 
 // Генерация QR-кода через API
 async function generateQRCode() {
+    console.log('generateQRCode called');
+    
     const referralQRCode = document.getElementById('referralQRCode');
     const referralQRContainer = document.getElementById('referralQRContainer');
     
-    if (!referralQRCode || !referralQRContainer) return;
+    if (!referralQRCode || !referralQRContainer) {
+        console.error('QR code elements not found!');
+        showNotification('Ошибка: элементы QR-кода не найдены', 'error');
+        return;
+    }
     
     // Получаем telegram_id из Telegram Web App
     const telegramUser = tg?.initDataUnsafe?.user;
     const telegramId = telegramUser?.id;
     
     if (!telegramId) {
+        console.error('Telegram ID not found');
         showNotification('Не удалось получить данные пользователя из Telegram', 'error');
         return;
+    }
+    
+    console.log('Generating QR code for telegram_id:', telegramId);
+    
+    // Если userData еще не загружен, загружаем его
+    if (!userData) {
+        console.log('User data not loaded, loading...');
+        await loadUserData(telegramId);
     }
     
     // Показываем лоадер
@@ -154,25 +250,46 @@ async function generateQRCode() {
     referralQRContainer.style.display = 'flex';
     
     try {
-        // Запрашиваем QR-код с сервера
-        const qrUrl = `${API_BASE_URL}/api/referral/qr?telegram_id=${telegramId}`;
-        const response = await fetch(qrUrl);
+        // Определяем API URL (может быть пустой строкой для относительных путей)
+        const qrApiUrl = API_BASE_URL 
+            ? `${API_BASE_URL}/api/referral/qr?telegram_id=${telegramId}`
+            : `/api/referral/qr?telegram_id=${telegramId}`;
+        
+        console.log('Fetching QR code from:', qrApiUrl);
+        
+        const response = await fetch(qrApiUrl);
+        
+        console.log('QR code response status:', response.status);
         
         if (response.ok) {
             // Получаем изображение как blob
             const blob = await response.blob();
             const imageUrl = URL.createObjectURL(blob);
             
+            console.log('QR code image loaded successfully');
+            
             // Отображаем QR-код
             referralQRCode.innerHTML = `<img src="${imageUrl}" alt="QR Code" style="max-width: 100%; height: auto; border-radius: 8px;">`;
+            showNotification('QR-код успешно загружен!', 'success');
         } else {
-            const error = await response.json();
-            throw new Error(error.detail || 'Ошибка генерации QR-кода');
+            const errorText = await response.text();
+            console.error('QR code API error:', errorText);
+            let errorMessage = 'Ошибка генерации QR-кода';
+            
+            try {
+                const error = JSON.parse(errorText);
+                errorMessage = error.detail || error.message || errorMessage;
+            } catch (e) {
+                // Если не JSON, используем текст ошибки
+                errorMessage = errorText || errorMessage;
+            }
+            
+            throw new Error(errorMessage);
         }
     } catch (error) {
         console.error('Error generating QR code:', error);
         referralQRCode.innerHTML = `<p style="color: var(--text-primary); padding: 1rem; text-align: center;">Ошибка загрузки QR-кода. Попробуйте позже.</p>`;
-        showNotification('Не удалось загрузить QR-код', 'error');
+        showNotification(`Не удалось загрузить QR-код: ${error.message}`, 'error');
     }
 }
 
@@ -235,47 +352,43 @@ function openCreateModal() {
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
         
-        // Убеждаемся, что обработчики привязаны к кнопкам внутри модального окна
-        // Удаляем старые обработчики если они есть
+        // Проверяем, что обработчики привязаны (на случай если элементы были пересозданы)
         const generateBtn = document.getElementById('generateBtn');
-        if (generateBtn) {
-            // Клонируем элемент чтобы удалить все обработчики
-            const newGenerateBtn = generateBtn.cloneNode(true);
-            generateBtn.parentNode.replaceChild(newGenerateBtn, generateBtn);
-            
-            // Привязываем новый обработчик
-            newGenerateBtn.addEventListener('click', (e) => {
+        const generateVideoBtn = document.getElementById('generateVideoBtn');
+        const swapFaceBtn = document.getElementById('swapFaceBtn');
+        
+        // Если кнопки найдены, но обработчики не привязаны, привязываем их
+        if (generateBtn && !generateBtn.hasAttribute('data-handler-attached')) {
+            console.log('Re-attaching handler to generateBtn');
+            generateBtn.addEventListener('click', (e) => {
                 console.log('Generate button clicked!');
                 e.preventDefault();
                 e.stopPropagation();
                 handleGenerateImage();
             });
+            generateBtn.setAttribute('data-handler-attached', 'true');
         }
         
-        const generateVideoBtn = document.getElementById('generateVideoBtn');
-        if (generateVideoBtn) {
-            const newGenerateVideoBtn = generateVideoBtn.cloneNode(true);
-            generateVideoBtn.parentNode.replaceChild(newGenerateVideoBtn, generateVideoBtn);
-            
-            newGenerateVideoBtn.addEventListener('click', (e) => {
+        if (generateVideoBtn && !generateVideoBtn.hasAttribute('data-handler-attached')) {
+            console.log('Re-attaching handler to generateVideoBtn');
+            generateVideoBtn.addEventListener('click', (e) => {
                 console.log('Generate video button clicked!');
                 e.preventDefault();
                 e.stopPropagation();
                 handleGenerateVideo();
             });
+            generateVideoBtn.setAttribute('data-handler-attached', 'true');
         }
         
-        const swapFaceBtn = document.getElementById('swapFaceBtn');
-        if (swapFaceBtn) {
-            const newSwapFaceBtn = swapFaceBtn.cloneNode(true);
-            swapFaceBtn.parentNode.replaceChild(newSwapFaceBtn, swapFaceBtn);
-            
-            newSwapFaceBtn.addEventListener('click', (e) => {
+        if (swapFaceBtn && !swapFaceBtn.hasAttribute('data-handler-attached')) {
+            console.log('Re-attaching handler to swapFaceBtn');
+            swapFaceBtn.addEventListener('click', (e) => {
                 console.log('Swap face button clicked!');
                 e.preventDefault();
                 e.stopPropagation();
                 handleSwapFace();
             });
+            swapFaceBtn.setAttribute('data-handler-attached', 'true');
         }
     }
 }
@@ -366,50 +479,130 @@ function initDemoToggles() {
 
 // Инициализация кнопок
 function initButtons() {
-    // Обработчики кнопок генерации привязываются в openCreateModal()
-    // чтобы они работали когда модальное окно открыто
+    console.log('Initializing buttons...');
+    
+    // Привязываем обработчики кнопок генерации сразу при загрузке страницы
+    const generateBtn = document.getElementById('generateBtn');
+    if (generateBtn) {
+        console.log('Found generateBtn, attaching handler');
+        generateBtn.addEventListener('click', (e) => {
+            console.log('Generate button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            handleGenerateImage();
+        });
+        generateBtn.setAttribute('data-handler-attached', 'true');
+    } else {
+        console.warn('generateBtn not found!');
+    }
+    
+    const generateVideoBtn = document.getElementById('generateVideoBtn');
+    if (generateVideoBtn) {
+        console.log('Found generateVideoBtn, attaching handler');
+        generateVideoBtn.addEventListener('click', (e) => {
+            console.log('Generate video button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            handleGenerateVideo();
+        });
+        generateVideoBtn.setAttribute('data-handler-attached', 'true');
+    } else {
+        console.warn('generateVideoBtn not found!');
+    }
+    
+    const swapFaceBtn = document.getElementById('swapFaceBtn');
+    if (swapFaceBtn) {
+        console.log('Found swapFaceBtn, attaching handler');
+        swapFaceBtn.addEventListener('click', (e) => {
+            console.log('Swap face button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            handleSwapFace();
+        });
+        swapFaceBtn.setAttribute('data-handler-attached', 'true');
+    } else {
+        console.warn('swapFaceBtn not found!');
+    }
     
     // Базовый тариф теперь всегда активен - кнопка заменена на надпись "Активен"
     
     // Кнопка копирования реферальной ссылки
     const copyReferralLinkBtn = document.getElementById('copyReferralLinkBtn');
     if (copyReferralLinkBtn) {
-        copyReferralLinkBtn.addEventListener('click', async () => {
+        console.log('Found copyReferralLinkBtn, attaching handler');
+        copyReferralLinkBtn.setAttribute('data-handler-attached', 'true');
+        copyReferralLinkBtn.addEventListener('click', async (e) => {
+            console.log('Copy referral link button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Если userData еще не загружен, загружаем его
+            const telegramUser = tg?.initDataUnsafe?.user;
+            const telegramId = telegramUser?.id;
+            
+            if (!userData && telegramId) {
+                console.log('User data not loaded, loading...');
+                await loadUserData(telegramId);
+            }
+            
             // Генерируем ссылку если еще не сгенерирована
             if (!referralLink) {
-                generateReferralLink();
+                const link = generateReferralLink();
+                console.log('Generated referral link:', link);
             }
             
             if (!referralLink) {
-                showNotification('Не удалось сгенерировать реферальную ссылку', 'error');
+                console.error('Failed to generate referral link. userData:', userData);
+                showNotification('Не удалось сгенерировать реферальную ссылку. Попробуйте позже.', 'error');
                 return;
             }
             
+            console.log('Copying referral link to clipboard:', referralLink);
+            
             // Копируем ссылку в буфер обмена
             try {
-                await navigator.clipboard.writeText(referralLink);
-                showNotification('Ссылка приглашения скопирована!', 'success');
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(referralLink);
+                    console.log('Link copied to clipboard successfully');
+                    showNotification('Ссылка приглашения скопирована!', 'success');
+                } else {
+                    // Fallback для старых браузеров
+                    const tempInput = document.createElement('input');
+                    tempInput.value = referralLink;
+                    tempInput.style.position = 'fixed';
+                    tempInput.style.opacity = '0';
+                    tempInput.style.left = '-9999px';
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    tempInput.setSelectionRange(0, 99999); // Для мобильных устройств
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    console.log('Link copied using fallback method');
+                    showNotification('Ссылка приглашения скопирована!', 'success');
+                }
             } catch (err) {
-                // Fallback для старых браузеров
-                const tempInput = document.createElement('input');
-                tempInput.value = referralLink;
-                tempInput.style.position = 'fixed';
-                tempInput.style.opacity = '0';
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempInput);
-                showNotification('Ссылка приглашения скопирована!', 'success');
+                console.error('Error copying to clipboard:', err);
+                // Показываем ссылку пользователю если копирование не удалось
+                showNotification(`Реферальная ссылка: ${referralLink}`, 'info');
             }
         });
+    } else {
+        console.warn('copyReferralLinkBtn not found!');
     }
     
     // Кнопка показа QR-кода
     const showQRBtn = document.getElementById('showQRBtn');
     if (showQRBtn) {
-        showQRBtn.addEventListener('click', () => {
+        console.log('Found showQRBtn, attaching handler');
+        showQRBtn.setAttribute('data-handler-attached', 'true');
+        showQRBtn.addEventListener('click', (e) => {
+            console.log('Show QR code button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
             generateQRCode();
         });
+    } else {
+        console.warn('showQRBtn not found!');
     }
     
     // Кнопка оплаты стандартного тарифа ($20)
@@ -518,12 +711,6 @@ async function handleSwapFace() {
         return;
     }
     
-    if (!API_BASE_URL) {
-        console.error('API_BASE_URL is not defined!');
-        showNotification('Ошибка: API не настроен', 'error');
-        return;
-    }
-    
     // Получаем telegram_id из Telegram Web App
     const telegramUser = tg?.initDataUnsafe?.user;
     const telegramId = telegramUser?.id;
@@ -540,6 +727,11 @@ async function handleSwapFace() {
     
     // Проверка баланса убрана - бесплатный доступ
     
+    // Определяем API URL (может быть пустой строкой для относительных путей)
+    const apiUrl = API_BASE_URL ? `${API_BASE_URL}/api/deepfake/swap` : '/api/deepfake/swap';
+    console.log('Face Swap API URL:', apiUrl);
+    console.log('API_BASE_URL:', API_BASE_URL);
+    
     showLoader('Создаем Face Swap...');
     
     try {
@@ -548,7 +740,7 @@ async function handleSwapFace() {
         formData.append('source_image', sourceImageFile);
         formData.append('target_video', targetVideoFile);
         
-        const response = await fetch(`${API_BASE_URL}/api/deepfake/swap`, {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             body: formData
         });
@@ -596,12 +788,6 @@ async function handleGenerateImage() {
         return;
     }
     
-    if (!API_BASE_URL) {
-        console.error('API_BASE_URL is not defined!');
-        showNotification('Ошибка: API не настроен', 'error');
-        return;
-    }
-    
     // Проверка на запрещенный контент (базовая клиентская проверка)
     if (!checkContentSafety(prompt)) {
         showNotification('⛔ Обнаружено недопустимое содержание. Пожалуйста, ознакомьтесь с политикой контента.', 'error');
@@ -618,14 +804,15 @@ async function handleGenerateImage() {
         console.warn('Telegram ID not found, using test ID:', telegramId);
     }
     
+    // Определяем API URL (может быть пустой строкой для относительных путей)
+    const apiUrl = API_BASE_URL ? `${API_BASE_URL}/api/generate/image` : '/api/generate/image';
     console.log('Starting generation with telegram_id:', telegramId, 'prompt:', prompt);
+    console.log('Sending request to:', apiUrl);
+    console.log('API_BASE_URL:', API_BASE_URL);
+    
     showLoader('Генерируем изображение...');
     
     try {
-        const apiUrl = `${API_BASE_URL}/api/generate/image`;
-        console.log('Sending request to:', apiUrl);
-        console.log('API_BASE_URL:', API_BASE_URL);
-        
         const requestBody = {
             telegram_id: telegramId,
             prompt: prompt,
@@ -707,12 +894,6 @@ async function handleGenerateVideo() {
         return;
     }
     
-    if (!API_BASE_URL) {
-        console.error('API_BASE_URL is not defined!');
-        showNotification('Ошибка: API не настроен', 'error');
-        return;
-    }
-    
     // Проверка на запрещенный контент (базовая клиентская проверка)
     if (!checkContentSafety(prompt)) {
         showNotification('⛔ Обнаружено недопустимое содержание. Пожалуйста, ознакомьтесь с политикой контента.', 'error');
@@ -735,10 +916,15 @@ async function handleGenerateVideo() {
     
     // Проверка баланса убрана - бесплатный доступ
     
+    // Определяем API URL (может быть пустой строкой для относительных путей)
+    const apiUrl = API_BASE_URL ? `${API_BASE_URL}/api/generate/video` : '/api/generate/video';
+    console.log('Video generation API URL:', apiUrl);
+    console.log('API_BASE_URL:', API_BASE_URL);
+    
     showLoader('Генерируем видео... Это может занять несколько минут.');
     
     try {
-        const response = await fetch(`${API_BASE_URL}/api/generate/video`, {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -799,7 +985,8 @@ async function checkVideoTaskStatus(taskId, generationId) {
     
     const checkStatus = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/video/task/${taskId}`);
+            const taskApiUrl = API_BASE_URL ? `${API_BASE_URL}/api/video/task/${taskId}` : `/api/video/task/${taskId}`;
+            const response = await fetch(taskApiUrl);
             
             if (response.ok) {
                 const status = await response.json();
@@ -873,15 +1060,28 @@ function closeResultModal() {
 
 // Показать уведомление
 function showNotification(message, type = 'info') {
-    if (tg?.showAlert) {
-        tg.showAlert(message);
-    } else if (tg?.showPopup) {
-        tg.showPopup({
-            title: type === 'error' ? 'Ошибка' : type === 'success' ? 'Успех' : 'Информация',
-            message: message,
-            buttons: [{ type: 'ok' }]
-        });
-    } else {
+    console.log(`Notification [${type}]:`, message);
+    
+    try {
+        if (tg?.showAlert) {
+            tg.showAlert(message);
+            return;
+        }
+        
+        if (tg?.showPopup) {
+            tg.showPopup({
+                title: type === 'error' ? 'Ошибка' : type === 'success' ? 'Успех' : 'Информация',
+                message: message,
+                buttons: [{ type: 'ok' }]
+            });
+            return;
+        }
+        
+        // Fallback для обычных браузеров
+        alert(message);
+    } catch (error) {
+        console.error('Error showing notification:', error);
+        // Последний fallback
         alert(message);
     }
 }
