@@ -176,12 +176,17 @@ class VideoGenerationService:
                 predictions_url = f"https://api.replicate.com/v1/models/{model_path}/predictions"
                 
                 logger.info(f"Creating prediction with Replicate API: {predictions_url}")
+                logger.info(f"Payload: {payload}")
                 
                 async with session.post(
                     predictions_url,
                     json=payload,
-                    headers=headers
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=30)
                 ) as response:
+                    response_text = await response.text()
+                    logger.info(f"Replicate API response status: {response.status}, body: {response_text[:500]}")
+                    
                     if response.status == 201:
                         result = await response.json()
                         prediction_id = result.get("id")
@@ -247,11 +252,15 @@ class VideoGenerationService:
                             "message": "Replicate API timeout - video generation took too long"
                         }
                     else:
-                        error_text = await response.text()
-                        logger.error(f"Replicate API error: {error_text}")
+                        logger.error(f"Replicate API error: status={response.status}, body={response_text}")
+                        try:
+                            error_json = await response.json() if response_text else {}
+                            error_detail = error_json.get("detail", error_json.get("error", response_text))
+                        except:
+                            error_detail = response_text
                         return {
                             "status": "error",
-                            "message": f"Replicate API error: {error_text}"
+                            "message": f"Replicate API error (status {response.status}): {error_detail[:200]}"
                         }
         except Exception as e:
             logger.error(f"Error in Replicate video generation: {e}")
