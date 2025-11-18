@@ -236,34 +236,46 @@ function openCreateModal() {
         document.body.style.overflow = 'hidden';
         
         // Убеждаемся, что обработчики привязаны к кнопкам внутри модального окна
+        // Удаляем старые обработчики если они есть
         const generateBtn = document.getElementById('generateBtn');
-        if (generateBtn && !generateBtn.dataset.listenerAttached) {
-            generateBtn.addEventListener('click', (e) => {
-                console.log('Generate button clicked from modal!');
+        if (generateBtn) {
+            // Клонируем элемент чтобы удалить все обработчики
+            const newGenerateBtn = generateBtn.cloneNode(true);
+            generateBtn.parentNode.replaceChild(newGenerateBtn, generateBtn);
+            
+            // Привязываем новый обработчик
+            newGenerateBtn.addEventListener('click', (e) => {
+                console.log('Generate button clicked!');
                 e.preventDefault();
+                e.stopPropagation();
                 handleGenerateImage();
             });
-            generateBtn.dataset.listenerAttached = 'true';
         }
         
         const generateVideoBtn = document.getElementById('generateVideoBtn');
-        if (generateVideoBtn && !generateVideoBtn.dataset.listenerAttached) {
-            generateVideoBtn.addEventListener('click', (e) => {
-                console.log('Generate video button clicked from modal!');
+        if (generateVideoBtn) {
+            const newGenerateVideoBtn = generateVideoBtn.cloneNode(true);
+            generateVideoBtn.parentNode.replaceChild(newGenerateVideoBtn, generateVideoBtn);
+            
+            newGenerateVideoBtn.addEventListener('click', (e) => {
+                console.log('Generate video button clicked!');
                 e.preventDefault();
+                e.stopPropagation();
                 handleGenerateVideo();
             });
-            generateVideoBtn.dataset.listenerAttached = 'true';
         }
         
         const swapFaceBtn = document.getElementById('swapFaceBtn');
-        if (swapFaceBtn && !swapFaceBtn.dataset.listenerAttached) {
-            swapFaceBtn.addEventListener('click', (e) => {
-                console.log('Swap face button clicked from modal!');
+        if (swapFaceBtn) {
+            const newSwapFaceBtn = swapFaceBtn.cloneNode(true);
+            swapFaceBtn.parentNode.replaceChild(newSwapFaceBtn, swapFaceBtn);
+            
+            newSwapFaceBtn.addEventListener('click', (e) => {
+                console.log('Swap face button clicked!');
                 e.preventDefault();
+                e.stopPropagation();
                 handleSwapFace();
             });
-            swapFaceBtn.dataset.listenerAttached = 'true';
         }
     }
 }
@@ -354,30 +366,8 @@ function initDemoToggles() {
 
 // Инициализация кнопок
 function initButtons() {
-    // Кнопка создания DeepFake
-    const swapFaceBtn = document.getElementById('swapFaceBtn');
-    if (swapFaceBtn) {
-        swapFaceBtn.addEventListener('click', handleSwapFace);
-    }
-    
-    // Кнопка генерации изображения
-    const generateBtn = document.getElementById('generateBtn');
-    console.log('generateBtn found:', generateBtn);
-    if (generateBtn) {
-        generateBtn.addEventListener('click', (e) => {
-            console.log('Generate button clicked!');
-            e.preventDefault();
-            handleGenerateImage();
-        });
-    } else {
-        console.error('generateBtn not found in DOM!');
-    }
-    
-    // Кнопка генерации видео
-    const generateVideoBtn = document.getElementById('generateVideoBtn');
-    if (generateVideoBtn) {
-        generateVideoBtn.addEventListener('click', handleGenerateVideo);
-    }
+    // Обработчики кнопок генерации привязываются в openCreateModal()
+    // чтобы они работали когда модальное окно открыто
     
     // Базовый тариф теперь всегда активен - кнопка заменена на надпись "Активен"
     
