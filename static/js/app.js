@@ -27,7 +27,12 @@ const getApiBaseUrl = () => {
         return '';
     }
     
-    // Если на Vercel или другом домене - используем API на Yandex Cloud
+    // Если на Vercel - используем относительные пути (API на том же домене)
+    if (currentHost.includes('vercel.app')) {
+        return '';
+    }
+    
+    // Если на другом домене - используем API на Yandex Cloud
     return 'https://onlyface.art';
 };
 
