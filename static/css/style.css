@@ -512,6 +512,27 @@ body {
     box-shadow: var(--shadow-neon);
 }
 
+.plan-status-active {
+    width: 100%;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+.plan-status-active span {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    background: rgba(139, 92, 246, 0.15);
+    border: 2px solid var(--primary-purple);
+    border-radius: 12px;
+    color: var(--primary-purple);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
 /* Партнерка */
 .partnership {
     padding: 4rem 1.5rem;

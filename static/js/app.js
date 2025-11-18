@@ -314,45 +314,7 @@ function initButtons() {
         generateVideoBtn.addEventListener('click', handleGenerateVideo);
     }
     
-    // Кнопка активации базового тарифа (бесплатный)
-    const activateBasicBtn = document.getElementById('activateBasicBtn');
-    if (activateBasicBtn) {
-        activateBasicBtn.addEventListener('click', async () => {
-            const telegramUser = tg?.initDataUnsafe?.user;
-            const telegramId = telegramUser?.id;
-            
-            if (!telegramId) {
-                showNotification('Не удалось получить данные пользователя из Telegram', 'error');
-                return;
-            }
-            
-            try {
-                // Активация базового тарифа через API
-                const response = await fetch(`${API_BASE_URL}/api/user/${telegramId}/activate-basic-plan`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success) {
-                        showNotification('Базовый тариф успешно активирован!', 'success');
-                        await loadUserData(telegramId);
-                    } else {
-                        showNotification(result.message || 'Ошибка при активации тарифа', 'error');
-                    }
-                } else {
-                    const error = await response.json();
-                    showNotification(error.detail || 'Ошибка сервера', 'error');
-                }
-            } catch (error) {
-                console.error('Error activating basic plan:', error);
-                showNotification('Произошла ошибка. Попробуйте позже.', 'error');
-            }
-        });
-    }
+    // Базовый тариф теперь всегда активен - кнопка заменена на надпись "Активен"
     
     // Кнопка оплаты стандартного тарифа ($20)
     const activateStandardBtn = document.getElementById('activateStandardBtn');
