@@ -320,6 +320,8 @@ class UserService:
                 # Начисляем бонус рефереру (например, +10 поинтов)
                 referrer.referral_balance += 10.0
                 logger.info(f"User {referrer.telegram_id} referred new user {telegram_id}")
+            else:
+                logger.warning(f"Referral code {referral_code} not found in database")
         
         # Генерируем уникальный реферальный код для нового пользователя
         new_referral_code = UserService.generate_referral_code()

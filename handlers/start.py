@@ -47,6 +47,57 @@ async def cmd_start(message: Message):
     """Обработка команды /start"""
     user = message.from_user
     
+    # Обработка реферального кода из параметра /start ref=код
+    referral_code = None
+    if message.text and len(message.text.split()) > 1:
+        # /start abc123 -> берем abc123
+        referral_code = message.text.split()[1]
+        logger.info(f"User {user.id} started with referral code: {referral_code}")
+        
+        # Сохраняем реферальную привязку
+        try:
+            from database import get_session
+            from services.user_service import UserService
+            from sqlalchemy.ext.asyncio import AsyncSession
+            from sqlalchemy import select
+            from database.models import User
+            
+            async for session in get_session():
+                # Находим реферера по коду
+                ref_result = await session.execute(
+                    select(User).where(User.referral_code == referral_code)
+                )
+                referrer = ref_result.scalar_one_or_none()
+                
+                if referrer:
+                    # Создаем/получаем пользователя с привязкой к рефереру
+                    # Передаем referral_code чтобы метод обработал привязку
+                    new_user = await UserService.create_user_with_referral(
+                        session=session,
+                        telegram_id=user.id,
+                        username=user.username,
+                        first_name=user.first_name,
+                        last_name=user.last_name,
+                        language_code=user.language_code or "ru",
+                        referral_code=referral_code  # Передаем код реферера
+                    )
+                    logger.info(f"User {user.id} registered with referral from {referrer.telegram_id}")
+                else:
+                    logger.warning(f"Referral code {referral_code} not found")
+                    # Создаем пользователя без реферальной привязки
+                    await UserService.create_user_with_referral(
+                        session=session,
+                        telegram_id=user.id,
+                        username=user.username,
+                        first_name=user.first_name,
+                        last_name=user.last_name,
+                        language_code=user.language_code or "ru",
+                        referral_code=None
+                    )
+                break
+        except Exception as e:
+            logger.error(f"Error processing referral code: {e}")
+    
     welcome_text = f"""
 <b>Привет, {user.first_name}!</b>
 
