@@ -1,7 +1,7 @@
 """Главный файл FastAPI приложения"""
-from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Query
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Query, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse, Response
+from fastapi.responses import HTMLResponse, FileResponse, Response, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, text
@@ -45,6 +45,16 @@ app = FastAPI(
     description="API для замены лиц и генерации изображений",
     version="1.0.0"
 )
+
+# Глобальный обработчик исключений для лучшей диагностики
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Глобальный обработчик исключений для логирования всех ошибок"""
+    logger.error(f"Unhandled exception at {request.url.path}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"}
+    )
 
 # Настройка CORS
 app.add_middleware(
@@ -194,6 +204,12 @@ async def generate_image(
     session: AsyncSession = Depends(get_session)
 ):
     """Генерация изображения"""
+    try:
+        logger.info(f"Received image generation request: telegram_id={request.telegram_id}, prompt={request.prompt[:50]}...")
+    except Exception as e:
+        logger.error(f"Error in generate_image endpoint: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    
     # Проверка контента на допустимость
     is_allowed, reason = content_moderation.check_text_content(request.prompt)
     if not is_allowed:

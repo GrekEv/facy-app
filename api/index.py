@@ -38,8 +38,13 @@ except Exception as e:
     error_app = FastAPI()
     
     @error_app.get("/{path:path}")
+    @error_app.post("/{path:path}")
     async def error_handler(path: str):
-        return {"error": "Application initialization failed", "details": str(e)}
+        return {
+            "error": "Application initialization failed",
+            "details": str(e),
+            "path": path
+        }
     
     handler = Mangum(error_app, lifespan="off")
     app = error_app  # Для локального тестирования
