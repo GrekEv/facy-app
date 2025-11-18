@@ -505,6 +505,9 @@ function initSmoothScroll() {
 
 // Обработка замены лица
 async function handleSwapFace() {
+    console.log('handleSwapFace called');
+    console.log('API_BASE_URL:', API_BASE_URL);
+    
     if (!sourceImageFile) {
         showNotification('Загрузите фото с лицом', 'error');
         return;
@@ -512,6 +515,12 @@ async function handleSwapFace() {
     
     if (!targetVideoFile) {
         showNotification('Загрузите целевое видео', 'error');
+        return;
+    }
+    
+    if (!API_BASE_URL) {
+        console.error('API_BASE_URL is not defined!');
+        showNotification('Ошибка: API не настроен', 'error');
         return;
     }
     
@@ -571,6 +580,7 @@ async function handleSwapFace() {
 // Обработка генерации изображения
 async function handleGenerateImage() {
     console.log('handleGenerateImage called');
+    console.log('API_BASE_URL:', API_BASE_URL);
     
     const promptInput = document.getElementById('promptInput');
     if (!promptInput) {
@@ -583,6 +593,12 @@ async function handleGenerateImage() {
     
     if (!prompt) {
         showNotification('Введите описание сцены', 'error');
+        return;
+    }
+    
+    if (!API_BASE_URL) {
+        console.error('API_BASE_URL is not defined!');
+        showNotification('Ошибка: API не настроен', 'error');
         return;
     }
     
@@ -672,16 +688,28 @@ async function handleGenerateImage() {
 
 // Обработка генерации видео
 async function handleGenerateVideo() {
+    console.log('handleGenerateVideo called');
+    console.log('API_BASE_URL:', API_BASE_URL);
+    
     const videoPromptInput = document.getElementById('videoPromptInput');
     const videoDurationSelect = document.getElementById('videoDuration');
     
-    if (!videoPromptInput) return;
+    if (!videoPromptInput) {
+        console.error('videoPromptInput not found!');
+        return;
+    }
     
     const prompt = videoPromptInput.value.trim();
     const duration = videoDurationSelect ? parseInt(videoDurationSelect.value) : 5;
     
     if (!prompt) {
         showNotification('Введите описание видео сцены', 'error');
+        return;
+    }
+    
+    if (!API_BASE_URL) {
+        console.error('API_BASE_URL is not defined!');
+        showNotification('Ошибка: API не настроен', 'error');
         return;
     }
     
