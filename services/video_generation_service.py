@@ -88,7 +88,7 @@ class VideoGenerationService:
             try:
                 async with aiohttp.ClientSession() as session:
                     headers = {
-                        'Authorization': f'Token {self.replicate_key}',
+                        'Authorization': f'Bearer {self.replicate_key}',  # Согласно официальной инструкции Replicate
                         'Content-Type': 'application/json'
                     }
                     
@@ -165,7 +165,7 @@ class VideoGenerationService:
             
             async with aiohttp.ClientSession() as session:
                 headers = {
-                    'Authorization': f'Token {self.replicate_key}',
+                    'Authorization': f'Bearer {self.replicate_key}',  # Согласно официальной инструкции Replicate
                     'Content-Type': 'application/json'
                 }
                 
