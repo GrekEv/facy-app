@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from pathlib import Path
 from datetime import datetime
 import logging
@@ -97,9 +98,13 @@ async def read_root():
             
             # Вставляем ссылку на оплату в JavaScript
             payment_url = settings.STANDARD_PLAN_PAYMENT_URL or "https://web.tribute.tg/p/n1Q"
+            logger.info(f"Setting STANDARD_PLAN_PAYMENT_URL to: {payment_url}")
+            # Экранируем кавычки в URL для безопасности
+            payment_url_escaped = payment_url.replace('"', '\\"').replace("'", "\\'")
             script_injection = f"""
             <script>
-                window.STANDARD_PLAN_PAYMENT_URL = "{payment_url}";
+                window.STANDARD_PLAN_PAYMENT_URL = "{payment_url_escaped}";
+                console.log('STANDARD_PLAN_PAYMENT_URL set to:', window.STANDARD_PLAN_PAYMENT_URL);
             </script>
             """
             # Вставляем скрипт перед закрывающим тегом head
@@ -116,14 +121,28 @@ async def get_user(
     session: AsyncSession = Depends(get_session)
 ):
     """Получить информацию о пользователе"""
-    user = await user_service.get_user_by_telegram_id(session, telegram_id)
+    # Всегда используем get_or_create_user чтобы гарантировать создание referral_code
+    user = await user_service.get_or_create_user(
+        session,
+        telegram_id=telegram_id
+    )
     
-    if not user:
-        # Создаем пользователя если не существует
-        user = await user_service.get_or_create_user(
-            session,
-            telegram_id=telegram_id
-        )
+    # Убеждаемся, что referral_code всегда есть
+    if not user.referral_code:
+        logger.warning(f"User {telegram_id} has no referral_code, generating one...")
+        new_referral_code = user_service.generate_referral_code()
+        # Проверяем уникальность
+        while True:
+            check_result = await session.execute(
+                select(User).where(User.referral_code == new_referral_code)
+            )
+            if check_result.scalar_one_or_none() is None:
+                break
+            new_referral_code = user_service.generate_referral_code()
+        user.referral_code = new_referral_code
+        await session.commit()
+        await session.refresh(user)
+        logger.info(f"Generated referral_code {new_referral_code} for user {telegram_id}")
     
     return UserResponse(
         id=user.id,

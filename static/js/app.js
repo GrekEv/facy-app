@@ -143,15 +143,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Загрузка данных пользователя (автоматически создается если не существует)
 async function loadUserData(telegramId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/user/${telegramId}`);
+        const apiUrl = API_BASE_URL ? `${API_BASE_URL}/api/user/${telegramId}` : `/api/user/${telegramId}`;
+        console.log('Loading user data from:', apiUrl);
+        
+        const response = await fetch(apiUrl);
         
         if (response.ok) {
             userData = await response.json();
+            console.log('User data loaded:', userData);
+            
+            // Если referral_code отсутствует, ждем немного и перезагружаем (бэкенд должен создать его)
+            if (!userData.referral_code) {
+                console.warn('Referral code missing, waiting and reloading...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                const retryResponse = await fetch(apiUrl);
+                if (retryResponse.ok) {
+                    userData = await retryResponse.json();
+                    console.log('User data reloaded:', userData);
+                }
+            }
+            
             updatePrice();
             // Генерируем реферальную ссылку при загрузке данных пользователя
             generateReferralLink();
         } else {
-            console.error('Failed to load user data');
+            const errorText = await response.text();
+            console.error('Failed to load user data:', response.status, errorText);
         }
     } catch (error) {
         console.error('Error loading user data:', error);
@@ -161,7 +178,8 @@ async function loadUserData(telegramId) {
 // Загрузка статистики
 async function loadStats() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/stats`);
+        const statsApiUrl = API_BASE_URL ? `${API_BASE_URL}/api/stats` : '/api/stats';
+        const response = await fetch(statsApiUrl);
         
         if (response.ok) {
             statsData = await response.json();
@@ -197,8 +215,11 @@ function generateReferralLink() {
         return null;
     }
     
+    // Если referral_code отсутствует, пытаемся получить его из API
     if (!userData.referral_code) {
-        console.warn('Referral code not available in userData:', userData);
+        console.warn('Referral code not available in userData, userData:', JSON.stringify(userData));
+        // Не возвращаем null сразу - попробуем сгенерировать временную ссылку или подождать
+        console.warn('Referral code missing! User should have referral_code. Check backend.');
         return null;
     }
     
@@ -540,9 +561,19 @@ function initButtons() {
             const telegramUser = tg?.initDataUnsafe?.user;
             const telegramId = telegramUser?.id;
             
-            if (!userData && telegramId) {
-                console.log('User data not loaded, loading...');
-                await loadUserData(telegramId);
+            if (!telegramId) {
+                showNotification('Не удалось получить данные пользователя из Telegram', 'error');
+                return;
+            }
+            
+            // Всегда загружаем актуальные данные пользователя перед генерацией ссылки
+            console.log('Loading user data before generating referral link...');
+            await loadUserData(telegramId);
+            
+            // Ждем немного, чтобы убедиться, что данные загружены
+            if (!userData) {
+                console.warn('User data still not loaded, waiting...');
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
             
             // Генерируем ссылку если еще не сгенерирована
@@ -551,9 +582,15 @@ function initButtons() {
                 console.log('Generated referral link:', link);
             }
             
+            // Если ссылка все еще не сгенерирована, пробуем еще раз
+            if (!referralLink && userData) {
+                console.warn('Referral link not generated, retrying...');
+                generateReferralLink();
+            }
+            
             if (!referralLink) {
                 console.error('Failed to generate referral link. userData:', userData);
-                showNotification('Не удалось сгенерировать реферальную ссылку. Попробуйте позже.', 'error');
+                showNotification('Не удалось сгенерировать реферальную ссылку. Попробуйте позже или обратитесь в поддержку.', 'error');
                 return;
             }
             
@@ -608,16 +645,38 @@ function initButtons() {
     // Кнопка оплаты стандартного тарифа ($20)
     const activateStandardBtn = document.getElementById('activateStandardBtn');
     if (activateStandardBtn) {
-        activateStandardBtn.addEventListener('click', async () => {
+        console.log('Found activateStandardBtn, attaching handler');
+        console.log('window.STANDARD_PLAN_PAYMENT_URL:', window.STANDARD_PLAN_PAYMENT_URL);
+        activateStandardBtn.addEventListener('click', async (e) => {
+            console.log('Activate standard plan button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            
             // Получаем ссылку на оплату из переменной окружения или используем дефолтную
             const paymentUrl = window.STANDARD_PLAN_PAYMENT_URL || 'https://web.tribute.tg/p/n1Q';
+            console.log('Payment URL:', paymentUrl);
             
-            if (tg?.openLink) {
-                tg.openLink(paymentUrl);
-            } else {
-                window.open(paymentUrl, '_blank');
+            if (!paymentUrl || paymentUrl === '') {
+                console.error('Payment URL is empty!');
+                showNotification('Ошибка: ссылка на оплату не настроена. Обратитесь в поддержку.', 'error');
+                return;
+            }
+            
+            try {
+                if (tg?.openLink) {
+                    console.log('Opening payment link via Telegram:', paymentUrl);
+                    tg.openLink(paymentUrl);
+                } else {
+                    console.log('Opening payment link in new window:', paymentUrl);
+                    window.open(paymentUrl, '_blank');
+                }
+            } catch (error) {
+                console.error('Error opening payment link:', error);
+                showNotification(`Ошибка при открытии ссылки оплаты: ${error.message}`, 'error');
             }
         });
+    } else {
+        console.warn('activateStandardBtn not found!');
     }
     
     
