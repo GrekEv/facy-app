@@ -292,9 +292,11 @@ async function generateReferralLink() {
     }
     
     // Формируем реферальную ссылку на Web App с параметром ref для регистрации
-    const webappUrl = window.location.origin || 'https://facy-app.vercel.app';
+    // Используем WEBAPP_URL из переменных окружения, если доступен, иначе текущий домен
+    const webappUrl = window.WEBAPP_URL || window.location.origin || 'https://facy-app.vercel.app';
     referralLink = `${webappUrl}?ref=${referralCode}`;
     console.log('Generated referral link:', referralLink);
+    console.log('WEBAPP_URL from env:', window.WEBAPP_URL);
     
     return referralLink;
 }
