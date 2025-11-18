@@ -118,8 +118,17 @@ async def read_root():
             html_content = f.read()
             
             # Подставляем переменные окружения
+            # Для Vercel API_BASE_URL должен быть пустым (относительные пути)
+            # так как API работает через serverless функции на том же домене
             api_base_url = os.getenv("API_BASE_URL", "")
             webapp_url = settings.WEBAPP_URL or ""
+            
+            # Если API_BASE_URL не установлен, используем пустую строку для относительных путей
+            # Это правильно для Vercel, где API работает на том же домене
+            if not api_base_url:
+                api_base_url = ""
+            
+            logger.info(f"Injecting API_BASE_URL: '{api_base_url}', WEBAPP_URL: '{webapp_url}'")
             
             html_content = html_content.replace("{{API_BASE_URL}}", api_base_url)
             html_content = html_content.replace("{{WEBAPP_URL}}", webapp_url)

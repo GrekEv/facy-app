@@ -11,12 +11,17 @@ if (tg) {
 // - Если на onlyface.art - используем локальный API (относительные пути)
 const getApiBaseUrl = () => {
     // Проверяем переменную окружения, но игнорируем неправильные значения
-    if (window.API_BASE_URL) {
-        const url = window.API_BASE_URL;
+    if (window.API_BASE_URL && window.API_BASE_URL !== '{{API_BASE_URL}}') {
+        const url = window.API_BASE_URL.trim();
         // Игнорируем URL с payment в пути или heleket домен
-        if (!url.includes('/payment') && !url.includes('heleket')) {
+        if (url && !url.includes('/payment') && !url.includes('heleket')) {
             return url;
         }
+    }
+    
+    // Если window.API_BASE_URL содержит плейсхолдер, значит замена не произошла
+    if (window.API_BASE_URL === '{{API_BASE_URL}}') {
+        console.warn('API_BASE_URL placeholder not replaced by server, using relative paths');
     }
     
     // Определяем текущий домен
@@ -1067,8 +1072,20 @@ async function handleGenerateImage() {
         } else {
             const text = await response.text();
             console.error('Non-JSON response:', text);
+            console.error('Response status:', response.status);
+            console.error('Response headers:', response.headers);
             hideLoader();
-            showNotification(`Ошибка сервера: ${text.substring(0, 100)}`, 'error');
+            
+            // Более информативное сообщение об ошибке
+            if (response.status === 405) {
+                showNotification('Метод не разрешен. Проверьте настройки сервера.', 'error');
+            } else if (response.status === 500) {
+                showNotification('Внутренняя ошибка сервера. Проверьте логи.', 'error');
+            } else if (text.includes('<!DOCTYPE')) {
+                showNotification('Сервер вернул HTML вместо JSON. Проверьте настройки API.', 'error');
+            } else {
+                showNotification(`Ошибка сервера (${response.status}): ${text.substring(0, 100)}`, 'error');
+            }
             return;
         }
         

@@ -2,20 +2,29 @@
 
 ## 1. Окружение: обязательные переменные на Vercel
 
+### ⚠️ ВАЖНО: Без этих переменных FastAPI не стартует!
+
+Если `BOT_TOKEN` или `DATABASE_URL` отсутствуют, приложение падает с `ValidationError` при импорте `config.py`, и Vercel отдает HTML-страницу 500 вместо JSON.
+
 ### Минимум (обязательно):
 
 ```env
+# ОБЯЗАТЕЛЬНО! Без этого приложение не стартует
+BOT_TOKEN=8254778202:AAH-1RebJBOKpr5fKorcIcFHqKAihbCBQ_o
+
+# ОБЯЗАТЕЛЬНО! Без этого приложение не стартует
 DATABASE_URL=postgresql+asyncpg://neondb_owner:npg_DB2lLYWyVSv5@ep-sweet-thunder-a45uh81b-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require
 
+# ОБЯЗАТЕЛЬНО! Для реферальных ссылок и QR-кодов
 WEBAPP_URL=https://your-app.vercel.app
 # Или кастомный домен:
 # WEBAPP_URL=https://onlyface.app
 
-BOT_TOKEN=your_telegram_bot_token
-
-ADMIN_IDS=123456789,987654321
-
+# ОБЯЗАТЕЛЬНО! Для генерации изображений/видео
 REPLICATE_API_KEY=your_replicate_api_key
+
+# Опционально
+ADMIN_IDS=123456789,987654321
 ```
 
 ### Дополнительно (если используются):
@@ -133,14 +142,16 @@ const telegramId = telegramUser?.id;
 
 ## 4. QR-код и проверка
 
-### Проверка health:
+### ⚠️ КРИТИЧНО: Проверка health перед использованием
+
+**Перед тем как жать "Сгенерировать", обязательно проверьте:**
 
 Откройте в браузере:
 ```
 https://your-app.vercel.app/api/health
 ```
 
-Ожидаемый ответ:
+**Ожидаемый ответ (JSON):**
 ```json
 {
   "status": "ok",
@@ -148,6 +159,14 @@ https://your-app.vercel.app/api/health
   "api": "ok"
 }
 ```
+
+**Если видите HTML-страницу Vercel "Internal Server Error":**
+- ❌ Backend не стартанул
+- ❌ Проверьте Environment Variables (скорее всего отсутствует `BOT_TOKEN` или `DATABASE_URL`)
+- ❌ Проверьте логи в Vercel → Deployments → Functions / Logs
+- ❌ Перезадеплойте после добавления переменных
+
+**Только после того, как `/api/health` возвращает JSON, можно использовать генерацию!**
 
 ### Проверка QR:
 
@@ -184,18 +203,31 @@ https://your-app.vercel.app/api/referral/qr?telegram_id=123456789
 
 ### Частые ошибки:
 
+**ValidationError: BOT_TOKEN is required**
+- ❌ `BOT_TOKEN` не добавлен в Environment Variables
+- ✅ Добавьте `BOT_TOKEN` и перезадеплойте
+- ⚠️ Без этого приложение вообще не стартует!
+
 **ValueError: DATABASE_URL not set**
-- Проверьте, что `DATABASE_URL` добавлен в Environment Variables
-- Проверьте формат: должен быть `postgresql+asyncpg://...`
+- ❌ `DATABASE_URL` не добавлен в Environment Variables
+- ✅ Добавьте `DATABASE_URL` в формате `postgresql+asyncpg://...` и перезадеплойте
+- ⚠️ Без этого приложение вообще не стартует!
 
 **Ошибка подключения к Postgres**
 - Проверьте connection string
 - Убедитесь, что база данных запущена
 - Проверьте, что IP не заблокирован
 
-**API отвечает 500**
-- Всегда смотрите Vercel logs первым делом
-- Там будет точная ошибка
+**API отвечает 500 с HTML вместо JSON**
+- ❌ FastAPI не стартанул из-за отсутствующих переменных
+- ✅ Проверьте `/api/health` - должен возвращать JSON, а не HTML
+- ✅ Проверьте логи Vercel - там будет точная ошибка
+- ✅ Убедитесь, что все обязательные переменные добавлены
+
+**Окно "ПОДТВЕРДИТЕ ДЕЙСТВИЕ НА ... Ошибка сервера:"**
+- Это системное окно браузера, которое появляется когда сервер возвращает HTML вместо JSON
+- Причина: FastAPI не стартанул, Vercel отдает свою HTML-страницу 500
+- Решение: добавить все обязательные переменные и перезадеплоить
 
 ---
 
