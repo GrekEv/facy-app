@@ -51,7 +51,7 @@ cd facy-app
 
 # Создайте .env файл
 cat > .env << 'EOF'
-BOT_TOKEN=8374729179:AAG7wyo467ksUQgNyoESNzc09Wn0UBS7T7g
+BOT_TOKEN=8254778202:AAH-1RebJBOKpr5fKorcIcFHqKAihbCBQ_o
 WEBAPP_URL=https://onlyface.art
 ENVIRONMENT=production
 DATABASE_URL=postgresql+asyncpg://onlyface_user:ВАШ_ПАРОЛЬ@c-xxxxx.rw.mdb.yandexcloud.net:6432/onlyface_db?ssl=require

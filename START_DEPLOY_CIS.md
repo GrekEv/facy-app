@@ -11,7 +11,7 @@
 ## 🎯 Что у вас есть:
 
 ✅ **GitHub репозиторий:** https://github.com/GrekEv/facy-app  
-✅ **Telegram Bot токен:** `8374729179:AAG7wyo467ksUQgNyoESNzc09Wn0UBS7T7g`
+✅ **Telegram Bot токен:** `8254778202:AAH-1RebJBOKpr5fKorcIcFHqKAihbCBQ_o`
 
 ---
 

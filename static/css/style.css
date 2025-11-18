@@ -356,6 +356,22 @@ body {
     overflow: hidden;
 }
 
+.demo-image-container {
+    position: relative;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg-darker);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.demo-image-simple {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+}
+
 /* Before/After Slider */
 .before-after-container {
     position: relative;
@@ -387,6 +403,12 @@ body {
     height: 100%;
     object-fit: cover;
     display: block;
+    background: var(--bg-darker);
+}
+
+.demo-image[src=""],
+.demo-image:not([src]) {
+    display: none;
 }
 
 .before-image {

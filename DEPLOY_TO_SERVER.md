@@ -55,7 +55,7 @@ cd ~/facy-app
 
 # Создайте .env файл
 cat > .env << 'ENVEOF'
-BOT_TOKEN=8374729179:AAG7wyo467ksUQgNyoESNzc09Wn0UBS7T7g
+BOT_TOKEN=8254778202:AAH-1RebJBOKpr5fKorcIcFHqKAihbCBQ_o
 WEBAPP_URL=https://onlyface.art
 ENVIRONMENT=production
 HOST=0.0.0.0

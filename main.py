@@ -14,17 +14,37 @@ logger = logging.getLogger(__name__)
 
 async def set_bot_commands(bot: Bot):
     """Установить команды бота"""
-    commands = [
-        BotCommand(command="start", description="🏠 Главное меню"),
-        BotCommand(command="balance", description="💰 Мой баланс"),
-        BotCommand(command="help", description="ℹ️ Помощь"),
-    ]
-    await bot.set_my_commands(commands)
+    try:
+        commands = [
+            BotCommand(command="start", description="🏠 Главное меню"),
+            BotCommand(command="balance", description="💰 Мой баланс"),
+            BotCommand(command="help", description="ℹ️ Помощь"),
+        ]
+        await bot.set_my_commands(commands)
+        logger.info("Bot commands set successfully")
+    except Exception as e:
+        logger.error(f"Failed to set bot commands: {e}")
+        logger.warning("Bot will continue without custom commands")
 
 
 async def on_startup():
     """Действия при запуске бота"""
     logger.info("Starting bot...")
+    
+    # Проверка токена бота
+    if not settings.BOT_TOKEN:
+        logger.error("BOT_TOKEN not set! Please set BOT_TOKEN in .env file")
+        raise ValueError("BOT_TOKEN is required")
+    
+    # Проверка валидности токена
+    try:
+        me = await bot.get_me()
+        logger.info(f"Bot authorized: @{me.username} ({me.first_name})")
+    except Exception as e:
+        logger.error(f"Bot authorization failed: {e}")
+        logger.error("Please check your BOT_TOKEN in .env file")
+        logger.error("Get a new token from @BotFather in Telegram")
+        raise
     
     # Инициализация базы данных
     await init_db()
@@ -32,7 +52,6 @@ async def on_startup():
     
     # Установка команд бота
     await set_bot_commands(bot)
-    logger.info("Bot commands set")
     
     logger.info("Bot started successfully!")
 

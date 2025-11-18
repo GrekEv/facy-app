@@ -56,6 +56,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     initButtons();
     initSmoothScroll();
     
+    // Проверка загрузки изображений
+    checkDemoImages();
+    
     // Также используем делегирование событий для кнопок реферальной программы
     // на случай если они динамически создаются или обработчики не привязались
     const referralSection = document.querySelector('.referral-section');
@@ -493,17 +496,49 @@ function displayPreview(file, previewElement, type) {
     reader.readAsDataURL(file);
 }
 
-// Инициализация слайдеров "До - После"
-function initDemoToggles() {
-    const sliders = document.querySelectorAll('.before-after-wrapper');
+// Проверка загрузки демо-изображений
+function checkDemoImages() {
+    const beforeImg = document.getElementById('before1');
+    const afterImg = document.getElementById('after1');
     
-    sliders.forEach((wrapper, index) => {
-        const sliderId = index + 1;
-        const afterImage = wrapper.querySelector('.after-image');
-        const sliderHandle = wrapper.querySelector('.slider-handle');
-        const sliderCircle = wrapper.querySelector('.slider-circle');
-        
-        if (!afterImage || !sliderHandle) return;
+    if (beforeImg) {
+        beforeImg.addEventListener('error', function() {
+            console.error('Failed to load demo-before-1.png');
+            // Показываем placeholder
+            this.style.background = 'var(--bg-darker)';
+        });
+        beforeImg.addEventListener('load', function() {
+            console.log('✅ Demo before image loaded');
+        });
+    }
+    
+    if (afterImg) {
+        afterImg.addEventListener('error', function() {
+            console.error('Failed to load demo-after-1.png');
+            // Показываем placeholder
+            this.style.background = 'var(--bg-darker)';
+        });
+        afterImg.addEventListener('load', function() {
+            console.log('✅ Demo after image loaded');
+        });
+    }
+}
+
+// Инициализация слайдеров "До - После" (только для первого элемента)
+function initDemoToggles() {
+    // Инициализируем только первый слайдер (demo1)
+    const wrapper = document.querySelector('#demo1 .before-after-wrapper');
+    
+    if (!wrapper) return;
+    
+    const afterImage = wrapper.querySelector('.after-image');
+    const sliderHandle = wrapper.querySelector('.slider-handle');
+    
+    if (!afterImage || !sliderHandle) return;
+    
+    // Инициализируем только первый слайдер
+    (function() {
+        const sliderId = 1;
         
         let isDragging = false;
         let startX = 0;
@@ -568,7 +603,7 @@ function initDemoToggles() {
         wrapper.addEventListener('touchend', stopDrag);
         
         // Инициализация начальной позиции (50%) после загрузки изображений
-        const initSlider = () => {
+        const initSliderPosition = () => {
             const rect = wrapper.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             updateSlider(centerX);
@@ -577,13 +612,13 @@ function initDemoToggles() {
         // Ждем загрузки изображений
         const afterImg = wrapper.querySelector('.after-image');
         if (afterImg.complete) {
-            initSlider();
+            initSliderPosition();
         } else {
-            afterImg.addEventListener('load', initSlider);
+            afterImg.addEventListener('load', initSliderPosition);
         }
         
         console.log(`Slider ${sliderId} initialized`);
-    });
+    })();
 }
 
 // Инициализация кнопок

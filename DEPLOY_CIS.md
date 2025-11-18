@@ -114,7 +114,7 @@ nano .env
 Добавьте:
 
 ```env
-BOT_TOKEN=8374729179:AAG7wyo467ksUQgNyoESNzc09Wn0UBS7T7g
+BOT_TOKEN=8254778202:AAH-1RebJBOKpr5fKorcIcFHqKAihbCBQ_o
 WEBAPP_URL=https://ваш-домен.ru
 ENVIRONMENT=production
 DATABASE_URL=sqlite+aiosqlite:///./data/app.db

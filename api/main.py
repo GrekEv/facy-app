@@ -56,10 +56,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Создаем директории если их нет (для serverless)
 static_dir = BASE_DIR / "static"
+static_images_dir = static_dir / "images"
 uploads_dir = BASE_DIR / "uploads"
 generated_dir = BASE_DIR / "generated"
 
 static_dir.mkdir(exist_ok=True)
+static_images_dir.mkdir(exist_ok=True)
 uploads_dir.mkdir(exist_ok=True)
 generated_dir.mkdir(exist_ok=True)
 
@@ -67,6 +69,11 @@ generated_dir.mkdir(exist_ok=True)
 if static_dir.exists():
     try:
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+        logger.info(f"Static files mounted from: {static_dir.absolute()}")
+        # Проверяем наличие изображений
+        if static_images_dir.exists():
+            images = list(static_images_dir.glob("*.png")) + list(static_images_dir.glob("*.jpg"))
+            logger.info(f"Found {len(images)} images in static/images/")
     except Exception as e:
         logger.warning(f"Could not mount static directory: {e}")
 

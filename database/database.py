@@ -29,11 +29,34 @@ def _init_engine():
         # Создаем заглушку чтобы не падать при импорте
         return
     
+    # Автоматическое преобразование стандартного PostgreSQL URL для asyncpg
+    database_url = settings.DATABASE_URL
+    ssl_required = False
+    
+    # Проверяем наличие sslmode=require в URL
+    if "sslmode=require" in database_url:
+        ssl_required = True
+        # Убираем параметр sslmode из URL (asyncpg не поддерживает его в URL)
+        database_url = database_url.replace("?sslmode=require", "").replace("&sslmode=require", "")
+    
+    if database_url.startswith("postgresql://") and not database_url.startswith("postgresql+asyncpg://"):
+        # Преобразуем стандартный PostgreSQL URL для asyncpg
+        database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        logger.info("Converted PostgreSQL URL to asyncpg format for Neon/Postgres compatibility")
+    
+    # Настройка SSL для Neon и других провайдеров, требующих SSL
+    connect_args = {}
+    if ssl_required:
+        import ssl
+        connect_args["ssl"] = ssl.create_default_context()
+        logger.info("SSL enabled for database connection (Neon/Postgres)")
+    
     try:
         _engine = create_async_engine(
-            settings.DATABASE_URL,
+            database_url,
             echo=False,
-            future=True
+            future=True,
+            connect_args=connect_args if connect_args else {}
         )
         
         _AsyncSessionLocal = async_sessionmaker(

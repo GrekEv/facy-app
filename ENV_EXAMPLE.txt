@@ -83,8 +83,21 @@ VIDEO_GENERATION_PROVIDER=replicate  # replicate, sora, higgsfield
 # Примечание: Если API ключи не указаны, используется mock режим для тестирования
 
 # База данных
-# Оставьте пустым для SQLite (по умолчанию)
-# Или укажите PostgreSQL URL от Railway (если создали базу данных)
+# Оставьте пустым для SQLite (по умолчанию, НЕ работает на Vercel/Railway serverless)
+# Или укажите PostgreSQL URL:
+# 
+# Для Neon:
+# DATABASE_URL=postgresql+asyncpg://username:password@ep-xxx-xxx.region.aws.neon.tech/dbname?sslmode=require
+#
+# Для Railway PostgreSQL:
+# DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname
+#
+# Для Vercel Postgres:
+# DATABASE_URL=$POSTGRES_URL  (Vercel автоматически подставит)
+#
+# Для Supabase:
+# DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname
+#
 DATABASE_URL=
 
 # Режим работы (production для продакшена)

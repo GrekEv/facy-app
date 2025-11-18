@@ -76,8 +76,8 @@
                 <div class="demo-item">
                     <div class="before-after-container" id="demo1">
                         <div class="before-after-wrapper">
-                            <img src="/static/demo-before-1.jpg" alt="До" class="demo-image before-image" id="before1">
-                            <img src="/static/demo-after-1.png" alt="После" class="demo-image after-image" id="after1">
+                            <img src="/static/images/demo-before-1.png" alt="До" class="demo-image before-image" id="before1" loading="eager" onerror="console.error('Failed to load before image'); this.style.display='none';">
+                            <img src="/static/images/demo-after-1.png" alt="После" class="demo-image after-image" id="after1" loading="eager" onerror="console.error('Failed to load after image'); this.style.display='none';">
                             <div class="slider-handle" id="slider1">
                                 <div class="slider-line"></div>
                                 <div class="slider-circle">
@@ -92,21 +92,8 @@
                     </div>
                 </div>
                 <div class="demo-item">
-                    <div class="before-after-container" id="demo2">
-                        <div class="before-after-wrapper">
-                            <img src="/static/demo-before-2.jpg" alt="До" class="demo-image before-image" id="before2">
-                            <img src="/static/demo-after-2.png" alt="После" class="demo-image after-image" id="after2">
-                            <div class="slider-handle" id="slider2">
-                                <div class="slider-line"></div>
-                                <div class="slider-circle">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                        <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="before-label">До</div>
-                            <div class="after-label">После</div>
-                        </div>
+                    <div class="demo-image-container">
+                        <img src="/static/images/demo-2.jpg" alt="Пример работы" class="demo-image-simple" id="demo2-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22225%22%3E%3Crect fill=%22%231a1a24%22 width=%22400%22 height=%22225%22/%3E%3Ctext fill=%22%23a0a0b0%22 font-family=%22sans-serif%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22%3EПример работы%3C/text%3E%3C/svg%3E';">
                     </div>
                 </div>
             </div>

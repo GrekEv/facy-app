@@ -9,6 +9,7 @@ python-multipart==0.0.9
 # База данных
 sqlalchemy==2.0.27
 asyncpg==0.29.0  # Для PostgreSQL
+greenlet>=3.0.0  # Требуется для SQLAlchemy async операций
 
 # HTTP клиенты
 aiohttp==3.9.3
