@@ -35,7 +35,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 app = FastAPI(
     title="DeepFace API",
-    description="API дл� замен� л�ц � �ене�ац�� �зо��ажен�й",
+    description="API дл� замен� л�ц � �ене�ац�� �зо��ажен�й",
     version="1.0.0"
 )
 @app.exception_handler(Exception)
@@ -98,6 +98,12 @@ async def read_root():
             payment_url = settings.STANDARD_PLAN_PAYMENT_URL or "https://web.tribute.tg/p/n1Q"
             logger.info(f"Setting STANDARD_PLAN_PAYMENT_URL to: {payment_url}")
             payment_url_escaped = payment_url.replace('"', '\\"').replace("'", "\\'")
+            script_injection = f"""
+            <script>
+                window.STANDARD_PLAN_PAYMENT_URL = "{payment_url_escaped}";
+                console.log('STANDARD_PLAN_PAYMENT_URL set to:', window.STANDARD_PLAN_PAYMENT_URL);
+            </script>
+            """
             html_content = html_content.replace("</head>", script_injection + "</head>")
             return HTMLResponse(content=html_content)
     return HTMLResponse(content="<h1>Web App</h1><p>Template not found</p>")
@@ -146,13 +152,13 @@ async def get_user(
         logger.error(f"Database not initialized: {e}")
         raise HTTPException(
             status_code=503,
-            detail="База данн�� не на�т�оена. �ожалуй�та, на�т�ойте DATABASE_URL в пе�еменн�� ок�ужен��."
+            detail="База данн�� не на�т�оена. �ожалуй�та, на�т�ойте DATABASE_URL в пе�еменн�� ок�ужен��."
         )
     except Exception as e:
         logger.error(f"Error getting user {telegram_id}: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail=f"Ош��ка п�� получен�� данн�� пол�зовател�: {str(e)}"
+            detail=f"Ош��ка п�� получен�� данн�� пол�зовател�: {str(e)}"
         )
 @app.post("/api/generate/image", response_model=GenerateImageResponse)
 async def generate_image(
@@ -174,8 +180,8 @@ async def generate_image(
         )
         raise HTTPException(
             status_code=400,
-            detail=f"Зап�о� отклонен: {reason}\n\n"
-                   "�ожалуй�та, ознаком�те�� � пол�т�кой контента (/help в �оте)."
+            detail=f"Зап�о� отклонен: {reason}\n\n"
+                   "�ожалуй�та, ознаком�те�� � пол�т�кой контента (/help в �оте)."
         )
     user = await user_service.get_or_create_user(
         session,
@@ -187,7 +193,7 @@ async def generate_image(
         if images_used >= 5:
             raise HTTPException(
                 status_code=403,
-                detail="�о�т��нут л�м�т �азово�о та��фа: мак��мум 5 �зо��ажен�й. О�нов�те та��ф до �танда�т дл� нео��ан�ченно�о ��пол�зован��."
+                detail="�о�т��нут л�м�т �азово�о та��фа: мак��мум 5 �зо��ажен�й. О�нов�те та��ф до �танда�т дл� нео��ан�ченно�о ��пол�зован��."
             )
     generation = Generation(
         user_id=user.id,
@@ -265,7 +271,7 @@ async def swap_face(
         if videos_used >= 2:
             raise HTTPException(
                 status_code=403,
-                detail="�о�т��нут л�м�т �азово�о та��фа: мак��мум 2 в�део. О�нов�те та��ф до �танда�т дл� нео��ан�ченно�о ��пол�зован��."
+                detail="�о�т��нут л�м�т �азово�о та��фа: мак��мум 2 в�део. О�нов�те та��ф до �танда�т дл� нео��ан�ченно�о ��пол�зован��."
             )
     try:
         uploads_dir = BASE_DIR / "uploads"
@@ -347,8 +353,8 @@ async def generate_video(
         )
         raise HTTPException(
             status_code=400,
-            detail=f"Зап�о� отклонен: {reason}\n\n"
-                   "�ожалуй�та, ознаком�те�� � пол�т�кой контента (/help в �оте)."
+            detail=f"Зап�о� отклонен: {reason}\n\n"
+                   "�ожалуй�та, ознаком�те�� � пол�т�кой контента (/help в �оте)."
         )
     user = await user_service.get_or_create_user(
         session,
@@ -360,7 +366,7 @@ async def generate_video(
         if videos_used >= 2:
             raise HTTPException(
                 status_code=403,
-                detail="�о�т��нут л�м�т �азово�о та��фа: мак��мум 2 в�део. О�нов�те та��ф до �танда�т дл� нео��ан�ченно�о ��пол�зован��."
+                detail="�о�т��нут л�м�т �азово�о та��фа: мак��мум 2 в�део. О�нов�те та��ф до �танда�т дл� нео��ан�ченно�о ��пол�зован��."
             )
     generation = Generation(
         user_id=user.id,
@@ -454,12 +460,12 @@ async def activate_basic_plan(
     logger.info(f"Activated basic plan for user {telegram_id}")
     return ActivatePlanResponse(
         success=True,
-        message="Базов�й та��ф у�пешно акт�в��ован!",
+        message="Базов�й та��ф у�пешно акт�в��ован!",
         plan_type="basic"
     )
 @app.get("/api/referral/qr")
 async def generate_referral_qr(
-    telegram_id: int = Query(..., description="Telegram ID пол�зовател�"),
+    telegram_id: int = Query(..., description="Telegram ID пол�зовател�"),
     session: AsyncSession = Depends(get_session)
 ):
     try:
@@ -522,10 +528,10 @@ async def send_verification_code(
         if success:
             return SendVerificationCodeResponse(
                 success=True,
-                message="�од подтве�жден�� отп�авлен на ваш email"
+                message="�од подтве�жден�� отп�авлен на ваш email"
             )
         else:
-            raise HTTPException(status_code=400, detail=error_message or "�е удало�� отп�ав�т� код")
+            raise HTTPException(status_code=400, detail=error_message or "�е удало�� отп�ав�т� код")
     except HTTPException:
         raise
     except Exception as e:
@@ -546,11 +552,11 @@ async def verify_email_code(
             user = await user_service.get_user_by_telegram_id(session, request.telegram_id)
             return VerifyEmailCodeResponse(
                 success=True,
-                message="Email у�пешно подтве�жден!",
+                message="Email у�пешно подтве�жден!",
                 email_verified=True
             )
         else:
-            raise HTTPException(status_code=400, detail=error_message or "�еве�н�й код")
+            raise HTTPException(status_code=400, detail=error_message or "�еве�н�й код")
     except HTTPException:
         raise
     except Exception as e:
@@ -559,7 +565,7 @@ async def verify_email_code(
 @app.post("/api/remove-background")
 async def remove_background(
     image: UploadFile = File(...),
-    threshold: int = Query(240, ge=0, le=255, description="�о�о� дл� оп�еделен�� �ело�о цвета")
+    threshold: int = Query(240, ge=0, le=255, description="�о�о� дл� оп�еделен�� �ело�о цвета")
 ):
     try:
         image_bytes = await image.read()
@@ -606,7 +612,7 @@ async def api_health_check():
         db_error = None
         if not settings.DATABASE_URL:
             db_status = "not_configured"
-            db_error = "DATABASE_URL не у�тановлен"
+            db_error = "DATABASE_URL не у�тановлен"
         else:
             try:
                 from database import get_engine
