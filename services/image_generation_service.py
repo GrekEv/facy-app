@@ -17,6 +17,7 @@ class ImageGenerationService:
         self.openai_proxy = settings.OPENAI_PROXY
         self.replicate_key = settings.REPLICATE_API_KEY
         self.provider = settings.IMAGE_GENERATION_PROVIDER
+        self.replicate_model = getattr(settings, 'REPLICATE_IMAGE_MODEL', 'ideogram-ai/ideogram-v3-turbo')
     
     async def generate_image(
         self,
@@ -57,7 +58,7 @@ class ImageGenerationService:
                         return await self._generate_with_ffans(prompt, model, style, negative_prompt, width, height)
                     if self.replicate_key:
                         logger.info("Trying Replicate API as fallback")
-                        return await self._generate_with_replicate(prompt, model, width, height)
+                        return await self._generate_with_replicate(prompt, model, width, height, style)
                 return result
             
             # Приоритет 2: Если провайдер не указан, используем OpenAI (основной провайдер)
@@ -72,7 +73,7 @@ class ImageGenerationService:
                         return await self._generate_with_ffans(prompt, model, style, negative_prompt, width, height)
                     if self.replicate_key:
                         logger.info("Trying Replicate API as fallback")
-                        return await self._generate_with_replicate(prompt, model, width, height)
+                        return await self._generate_with_replicate(prompt, model, width, height, style)
                 return result
             
             # Приоритет 3: Альтернативные провайдеры если OpenAI недоступен
@@ -83,8 +84,8 @@ class ImageGenerationService:
             
             # Используем Replicate API если доступен и выбран как провайдер
             if self.replicate_key and self.provider == "replicate":
-                logger.info("Using Replicate API for image generation")
-                return await self._generate_with_replicate(prompt, model, width, height)
+                logger.info(f"Using Replicate API for image generation with model: {self.replicate_model}")
+                return await self._generate_with_replicate(prompt, model, width, height, style)
             
             # Fallback на mock
             logger.warning("No API keys configured, using mock response")
@@ -241,11 +242,32 @@ class ImageGenerationService:
                         "message": f"API error: {error_text}"
                     }
     
-    async def _generate_with_replicate(self, prompt: str, model: str, width: int, height: int) -> Dict[str, Any]:
-        """Генерация через Replicate API"""
+    async def _generate_with_replicate(self, prompt: str, model: str, width: int, height: int, style: Optional[str] = None, aspect_ratio: Optional[str] = None) -> Dict[str, Any]:
+        """Генерация через Replicate API с использованием ideogram-v3-turbo"""
         try:
-            # Выбираем модель в зависимости от запроса
-            replicate_model = "black-forest-labs/flux-schnell" if "flux" in model.lower() else "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b"
+            # Используем ideogram-v3-turbo по умолчанию
+            replicate_model = self.replicate_model
+            
+            # Определяем aspect_ratio на основе width и height для ideogram
+            if not aspect_ratio:
+                if width == height:
+                    aspect_ratio = "1:1"
+                elif width > height:
+                    ratio = width / height
+                    if ratio >= 1.7:
+                        aspect_ratio = "16:9"
+                    elif ratio >= 1.4:
+                        aspect_ratio = "3:2"
+                    else:
+                        aspect_ratio = "4:3"
+                else:
+                    ratio = height / width
+                    if ratio >= 1.7:
+                        aspect_ratio = "9:16"
+                    elif ratio >= 1.4:
+                        aspect_ratio = "2:3"
+                    else:
+                        aspect_ratio = "3:4"
             
             async with aiohttp.ClientSession() as session:
                 headers = {
@@ -253,18 +275,31 @@ class ImageGenerationService:
                     'Content-Type': 'application/json'
                 }
                 
-                # Создаем prediction
-                payload = {
-                    "version": replicate_model.split(":")[1] if ":" in replicate_model else None,
-                    "input": {
+                # Для ideogram-v3-turbo используем aspect_ratio вместо width/height
+                if "ideogram" in replicate_model.lower():
+                    input_params = {
+                        "prompt": prompt,
+                        "aspect_ratio": aspect_ratio
+                    }
+                else:
+                    # Для других моделей используем width/height
+                    input_params = {
                         "prompt": prompt,
                         "width": width,
                         "height": height
                     }
+                
+                # Создаем prediction
+                payload = {
+                    "input": input_params
                 }
                 
+                # URL для создания prediction
+                model_path = replicate_model.split(':')[0]
+                predictions_url = f"https://api.replicate.com/v1/models/{model_path}/predictions"
+                
                 async with session.post(
-                    f"https://api.replicate.com/v1/models/{replicate_model.split(':')[0]}/predictions",
+                    predictions_url,
                     json=payload,
                     headers=headers
                 ) as response:
@@ -288,19 +323,31 @@ class ImageGenerationService:
                                     
                                     if status == "succeeded":
                                         output = status_result.get("output")
+                                        # Для ideogram output может быть строкой URL или списком
                                         if isinstance(output, list) and len(output) > 0:
-                                            image_url = output[0]
+                                            # Если это список, берем первый элемент
+                                            image_url = output[0] if isinstance(output[0], str) else output[0].get("url") if isinstance(output[0], dict) else None
                                         elif isinstance(output, str):
                                             image_url = output
+                                        elif isinstance(output, dict):
+                                            # Если output - словарь, ищем URL
+                                            image_url = output.get("url") or output.get("output")
                                         else:
                                             image_url = None
                                         
                                         if image_url:
+                                            logger.info(f"Image generated successfully: {image_url}")
                                             return {
                                                 "status": "success",
                                                 "message": "Image generated successfully",
                                                 "images": [image_url],
                                                 "task_id": prediction_id
+                                            }
+                                        else:
+                                            logger.error(f"Unexpected output format: {output}")
+                                            return {
+                                                "status": "error",
+                                                "message": f"Unexpected output format from Replicate API"
                                             }
                                     elif status == "failed":
                                         error = status_result.get("error", "Unknown error")

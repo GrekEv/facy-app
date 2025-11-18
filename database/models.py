@@ -53,6 +53,12 @@ class User(Base):
     referred_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     referral_balance = Column(Float, default=0.0)  # Заработанные на рефералах
     
+    # Email авторизация и подтверждение
+    email = Column(String, nullable=True, index=True)
+    email_verified = Column(Boolean, default=False)
+    verification_code = Column(String, nullable=True)
+    verification_code_expires = Column(DateTime, nullable=True)
+    
     # Минимальный вывод
     min_withdrawal = Column(Float, default=100.0)  # Минимальная сумма вывода
     

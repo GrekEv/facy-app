@@ -204,6 +204,45 @@
             </div>
         </footer>
 
+        <!-- Модальное окно авторизации по email -->
+        <div class="modal" id="emailAuthModal">
+            <div class="modal-content">
+                <button class="modal-close" id="emailAuthModalClose">✕</button>
+                <h3 class="modal-title">Авторизация по email</h3>
+                <div class="modal-body">
+                    <!-- Шаг 1: Ввод email -->
+                    <div id="emailAuthStep1" class="auth-step active">
+                        <p class="auth-description">Введите ваш email для получения кода подтверждения</p>
+                        <div class="form-group">
+                            <input type="email" id="emailInput" class="form-input" placeholder="your@email.com" required>
+                        </div>
+                        <button class="btn btn-primary" id="sendCodeBtn">
+                            <span class="btn-text">Отправить код</span>
+                            <span class="btn-icon">📧</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Шаг 2: Ввод кода -->
+                    <div id="emailAuthStep2" class="auth-step" style="display: none;">
+                        <p class="auth-description">Введите код подтверждения, отправленный на <span id="emailDisplay"></span></p>
+                        <div class="form-group">
+                            <input type="text" id="codeInput" class="form-input" placeholder="000000" maxlength="6" pattern="[0-9]{6}" required>
+                            <p class="form-hint">Код действителен 10 минут</p>
+                        </div>
+                        <div class="auth-buttons">
+                            <button class="btn btn-primary" id="verifyCodeBtn">
+                                <span class="btn-text">Подтвердить</span>
+                                <span class="btn-icon">✓</span>
+                            </button>
+                            <button class="btn btn-secondary" id="resendCodeBtn">
+                                <span class="btn-text">Отправить код заново</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Модальное окно создания видео -->
         <div class="modal" id="createModal">
             <div class="modal-content">

@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initDemoToggles();
     initButtons();
     initSmoothScroll();
+    initEmailAuth();
     
     // Проверка загрузки изображений
     checkDemoImages();
@@ -88,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     // Генерируем ссылку если еще не сгенерирована
                     if (!referralLink) {
-                        generateReferralLink();
+                        await generateReferralLink();
                     }
                     
                     if (!referralLink) {
@@ -168,7 +169,15 @@ async function loadUserData(telegramId) {
             
             updatePrice();
             // Генерируем реферальную ссылку при загрузке данных пользователя
-            generateReferralLink();
+            await generateReferralLink();
+            
+            // Проверяем, нужно ли подтвердить email
+            if (userData && !userData.email_verified) {
+                // Показываем модальное окно авторизации по email
+                setTimeout(() => {
+                    showEmailAuthModal();
+                }, 1000); // Небольшая задержка для лучшего UX
+            }
         } else {
             const errorText = await response.text();
             console.error('Failed to load user data:', response.status, errorText);
@@ -227,20 +236,44 @@ function updatePrice() {
 let referralLink = null;
 
 // Генерация реферальной ссылки для регистрации
-function generateReferralLink() {
+async function generateReferralLink() {
     console.log('generateReferralLink called, userData:', userData);
     
+    // Если userData отсутствует, пытаемся загрузить его
     if (!userData) {
-        console.warn('User data not available');
-        return null;
+        console.warn('User data not available, trying to load...');
+        const telegramUser = tg?.initDataUnsafe?.user;
+        const telegramId = telegramUser?.id;
+        
+        if (telegramId) {
+            await loadUserData(telegramId);
+        } else {
+            console.warn('Telegram ID not available');
+            return null;
+        }
     }
     
-    // Если referral_code отсутствует, пытаемся получить его из API
-    if (!userData.referral_code) {
-        console.warn('Referral code not available in userData, userData:', JSON.stringify(userData));
-        // Не возвращаем null сразу - попробуем сгенерировать временную ссылку или подождать
-        console.warn('Referral code missing! User should have referral_code. Check backend.');
-        return null;
+    // Если referral_code отсутствует, перезагружаем данные пользователя
+    if (!userData?.referral_code) {
+        console.warn('Referral code not available, reloading user data...');
+        const telegramUser = tg?.initDataUnsafe?.user;
+        const telegramId = telegramUser?.id;
+        
+        if (telegramId) {
+            await loadUserData(telegramId);
+            // Ждем немного для завершения загрузки
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Проверяем еще раз после перезагрузки
+            if (!userData?.referral_code) {
+                console.error('Referral code still missing after reload! userData:', JSON.stringify(userData));
+                console.error('Backend should generate referral_code automatically. Check API response.');
+                return null;
+            }
+        } else {
+            console.error('Telegram ID not available for reload');
+            return null;
+        }
     }
     
     // Получаем реферальный код пользователя
@@ -701,14 +734,14 @@ function initButtons() {
             
             // Генерируем ссылку если еще не сгенерирована
             if (!referralLink) {
-                const link = generateReferralLink();
+                const link = await generateReferralLink();
                 console.log('Generated referral link:', link);
             }
             
             // Если ссылка все еще не сгенерирована, пробуем еще раз
             if (!referralLink && userData) {
                 console.warn('Referral link not generated, retrying...');
-                generateReferralLink();
+                await generateReferralLink();
             }
             
             if (!referralLink) {
@@ -1284,6 +1317,202 @@ function hideLoader() {
     const loader = document.getElementById('loader');
     if (loader) {
         loader.classList.remove('show');
+    }
+}
+
+// Инициализация модального окна авторизации по email
+function initEmailAuth() {
+    const emailAuthModal = document.getElementById('emailAuthModal');
+    const emailAuthModalClose = document.getElementById('emailAuthModalClose');
+    const sendCodeBtn = document.getElementById('sendCodeBtn');
+    const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+    const resendCodeBtn = document.getElementById('resendCodeBtn');
+    const emailInput = document.getElementById('emailInput');
+    const codeInput = document.getElementById('codeInput');
+    
+    if (!emailAuthModal) return;
+    
+    // Закрытие модального окна
+    if (emailAuthModalClose) {
+        emailAuthModalClose.addEventListener('click', () => {
+            hideEmailAuthModal();
+        });
+    }
+    
+    // Отправка кода
+    if (sendCodeBtn) {
+        sendCodeBtn.addEventListener('click', async () => {
+            const email = emailInput?.value?.trim();
+            if (!email) {
+                showNotification('Введите email', 'error');
+                return;
+            }
+            
+            const telegramUser = tg?.initDataUnsafe?.user;
+            const telegramId = telegramUser?.id;
+            
+            if (!telegramId) {
+                showNotification('Не удалось получить данные пользователя из Telegram', 'error');
+                return;
+            }
+            
+            sendCodeBtn.disabled = true;
+            sendCodeBtn.innerHTML = '<span class="btn-text">Отправка...</span>';
+            
+            try {
+                const apiUrl = API_BASE_URL 
+                    ? `${API_BASE_URL}/api/auth/send-verification-code`
+                    : `/api/auth/send-verification-code`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegram_id: telegramId,
+                        email: email
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification(result.message || 'Код отправлен на ваш email', 'success');
+                    // Переходим ко второму шагу
+                    showEmailAuthStep2(email);
+                } else {
+                    showNotification(result.detail || result.message || 'Ошибка отправки кода', 'error');
+                }
+            } catch (error) {
+                console.error('Error sending verification code:', error);
+                showNotification('Ошибка отправки кода. Попробуйте позже.', 'error');
+            } finally {
+                sendCodeBtn.disabled = false;
+                sendCodeBtn.innerHTML = '<span class="btn-text">Отправить код</span><span class="btn-icon">📧</span>';
+            }
+        });
+    }
+    
+    // Проверка кода
+    if (verifyCodeBtn) {
+        verifyCodeBtn.addEventListener('click', async () => {
+            const code = codeInput?.value?.trim();
+            if (!code || code.length !== 6) {
+                showNotification('Введите 6-значный код', 'error');
+                return;
+            }
+            
+            const telegramUser = tg?.initDataUnsafe?.user;
+            const telegramId = telegramUser?.id;
+            
+            if (!telegramId) {
+                showNotification('Не удалось получить данные пользователя из Telegram', 'error');
+                return;
+            }
+            
+            verifyCodeBtn.disabled = true;
+            verifyCodeBtn.innerHTML = '<span class="btn-text">Проверка...</span>';
+            
+            try {
+                const apiUrl = API_BASE_URL 
+                    ? `${API_BASE_URL}/api/auth/verify-email-code`
+                    : `/api/auth/verify-email-code`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegram_id: telegramId,
+                        code: code
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification(result.message || 'Email успешно подтвержден!', 'success');
+                    // Перезагружаем данные пользователя
+                    await loadUserData(telegramId);
+                    // Закрываем модальное окно
+                    hideEmailAuthModal();
+                } else {
+                    showNotification(result.detail || result.message || 'Неверный код', 'error');
+                }
+            } catch (error) {
+                console.error('Error verifying code:', error);
+                showNotification('Ошибка проверки кода. Попробуйте позже.', 'error');
+            } finally {
+                verifyCodeBtn.disabled = false;
+                verifyCodeBtn.innerHTML = '<span class="btn-text">Подтвердить</span><span class="btn-icon">✓</span>';
+            }
+        });
+    }
+    
+    // Повторная отправка кода
+    if (resendCodeBtn) {
+        resendCodeBtn.addEventListener('click', async () => {
+            const email = emailInput?.value?.trim();
+            if (!email) {
+                showNotification('Введите email', 'error');
+                return;
+            }
+            
+            // Возвращаемся к первому шагу и отправляем код заново
+            showEmailAuthStep1();
+            sendCodeBtn.click();
+        });
+    }
+    
+    // Ввод кода - только цифры
+    if (codeInput) {
+        codeInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+    }
+}
+
+// Показать модальное окно авторизации по email
+function showEmailAuthModal() {
+    const emailAuthModal = document.getElementById('emailAuthModal');
+    if (emailAuthModal) {
+        emailAuthModal.classList.add('show');
+        showEmailAuthStep1();
+    }
+}
+
+// Скрыть модальное окно авторизации по email
+function hideEmailAuthModal() {
+    const emailAuthModal = document.getElementById('emailAuthModal');
+    if (emailAuthModal) {
+        emailAuthModal.classList.remove('show');
+    }
+}
+
+// Показать шаг 1 (ввод email)
+function showEmailAuthStep1() {
+    const step1 = document.getElementById('emailAuthStep1');
+    const step2 = document.getElementById('emailAuthStep2');
+    if (step1) step1.style.display = 'flex';
+    if (step2) step2.style.display = 'none';
+}
+
+// Показать шаг 2 (ввод кода)
+function showEmailAuthStep2(email) {
+    const step1 = document.getElementById('emailAuthStep1');
+    const step2 = document.getElementById('emailAuthStep2');
+    const emailDisplay = document.getElementById('emailDisplay');
+    
+    if (step1) step1.style.display = 'none';
+    if (step2) step2.style.display = 'flex';
+    if (emailDisplay) emailDisplay.textContent = email;
+    
+    // Фокус на поле ввода кода
+    const codeInput = document.getElementById('codeInput');
+    if (codeInput) {
+        setTimeout(() => codeInput.focus(), 100);
     }
 }
 

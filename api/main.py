@@ -24,7 +24,11 @@ from api.schemas import (
     SwapFaceResponse,
     UserResponse,
     StatsResponse,
-    ActivatePlanResponse
+    ActivatePlanResponse,
+    SendVerificationCodeRequest,
+    SendVerificationCodeResponse,
+    VerifyEmailCodeRequest,
+    VerifyEmailCodeResponse
 )
 
 # Импорт платежного модуля (опционально)
@@ -165,7 +169,9 @@ async def get_user(
             plan_type=getattr(user, 'plan_type', 'basic'),
             images_used=getattr(user, 'images_used', 0),
             videos_used=getattr(user, 'videos_used', 0),
-            referral_code=user.referral_code
+            referral_code=user.referral_code,
+            email=getattr(user, 'email', None),
+            email_verified=getattr(user, 'email_verified', False)
         )
     except ValueError as e:
         # Ошибка инициализации базы данных
@@ -580,16 +586,31 @@ async def generate_referral_qr(
 ):
     """Генерация QR-кода для реферальной ссылки"""
     try:
-        # Получаем пользователя
-        user = await user_service.get_user_by_telegram_id(session, telegram_id)
+        # Используем get_or_create_user чтобы гарантировать создание referral_code
+        user = await user_service.get_or_create_user(
+            session,
+            telegram_id=telegram_id
+        )
         
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+        # Убеждаемся, что referral_code всегда есть
+        if not user.referral_code:
+            logger.warning(f"User {telegram_id} has no referral_code in QR endpoint, generating one...")
+            new_referral_code = user_service.generate_referral_code()
+            # Проверяем уникальность
+            while True:
+                check_result = await session.execute(
+                    select(User).where(User.referral_code == new_referral_code)
+                )
+                if check_result.scalar_one_or_none() is None:
+                    break
+                new_referral_code = user_service.generate_referral_code()
+            user.referral_code = new_referral_code
+            await session.commit()
+            await session.refresh(user)
+            logger.info(f"Generated referral_code {new_referral_code} for user {telegram_id} in QR endpoint")
         
         # Получаем реферальный код
         referral_code = user.referral_code
-        if not referral_code:
-            raise HTTPException(status_code=400, detail="Referral code not found")
         
         # Формируем реферальную ссылку
         webapp_url = settings.WEBAPP_URL or "https://facy-app.vercel.app"
@@ -625,6 +646,65 @@ async def generate_referral_qr(
         raise
     except Exception as e:
         logger.error(f"Error generating QR code: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/auth/send-verification-code", response_model=SendVerificationCodeResponse)
+async def send_verification_code(
+    request: SendVerificationCodeRequest,
+    session: AsyncSession = Depends(get_session)
+):
+    """Отправить код подтверждения на email"""
+    try:
+        success, error_message = await user_service.send_verification_code(
+            session,
+            telegram_id=request.telegram_id,
+            email=request.email
+        )
+        
+        if success:
+            return SendVerificationCodeResponse(
+                success=True,
+                message="Код подтверждения отправлен на ваш email"
+            )
+        else:
+            raise HTTPException(status_code=400, detail=error_message or "Не удалось отправить код")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error sending verification code: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/auth/verify-email-code", response_model=VerifyEmailCodeResponse)
+async def verify_email_code(
+    request: VerifyEmailCodeRequest,
+    session: AsyncSession = Depends(get_session)
+):
+    """Проверить код подтверждения email"""
+    try:
+        success, error_message = await user_service.verify_email_code(
+            session,
+            telegram_id=request.telegram_id,
+            code=request.code
+        )
+        
+        if success:
+            # Получаем обновленные данные пользователя
+            user = await user_service.get_user_by_telegram_id(session, request.telegram_id)
+            return VerifyEmailCodeResponse(
+                success=True,
+                message="Email успешно подтвержден!",
+                email_verified=True
+            )
+        else:
+            raise HTTPException(status_code=400, detail=error_message or "Неверный код")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error verifying email code: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

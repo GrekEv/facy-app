@@ -1523,10 +1523,45 @@ body {
     box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
 }
 
+/* Стили для авторизации по email */
+.auth-step {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.auth-step.active {
+    display: flex;
+}
+
+.auth-description {
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
 .form-hint {
-    margin-top: 0.5rem;
     font-size: 0.875rem;
     color: var(--text-muted);
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.btn-secondary {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--primary-purple);
 }
 
 .welcome-actions {

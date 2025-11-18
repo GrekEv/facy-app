@@ -45,6 +45,8 @@ class UserResponse(BaseModel):
     images_used: Optional[int] = 0
     videos_used: Optional[int] = 0
     referral_code: Optional[str] = None
+    email: Optional[str] = None
+    email_verified: bool = False
 
 
 class ActivatePlanResponse(BaseModel):
@@ -119,4 +121,29 @@ class StatsResponse(BaseModel):
     total_generations: int
     total_deepfakes: int
     active_users_today: int
+
+
+class SendVerificationCodeRequest(BaseModel):
+    """Запрос на отправку кода подтверждения"""
+    telegram_id: int
+    email: str
+
+
+class SendVerificationCodeResponse(BaseModel):
+    """Ответ на отправку кода подтверждения"""
+    success: bool
+    message: str
+
+
+class VerifyEmailCodeRequest(BaseModel):
+    """Запрос на проверку кода подтверждения"""
+    telegram_id: int
+    code: str
+
+
+class VerifyEmailCodeResponse(BaseModel):
+    """Ответ на проверку кода подтверждения"""
+    success: bool
+    message: str
+    email_verified: bool = False
 

@@ -45,6 +45,8 @@ DEEPSWAP_API_URL=https://api.deepswap.ai
 # Account → API Tokens → Create token
 REPLICATE_API_KEY=your_replicate_api_key
 REPLICATE_API_URL=https://api.replicate.com/v1
+# Модель для генерации изображений (по умолчанию ideogram-v3-turbo)
+REPLICATE_IMAGE_MODEL=ideogram-ai/ideogram-v3-turbo
 
 # ============================================
 # API КЛЮЧИ ДЛЯ ГЕНЕРАЦИИ ВИДЕО
@@ -112,6 +114,18 @@ ADMIN_IDS=123456789,987654321
 
 # Ссылка на оплату тарифа Стандарт ($20)
 STANDARD_PLAN_PAYMENT_URL=https://web.tribute.tg/p/n1Q
+
+# ============================================
+# EMAIL SETTINGS (для отправки кодов подтверждения)
+# ============================================
+# Для Gmail используйте пароль приложения (не обычный пароль!)
+# Получить пароль приложения: https://myaccount.google.com/apppasswords
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM_EMAIL=your-email@gmail.com
+SMTP_FROM_NAME=OnlyFace
 
 # ============================================
 # ПРИМЕЧАНИЯ

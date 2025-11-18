@@ -167,6 +167,108 @@ class UserService:
         return ''.join(secrets.choice(alphabet) for _ in range(8))
     
     @staticmethod
+    def generate_verification_code() -> str:
+        """Генерирует 6-значный код подтверждения"""
+        return ''.join(secrets.choice(string.digits) for _ in range(6))
+    
+    @staticmethod
+    async def send_verification_code(
+        session: AsyncSession,
+        telegram_id: int,
+        email: str
+    ) -> tuple[bool, Optional[str]]:
+        """
+        Отправить код подтверждения на email
+        
+        Args:
+            session: Сессия БД
+            telegram_id: ID пользователя в Telegram
+            email: Email для отправки кода
+            
+        Returns:
+            (success, error_message)
+        """
+        from services.email_service import EmailService
+        
+        # Валидация email
+        if not EmailService.validate_email(email):
+            return False, "Неверный формат email"
+        
+        # Получаем или создаем пользователя
+        user = await UserService.get_or_create_user(
+            session,
+            telegram_id=telegram_id
+        )
+        
+        # Генерируем код
+        code = UserService.generate_verification_code()
+        expires_at = datetime.utcnow() + timedelta(minutes=10)
+        
+        # Сохраняем код в БД
+        user.email = email.lower().strip()
+        user.verification_code = code
+        user.verification_code_expires = expires_at
+        user.email_verified = False  # Сбрасываем статус подтверждения
+        
+        await session.commit()
+        
+        # Отправляем email
+        success = await EmailService.send_verification_code(email, code)
+        
+        if success:
+            logger.info(f"Verification code sent to {email} for user {telegram_id}")
+            return True, None
+        else:
+            logger.error(f"Failed to send verification code to {email}")
+            return False, "Не удалось отправить код. Проверьте настройки SMTP."
+    
+    @staticmethod
+    async def verify_email_code(
+        session: AsyncSession,
+        telegram_id: int,
+        code: str
+    ) -> tuple[bool, Optional[str]]:
+        """
+        Проверить код подтверждения email
+        
+        Args:
+            session: Сессия БД
+            telegram_id: ID пользователя в Telegram
+            code: Код подтверждения
+            
+        Returns:
+            (success, error_message)
+        """
+        # Получаем пользователя
+        result = await session.execute(
+            select(User).where(User.telegram_id == telegram_id)
+        )
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            return False, "Пользователь не найден"
+        
+        # Проверяем код
+        if not user.verification_code:
+            return False, "Код подтверждения не был отправлен"
+        
+        if user.verification_code != code:
+            return False, "Неверный код подтверждения"
+        
+        if user.verification_code_expires and user.verification_code_expires < datetime.utcnow():
+            return False, "Код подтверждения истек. Запросите новый код."
+        
+        # Подтверждаем email
+        user.email_verified = True
+        user.verification_code = None
+        user.verification_code_expires = None
+        
+        await session.commit()
+        
+        logger.info(f"Email verified for user {telegram_id}: {user.email}")
+        return True, None
+    
+    @staticmethod
     async def create_user_with_referral(
         session: AsyncSession,
         telegram_id: int,

@@ -82,7 +82,8 @@ class Settings(BaseSettings):
     
     # Выбор провайдера по умолчанию
     VIDEO_GENERATION_PROVIDER: str = "sora"  # sora, ffans, runway, pika, replicate, higgsfield, leonardo
-    IMAGE_GENERATION_PROVIDER: str = "openai"  # openai, ffans, leonardo, replicate
+    IMAGE_GENERATION_PROVIDER: str = "replicate"  # openai, ffans, leonardo, replicate
+    REPLICATE_IMAGE_MODEL: str = "ideogram-ai/ideogram-v3-turbo"  # Модель для генерации изображений через Replicate
     
     # Database
     # Для Vercel serverless нужен PostgreSQL (SQLite не работает)
@@ -120,6 +121,14 @@ class Settings(BaseSettings):
     
     # Subscription payment URL
     STANDARD_PLAN_PAYMENT_URL: str = ""  # Ссылка на оплату тарифа Стандарт ($20)
+    
+    # Email settings для отправки кодов подтверждения
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""  # Email для отправки
+    SMTP_PASSWORD: str = ""  # Пароль приложения или пароль от email
+    SMTP_FROM_EMAIL: str = ""  # Email отправителя (обычно тот же что SMTP_USER)
+    SMTP_FROM_NAME: str = "OnlyFace"  # Имя отправителя
     
     @property
     def admin_ids_list(self) -> List[int]:
