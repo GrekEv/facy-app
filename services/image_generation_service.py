@@ -160,14 +160,19 @@ class ImageGenerationService:
             async with aiohttp.ClientSession() as session:
                 headers = {
                     'Authorization': f'Token {self.replicate_key}',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Prefer': 'wait'  # Ждем завершения генерации (как в официальной инструкции)
                 }
                 
-                # Для ideogram-v3-turbo используем aspect_ratio вместо width/height
+                # Для ideogram-v3-turbo используем параметры согласно официальной инструкции
                 if "ideogram" in replicate_model.lower():
                     input_params = {
                         "prompt": prompt,
-                        "aspect_ratio": aspect_ratio
+                        "aspect_ratio": aspect_ratio,
+                        "resolution": "None",  # Можно указать конкретное разрешение или None
+                        "style_type": "None",  # Можно указать стиль или None
+                        "style_preset": "None",  # Можно указать пресет стиля или None
+                        "magic_prompt_option": "Auto"  # Автоматическое улучшение промпта
                     }
                 else:
                     # Для других моделей используем width/height
