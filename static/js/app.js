@@ -169,9 +169,26 @@ async function loadUserData(telegramId) {
         } else {
             const errorText = await response.text();
             console.error('Failed to load user data:', response.status, errorText);
+            
+            // Проверяем, не связана ли ошибка с базой данных
+            if (response.status === 503) {
+                try {
+                    const errorData = JSON.parse(errorText);
+                    if (errorData.detail && errorData.detail.includes('база данных')) {
+                        console.error('Database not configured!');
+                        showNotification('База данных не настроена. Обратитесь к администратору.', 'error');
+                    }
+                } catch (e) {
+                    // Не JSON ответ
+                }
+            }
         }
     } catch (error) {
         console.error('Error loading user data:', error);
+        // Проверяем, не связана ли ошибка с подключением
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            showNotification('Не удалось подключиться к серверу. Проверьте подключение к интернету.', 'error');
+        }
     }
 }
 

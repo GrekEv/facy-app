@@ -239,7 +239,14 @@ async def init_db():
 
 async def get_session() -> AsyncSession:
     """Получить сессию базы данных"""
-    session_factory = get_session_factory()
-    async with session_factory() as session:
-        yield session
+    try:
+        session_factory = get_session_factory()
+        async with session_factory() as session:
+            yield session
+    except ValueError as e:
+        # Если база данных не инициализирована, создаем заглушку
+        logger.error(f"Database session error: {e}")
+        # В production лучше поднять ошибку, но для разработки можно вернуть None
+        # и обработать в endpoint
+        raise ValueError(f"База данных не настроена: {e}")
 

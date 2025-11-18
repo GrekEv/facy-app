@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, text
 from pathlib import Path
 from datetime import datetime
 import logging
@@ -121,44 +121,58 @@ async def get_user(
     session: AsyncSession = Depends(get_session)
 ):
     """Получить информацию о пользователе"""
-    # Всегда используем get_or_create_user чтобы гарантировать создание referral_code
-    user = await user_service.get_or_create_user(
-        session,
-        telegram_id=telegram_id
-    )
-    
-    # Убеждаемся, что referral_code всегда есть
-    if not user.referral_code:
-        logger.warning(f"User {telegram_id} has no referral_code, generating one...")
-        new_referral_code = user_service.generate_referral_code()
-        # Проверяем уникальность
-        while True:
-            check_result = await session.execute(
-                select(User).where(User.referral_code == new_referral_code)
-            )
-            if check_result.scalar_one_or_none() is None:
-                break
+    try:
+        # Всегда используем get_or_create_user чтобы гарантировать создание referral_code
+        user = await user_service.get_or_create_user(
+            session,
+            telegram_id=telegram_id
+        )
+        
+        # Убеждаемся, что referral_code всегда есть
+        if not user.referral_code:
+            logger.warning(f"User {telegram_id} has no referral_code, generating one...")
             new_referral_code = user_service.generate_referral_code()
-        user.referral_code = new_referral_code
-        await session.commit()
-        await session.refresh(user)
-        logger.info(f"Generated referral_code {new_referral_code} for user {telegram_id}")
-    
-    return UserResponse(
-        id=user.id,
-        telegram_id=user.telegram_id,
-        username=user.username,
-        first_name=user.first_name,
-        balance=user.balance,
-        free_generations=user.free_generations,
-        total_generations=user.total_generations,
-        total_deepfakes=user.total_deepfakes,
-        is_premium=user.is_premium,
-        plan_type=getattr(user, 'plan_type', 'basic'),
-        images_used=getattr(user, 'images_used', 0),
-        videos_used=getattr(user, 'videos_used', 0),
-        referral_code=user.referral_code
-    )
+            # Проверяем уникальность
+            while True:
+                check_result = await session.execute(
+                    select(User).where(User.referral_code == new_referral_code)
+                )
+                if check_result.scalar_one_or_none() is None:
+                    break
+                new_referral_code = user_service.generate_referral_code()
+            user.referral_code = new_referral_code
+            await session.commit()
+            await session.refresh(user)
+            logger.info(f"Generated referral_code {new_referral_code} for user {telegram_id}")
+        
+        return UserResponse(
+            id=user.id,
+            telegram_id=user.telegram_id,
+            username=user.username,
+            first_name=user.first_name,
+            balance=user.balance,
+            free_generations=user.free_generations,
+            total_generations=user.total_generations,
+            total_deepfakes=user.total_deepfakes,
+            is_premium=user.is_premium,
+            plan_type=getattr(user, 'plan_type', 'basic'),
+            images_used=getattr(user, 'images_used', 0),
+            videos_used=getattr(user, 'videos_used', 0),
+            referral_code=user.referral_code
+        )
+    except ValueError as e:
+        # Ошибка инициализации базы данных
+        logger.error(f"Database not initialized: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="База данных не настроена. Пожалуйста, настройте DATABASE_URL в переменных окружения."
+        )
+    except Exception as e:
+        logger.error(f"Error getting user {telegram_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Ошибка при получении данных пользователя: {str(e)}"
+        )
 
 
 @app.post("/api/generate/image", response_model=GenerateImageResponse)
@@ -638,5 +652,69 @@ async def remove_background(
 @app.get("/health")
 async def health_check():
     """Проверка здоровья сервиса"""
-    return {"status": "healthy"}
+    health_status = {
+        "status": "healthy",
+        "database": "unknown"
+    }
+    
+    # Проверяем подключение к базе данных
+    try:
+        if settings.DATABASE_URL:
+            from database import get_engine
+            engine = get_engine()
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            health_status["database"] = "connected"
+        else:
+            health_status["database"] = "not_configured"
+            health_status["status"] = "degraded"
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        health_status["database"] = "error"
+        health_status["database_error"] = str(e)
+        health_status["status"] = "degraded"
+    
+    return health_status
+
+
+@app.get("/api/health")
+async def api_health_check():
+    """Проверка здоровья API и базы данных"""
+    try:
+        # Проверяем базу данных
+        db_status = "unknown"
+        db_error = None
+        
+        if not settings.DATABASE_URL:
+            db_status = "not_configured"
+            db_error = "DATABASE_URL не установлен"
+        else:
+            try:
+                from database import get_engine
+                engine = get_engine()
+                async with engine.connect() as conn:
+                    await conn.execute(text("SELECT 1"))
+                db_status = "connected"
+            except ValueError as e:
+                db_status = "not_initialized"
+                db_error = str(e)
+            except Exception as e:
+                db_status = "error"
+                db_error = str(e)
+        
+        return {
+            "status": "ok" if db_status == "connected" else "degraded",
+            "database": {
+                "status": db_status,
+                "error": db_error,
+                "configured": bool(settings.DATABASE_URL)
+            },
+            "api": "operational"
+        }
+    except Exception as e:
+        logger.error(f"API health check failed: {e}")
+        return {
+            "status": "error",
+            "error": str(e)
+        }
 
