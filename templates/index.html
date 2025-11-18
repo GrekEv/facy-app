@@ -156,14 +156,20 @@
                 <p class="referral-description">
                     При оплате подписки по твоей ссылке 50% от стоимости подписки друга вернется тебе на баланс
                 </p>
-                <div class="referral-qr-container">
+                <div class="referral-qr-container" id="referralQRContainer" style="display: none;">
                     <div id="referralQRCode" class="referral-qr-code"></div>
-                    <p class="referral-qr-hint">Отсканируй QR-код или отправь ссылку другу</p>
+                    <p class="referral-qr-hint">Отсканируй QR-код</p>
                 </div>
-                <button class="btn btn-referral-share" id="shareReferralBtn">
-                    <span class="btn-icon">📤</span>
-                    <span class="btn-text">Поделиться ссылкой с другом</span>
-                </button>
+                <div class="referral-buttons">
+                    <button class="btn btn-referral-copy-link" id="copyReferralLinkBtn">
+                        <span class="btn-icon">📋</span>
+                        <span class="btn-text">Скопировать ссылку приглашение</span>
+                    </button>
+                    <button class="btn btn-referral-show-qr" id="showQRBtn">
+                        <span class="btn-icon">📱</span>
+                        <span class="btn-text">Показать QR код</span>
+                    </button>
+                </div>
             </div>
         </section>
 

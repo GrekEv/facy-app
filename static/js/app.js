@@ -76,7 +76,8 @@ async function loadUserData(telegramId) {
         if (response.ok) {
             userData = await response.json();
             updatePrice();
-            updateReferralLink();
+            // Генерируем реферальную ссылку при загрузке данных пользователя
+            generateReferralLink();
         } else {
             console.error('Failed to load user data');
         }
@@ -115,18 +116,42 @@ function updatePrice() {
 // Глобальная переменная для хранения реферальной ссылки
 let referralLink = null;
 
-// Обновление реферальной ссылки и генерация QR-кода
-function updateReferralLink() {
-    const referralQRCode = document.getElementById('referralQRCode');
-    if (!referralQRCode || !userData) return;
+// Генерация реферальной ссылки для регистрации
+function generateReferralLink() {
+    if (!userData || !userData.referral_code) {
+        console.warn('User data or referral code not available');
+        return null;
+    }
     
     // Получаем реферальный код пользователя
     const referralCode = userData.referral_code;
-    if (!referralCode) return;
     
-    // Формируем реферальную ссылку на оплату с параметром ref
-    const paymentUrl = window.STANDARD_PLAN_PAYMENT_URL || 'https://web.tribute.tg/p/n1Q';
-    referralLink = `${paymentUrl}?ref=${referralCode}`;
+    // Формируем реферальную ссылку на Web App с параметром ref для регистрации
+    const webappUrl = window.location.origin || 'https://facy-app.vercel.app';
+    referralLink = `${webappUrl}?ref=${referralCode}`;
+    
+    return referralLink;
+}
+
+// Генерация QR-кода
+function generateQRCode() {
+    const referralQRCode = document.getElementById('referralQRCode');
+    const referralQRContainer = document.getElementById('referralQRContainer');
+    
+    if (!referralQRCode || !referralQRContainer) return;
+    
+    // Генерируем ссылку если еще не сгенерирована
+    if (!referralLink) {
+        generateReferralLink();
+    }
+    
+    if (!referralLink) {
+        showNotification('Не удалось сгенерировать реферальную ссылку', 'error');
+        return;
+    }
+    
+    // Очищаем предыдущий QR-код
+    referralQRCode.innerHTML = '';
     
     // Генерируем QR-код
     if (typeof QRCode !== 'undefined') {
@@ -141,13 +166,16 @@ function updateReferralLink() {
             if (error) {
                 console.error('Error generating QR code:', error);
                 // Fallback - показываем ссылку текстом
-                referralQRCode.innerHTML = `<p style="color: var(--text-primary); word-break: break-all; padding: 1rem;">${referralLink}</p>`;
+                referralQRCode.innerHTML = `<p style="color: var(--text-primary); word-break: break-all; padding: 1rem; font-size: 0.8rem;">${referralLink}</p>`;
             }
         });
     } else {
         // Если библиотека не загрузилась, показываем ссылку текстом
-        referralQRCode.innerHTML = `<p style="color: var(--text-primary); word-break: break-all; padding: 1rem;">${referralLink}</p>`;
+        referralQRCode.innerHTML = `<p style="color: var(--text-primary); word-break: break-all; padding: 1rem; font-size: 0.8rem;">${referralLink}</p>`;
     }
+    
+    // Показываем контейнер с QR-кодом
+    referralQRContainer.style.display = 'flex';
 }
 
 // Инициализация кнопок хедера (убрана кнопка создания видео)
@@ -355,47 +383,44 @@ function initButtons() {
     
     // Базовый тариф теперь всегда активен - кнопка заменена на надпись "Активен"
     
-    // Кнопка поделиться реферальной ссылкой
-    const shareReferralBtn = document.getElementById('shareReferralBtn');
-    if (shareReferralBtn) {
-        shareReferralBtn.addEventListener('click', async () => {
+    // Кнопка копирования реферальной ссылки
+    const copyReferralLinkBtn = document.getElementById('copyReferralLinkBtn');
+    if (copyReferralLinkBtn) {
+        copyReferralLinkBtn.addEventListener('click', async () => {
+            // Генерируем ссылку если еще не сгенерирована
             if (!referralLink) {
-                showNotification('Реферальная ссылка не загружена', 'error');
+                generateReferralLink();
+            }
+            
+            if (!referralLink) {
+                showNotification('Не удалось сгенерировать реферальную ссылку', 'error');
                 return;
             }
-            const shareText = `🎁 Привет! Попробуй OnlyFace - приложение для замены лиц и генерации видео!\n\n${referralLink}\n\nПри оплате подписки по этой ссылке мы оба получим бонусы! 🚀`;
             
-            // Используем Telegram Share API если доступен
-            if (tg?.shareUrl) {
-                tg.shareUrl(referralLink);
-            } else if (navigator.share) {
-                // Используем Web Share API
-                try {
-                    await navigator.share({
-                        title: 'OnlyFace - Приглашение',
-                        text: shareText,
-                        url: referralLink
-                    });
-                } catch (err) {
-                    // Если пользователь отменил или произошла ошибка
-                    console.log('Share cancelled or error:', err);
-                }
-            } else {
-                // Fallback - копируем в буфер обмена
-                try {
-                    await navigator.clipboard.writeText(shareText);
-                    showNotification('Текст для отправки скопирован! Вставьте его в сообщение другу.', 'success');
-                } catch (err) {
-                    // Создаем временный элемент для копирования
-                    const tempInput = document.createElement('input');
-                    tempInput.value = referralLink;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(tempInput);
-                    showNotification('Ссылка скопирована! Отправьте её другу.', 'success');
-                }
+            // Копируем ссылку в буфер обмена
+            try {
+                await navigator.clipboard.writeText(referralLink);
+                showNotification('Ссылка приглашения скопирована!', 'success');
+            } catch (err) {
+                // Fallback для старых браузеров
+                const tempInput = document.createElement('input');
+                tempInput.value = referralLink;
+                tempInput.style.position = 'fixed';
+                tempInput.style.opacity = '0';
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showNotification('Ссылка приглашения скопирована!', 'success');
             }
+        });
+    }
+    
+    // Кнопка показа QR-кода
+    const showQRBtn = document.getElementById('showQRBtn');
+    if (showQRBtn) {
+        showQRBtn.addEventListener('click', () => {
+            generateQRCode();
         });
     }
     
