@@ -16,6 +16,7 @@ class ImageGenerationService:
         self.replicate_key = settings.REPLICATE_API_KEY
         self.provider = settings.IMAGE_GENERATION_PROVIDER
         self.replicate_model = getattr(settings, 'REPLICATE_IMAGE_MODEL', 'ideogram-ai/ideogram-v3-turbo')
+        self.proxy_url = getattr(settings, 'PROXY_URL', '')
     
     async def generate_image(
         self,
@@ -151,6 +152,11 @@ class ImageGenerationService:
                     else:
                         aspect_ratio = "3:4"
             
+            # Настройка прокси если указан
+            proxy = self.proxy_url if self.proxy_url else None
+            if proxy:
+                logger.info(f"Using proxy for Replicate API: {proxy.split('@')[-1] if '@' in proxy else proxy}")
+            
             async with aiohttp.ClientSession() as session:
                 headers = {
                     'Authorization': f'Token {self.replicate_key}',
@@ -187,6 +193,7 @@ class ImageGenerationService:
                     predictions_url,
                     json=payload,
                     headers=headers,
+                    proxy=proxy,
                     timeout=aiohttp.ClientTimeout(total=30)
                 ) as response:
                     response_text = await response.text()
@@ -204,7 +211,8 @@ class ImageGenerationService:
                             
                             async with session.get(
                                 f"https://api.replicate.com/v1/predictions/{prediction_id}",
-                                headers=headers
+                                headers=headers,
+                                proxy=proxy
                             ) as status_response:
                                 if status_response.status == 200:
                                     status_result = await status_response.json()
