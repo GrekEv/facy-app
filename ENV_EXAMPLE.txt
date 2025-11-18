@@ -8,14 +8,15 @@
 # Токен бота от BotFather
 BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
 
-# URL вашего Web App (ОПЦИОНАЛЬНО - можно использовать домен или Railway/Render/ngrok URL)
+# URL вашего Web App (ОПЦИОНАЛЬНО - можно использовать домен или Railway/Render/Vercel/ngrok URL)
 # Варианты:
 # 1. С доменом: WEBAPP_URL=https://your-domain.com
-# 2. Railway: WEBAPP_URL=https://your-app.up.railway.app (или оставьте пустым - определится автоматически)
-# 3. Render: WEBAPP_URL=https://your-app.onrender.com (или оставьте пустым - определится автоматически)
-# 4. ngrok: WEBAPP_URL=https://xxx.ngrok-free.app
-# 5. Оставить пустым - будет использован автоматически определенный URL или http://localhost:8000
-WEBAPP_URL=
+# 2. Vercel: WEBAPP_URL=https://facy-app.vercel.app
+# 3. Railway: WEBAPP_URL=https://your-app.up.railway.app (или оставьте пустым - определится автоматически)
+# 4. Render: WEBAPP_URL=https://your-app.onrender.com (или оставьте пустым - определится автоматически)
+# 5. ngrok: WEBAPP_URL=https://xxx.ngrok-free.app
+# 6. Оставить пустым - будет использован автоматически определенный URL или http://localhost:8000
+WEBAPP_URL=https://facy-app.vercel.app
 
 # ============================================
 # ОПЦИОНАЛЬНЫЕ ПЕРЕМЕННЫЕ

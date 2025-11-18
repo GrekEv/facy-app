@@ -22,6 +22,7 @@ vercel env add OPENAI_API_KEY
 
 ```
 BOT_TOKEN=ваш_токен_бота
+WEBAPP_URL=https://facy-app.vercel.app
 DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname
 OPENAI_API_KEY=sk-ваш_ключ_openai
 IMAGE_GENERATION_PROVIDER=openai
