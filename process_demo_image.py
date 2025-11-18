@@ -56,12 +56,13 @@ def remove_white_borders(image_path, output_path):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Использование: python3 process_demo_image.py <путь_к_изображению>")
-        print("Пример: python3 process_demo_image.py ~/Downloads/image.png")
+        print("Использование: python3 process_demo_image.py <путь_к_изображению> [before|after]")
+        print("Пример: python3 process_demo_image.py ~/Downloads/image.png after")
         sys.exit(1)
     
     input_path = sys.argv[1]
-    output_path = "static/images/demo-before-1.png"
+    position = sys.argv[2] if len(sys.argv) > 2 else "before"
+    output_path = f"static/images/demo-{position}-1.png"
     
     if not os.path.exists(input_path):
         print(f"❌ Файл не найден: {input_path}")
