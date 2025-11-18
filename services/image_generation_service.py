@@ -220,17 +220,36 @@ class ImageGenerationService:
                                     
                                     if status == "succeeded":
                                         output = status_result.get("output")
-                                        # Для ideogram output может быть строкой URL или списком
-                                        if isinstance(output, list) and len(output) > 0:
-                                            # Если это список, берем первый элемент
-                                            image_url = output[0] if isinstance(output[0], str) else output[0].get("url") if isinstance(output[0], dict) else None
-                                        elif isinstance(output, str):
+                                        logger.info(f"Replicate output type: {type(output)}, value: {output}")
+                                        
+                                        # Для ideogram-v3-turbo output может быть:
+                                        # 1. Строкой URL напрямую
+                                        # 2. Списком с URL
+                                        # 3. Объектом с методом url() (в Node.js SDK)
+                                        # 4. Словарем с ключом url
+                                        
+                                        image_url = None
+                                        if isinstance(output, str):
                                             image_url = output
+                                        elif isinstance(output, list):
+                                            if len(output) > 0:
+                                                if isinstance(output[0], str):
+                                                    image_url = output[0]
+                                                elif isinstance(output[0], dict):
+                                                    image_url = output[0].get("url") or output[0].get("output")
                                         elif isinstance(output, dict):
-                                            # Если output - словарь, ищем URL
-                                            image_url = output.get("url") or output.get("output")
-                                        else:
-                                            image_url = None
+                                            # Проверяем разные возможные ключи
+                                            image_url = (
+                                                output.get("url") or 
+                                                output.get("output") or
+                                                output.get("image_url") or
+                                                output.get("file")
+                                            )
+                                        
+                                        # Если все еще None, логируем для отладки
+                                        if not image_url:
+                                            logger.error(f"Could not extract image URL from output: {output}")
+                                            logger.error(f"Output type: {type(output)}, keys: {output.keys() if isinstance(output, dict) else 'N/A'}")
                                         
                                         if image_url:
                                             logger.info(f"Image generated successfully: {image_url}")
