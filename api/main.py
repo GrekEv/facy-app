@@ -83,7 +83,35 @@ if generated_dir.exists():
 if payments:
     app.include_router(payments.router)
 @app.get("/", response_class=HTMLResponse)
-async def read_root():
+async def read_root(request: Request):
+    env_log_file = BASE_DIR / "env_check.log"
+    env_info = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "request_url": str(request.url),
+        "request_method": request.method,
+        "headers": dict(request.headers),
+        "os_getenv": {
+            "API_BASE_URL": os.getenv("API_BASE_URL", "NOT SET"),
+            "WEBAPP_URL": os.getenv("WEBAPP_URL", "NOT SET"),
+            "DATABASE_URL": "SET" if os.getenv("DATABASE_URL") else "NOT SET",
+            "BOT_TOKEN": "SET" if os.getenv("BOT_TOKEN") else "NOT SET",
+            "REPLICATE_API_KEY": "SET" if os.getenv("REPLICATE_API_KEY") else "NOT SET",
+        },
+        "settings": {
+            "WEBAPP_URL": settings.WEBAPP_URL or "NOT SET",
+            "DATABASE_URL": "SET" if settings.DATABASE_URL else "NOT SET",
+            "BOT_TOKEN": "SET" if settings.BOT_TOKEN else "NOT SET",
+        }
+    }
+    
+    try:
+        with open(env_log_file, "a", encoding="utf-8") as log_f:
+            import json
+            log_f.write(json.dumps(env_info, indent=2, ensure_ascii=False) + "\n" + "="*80 + "\n")
+        logger.info(f"Environment info logged to {env_log_file}")
+    except Exception as e:
+        logger.error(f"Failed to write env log: {e}")
+    
     template_path = BASE_DIR / "templates" / "index.html"
     if template_path.exists():
         with open(template_path, "r", encoding="utf-8") as f:
