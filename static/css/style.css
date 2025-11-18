@@ -604,73 +604,40 @@ body {
     z-index: 1;
 }
 
-.referral-link-container {
+.referral-qr-container {
     display: flex;
-    gap: 0.75rem;
+    flex-direction: column;
+    align-items: center;
     margin-bottom: 1.5rem;
     position: relative;
     z-index: 1;
 }
 
-.referral-link-input {
-    flex: 1;
-    padding: 0.875rem 1.25rem;
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    font-family: inherit;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    transition: all 0.3s ease;
-}
-
-.referral-link-input:focus {
-    outline: none;
-    border-color: var(--primary-purple);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-}
-
-.btn-referral-copy {
-    padding: 0.875rem 1.25rem;
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1.2rem;
-    min-width: 56px;
+.referral-qr-code {
+    width: 200px;
+    height: 200px;
+    background: white;
+    padding: 1rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    overflow: hidden;
 }
 
-.btn-referral-copy::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
-    transition: left 0.5s;
+.referral-qr-code canvas,
+.referral-qr-code img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
 }
 
-.btn-referral-copy:hover::before {
-    left: 100%;
-}
-
-.btn-referral-copy:hover {
-    background: linear-gradient(135deg, var(--primary-purple), var(--primary-pink));
-    border-color: var(--primary-purple);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+.referral-qr-hint {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin: 0;
 }
 
 .btn-referral-share {

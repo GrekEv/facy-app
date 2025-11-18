@@ -112,10 +112,13 @@ function updatePrice() {
     }
 }
 
-// Обновление реферальной ссылки
+// Глобальная переменная для хранения реферальной ссылки
+let referralLink = null;
+
+// Обновление реферальной ссылки и генерация QR-кода
 function updateReferralLink() {
-    const referralLinkInput = document.getElementById('referralLink');
-    if (!referralLinkInput || !userData) return;
+    const referralQRCode = document.getElementById('referralQRCode');
+    if (!referralQRCode || !userData) return;
     
     // Получаем реферальный код пользователя
     const referralCode = userData.referral_code;
@@ -123,9 +126,28 @@ function updateReferralLink() {
     
     // Формируем реферальную ссылку на оплату с параметром ref
     const paymentUrl = window.STANDARD_PLAN_PAYMENT_URL || 'https://web.tribute.tg/p/n1Q';
-    const referralLink = `${paymentUrl}?ref=${referralCode}`;
+    referralLink = `${paymentUrl}?ref=${referralCode}`;
     
-    referralLinkInput.value = referralLink;
+    // Генерируем QR-код
+    if (typeof QRCode !== 'undefined') {
+        QRCode.toCanvas(referralQRCode, referralLink, {
+            width: 180,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        }, function (error) {
+            if (error) {
+                console.error('Error generating QR code:', error);
+                // Fallback - показываем ссылку текстом
+                referralQRCode.innerHTML = `<p style="color: var(--text-primary); word-break: break-all; padding: 1rem;">${referralLink}</p>`;
+            }
+        });
+    } else {
+        // Если библиотека не загрузилась, показываем ссылку текстом
+        referralQRCode.innerHTML = `<p style="color: var(--text-primary); word-break: break-all; padding: 1rem;">${referralLink}</p>`;
+    }
 }
 
 // Инициализация кнопок хедера (убрана кнопка создания видео)
@@ -333,43 +355,14 @@ function initButtons() {
     
     // Базовый тариф теперь всегда активен - кнопка заменена на надпись "Активен"
     
-    // Кнопка копирования реферальной ссылки
-    const copyReferralBtn = document.getElementById('copyReferralBtn');
-    if (copyReferralBtn) {
-        copyReferralBtn.addEventListener('click', () => {
-            const referralLinkInput = document.getElementById('referralLink');
-            if (referralLinkInput && referralLinkInput.value) {
-                referralLinkInput.select();
-                referralLinkInput.setSelectionRange(0, 99999); // Для мобильных устройств
-                
-                try {
-                    navigator.clipboard.writeText(referralLinkInput.value).then(() => {
-                        showNotification('Ссылка скопирована!', 'success');
-                    }).catch(() => {
-                        // Fallback для старых браузеров
-                        document.execCommand('copy');
-                        showNotification('Ссылка скопирована!', 'success');
-                    });
-                } catch (err) {
-                    // Fallback для старых браузеров
-                    document.execCommand('copy');
-                    showNotification('Ссылка скопирована!', 'success');
-                }
-            }
-        });
-    }
-    
     // Кнопка поделиться реферальной ссылкой
     const shareReferralBtn = document.getElementById('shareReferralBtn');
     if (shareReferralBtn) {
         shareReferralBtn.addEventListener('click', async () => {
-            const referralLinkInput = document.getElementById('referralLink');
-            if (!referralLinkInput || !referralLinkInput.value) {
+            if (!referralLink) {
                 showNotification('Реферальная ссылка не загружена', 'error');
                 return;
             }
-            
-            const referralLink = referralLinkInput.value;
             const shareText = `🎁 Привет! Попробуй OnlyFace - приложение для замены лиц и генерации видео!\n\n${referralLink}\n\nПри оплате подписки по этой ссылке мы оба получим бонусы! 🚀`;
             
             // Используем Telegram Share API если доступен
@@ -393,8 +386,13 @@ function initButtons() {
                     await navigator.clipboard.writeText(shareText);
                     showNotification('Текст для отправки скопирован! Вставьте его в сообщение другу.', 'success');
                 } catch (err) {
-                    referralLinkInput.select();
+                    // Создаем временный элемент для копирования
+                    const tempInput = document.createElement('input');
+                    tempInput.value = referralLink;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
                     document.execCommand('copy');
+                    document.body.removeChild(tempInput);
                     showNotification('Ссылка скопирована! Отправьте её другу.', 'success');
                 }
             }

@@ -6,6 +6,7 @@
     <title>OnlyFace - Стань кем угодно за 10 секунд</title>
     <link rel="stylesheet" href="/static/css/style.css?v=2">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script>
         // API URL определяется автоматически в app.js
         // На onlyface.art - локальный API (относительные пути)
@@ -155,15 +156,13 @@
                 <p class="referral-description">
                     При оплате подписки по твоей ссылке 50% от стоимости подписки друга вернется тебе на баланс
                 </p>
-                <div class="referral-link-container">
-                    <input type="text" id="referralLink" class="referral-link-input" readonly>
-                    <button class="btn btn-referral-copy" id="copyReferralBtn">
-                        <span>📋</span>
-                    </button>
+                <div class="referral-qr-container">
+                    <div id="referralQRCode" class="referral-qr-code"></div>
+                    <p class="referral-qr-hint">Отсканируй QR-код или отправь ссылку другу</p>
                 </div>
                 <button class="btn btn-referral-share" id="shareReferralBtn">
                     <span class="btn-icon">📤</span>
-                    <span class="btn-text">Поделиться с другом</span>
+                    <span class="btn-text">Поделиться ссылкой с другом</span>
                 </button>
             </div>
         </section>
