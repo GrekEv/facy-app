@@ -220,15 +220,36 @@ class VideoGenerationService:
                                     
                                     if status == "succeeded":
                                         output = status_result.get("output")
-                                        # Для minimax/video-01 output может быть строкой URL или объектом
+                                        logger.info(f"Replicate output type: {type(output)}, value: {output}")
+                                        
+                                        # Для minimax/video-01 output может быть:
+                                        # 1. Строкой URL напрямую
+                                        # 2. Списком с URL
+                                        # 3. Объектом с методом url() (в Node.js SDK)
+                                        # 4. Словарем с ключом url
+                                        
+                                        video_url = None
                                         if isinstance(output, str):
                                             video_url = output
-                                        elif isinstance(output, list) and len(output) > 0:
-                                            video_url = output[0] if isinstance(output[0], str) else output[0].get("url") if isinstance(output[0], dict) else None
+                                        elif isinstance(output, list):
+                                            if len(output) > 0:
+                                                if isinstance(output[0], str):
+                                                    video_url = output[0]
+                                                elif isinstance(output[0], dict):
+                                                    video_url = output[0].get("url") or output[0].get("output")
                                         elif isinstance(output, dict):
-                                            video_url = output.get("url") or output.get("output")
-                                        else:
-                                            video_url = None
+                                            # Проверяем разные возможные ключи
+                                            video_url = (
+                                                output.get("url") or 
+                                                output.get("output") or
+                                                output.get("video_url") or
+                                                output.get("file")
+                                            )
+                                        
+                                        # Если все еще None, логируем для отладки
+                                        if not video_url:
+                                            logger.error(f"Could not extract video URL from output: {output}")
+                                            logger.error(f"Output type: {type(output)}, keys: {output.keys() if isinstance(output, dict) else 'N/A'}")
                                         
                                         if video_url:
                                             logger.info(f"Video generated successfully: {video_url}")
