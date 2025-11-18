@@ -84,7 +84,7 @@ OPENAI_PROXY=http://proxy-server.com:8080
 
 ```bash
 # OpenAI ключ
-OPENAI_API_KEY=sk-ваш_ключ
+OPENAI_API_KEY=sk-proj-your-openai-api-key-here
 
 # Провайдер
 IMAGE_GENERATION_PROVIDER=openai

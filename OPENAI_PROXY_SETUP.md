@@ -35,7 +35,7 @@ OPENAI_PROXY=socks5://proxy.example.com:1080
 Добавьте в `.env` файл:
 
 ```bash
-OPENAI_API_KEY=sk-ваш_ключ
+OPENAI_API_KEY=sk-proj-your-openai-api-key-here
 IMAGE_GENERATION_PROVIDER=openai
 OPENAI_PROXY=http://your-proxy-server:port
 ```

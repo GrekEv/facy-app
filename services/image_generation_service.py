@@ -138,11 +138,25 @@ class ImageGenerationService:
                     "n": 1
                 }
                 
+                # Определяем URL для запроса
+                # Если прокси - это Cloudflare Workers (содержит workers.dev), используем его как endpoint
+                # Иначе используем обычный прокси
+                if proxy and 'workers.dev' in proxy:
+                    # Cloudflare Workers работает как reverse proxy
+                    # Используем URL Worker'а напрямую
+                    api_url = f"{proxy.rstrip('/')}/v1/images/generations"
+                    logger.info(f"Using Cloudflare Worker as reverse proxy: {api_url}")
+                    use_proxy = None
+                else:
+                    # Обычный HTTP прокси
+                    api_url = "https://api.openai.com/v1/images/generations"
+                    use_proxy = proxy
+                
                 async with session.post(
-                    "https://api.openai.com/v1/images/generations",
+                    api_url,
                     json=payload,
                     headers=headers,
-                    proxy=proxy
+                    proxy=use_proxy
                 ) as response:
                     if response.status == 200:
                         result = await response.json()
