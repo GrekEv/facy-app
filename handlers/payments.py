@@ -41,19 +41,19 @@ def get_payment_methods_keyboard(transaction_id: int) -> InlineKeyboardMarkup:
     )
     builder.row(
         InlineKeyboardButton(
-            text="�� ���птовал�та (BTC/ETH/USDT)",
+            text="�� ���птовал�та (BTC/ETH/USDT)",
             callback_data=f"pay_crypto_{transaction_id}"
         )
     )
     builder.row(
-        InlineKeyboardButton(text="� �азад", callback_data="buy_points")
+        InlineKeyboardButton(text="� �азад", callback_data="buy_points")
     )
     return builder.as_markup()
 def get_crypto_methods_keyboard(transaction_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text="�� Bitcoin (BTC)",
+            text="�� Bitcoin (BTC)",
             callback_data=f"crypto_btc_{transaction_id}"
         )
     )
@@ -65,12 +65,12 @@ def get_crypto_methods_keyboard(transaction_id: int) -> InlineKeyboardMarkup:
     )
     builder.row(
         InlineKeyboardButton(
-            text="�� Tether (USDT)",
+            text="�� Tether (USDT)",
             callback_data=f"crypto_usdt_{transaction_id}"
         )
     )
     builder.row(
-        InlineKeyboardButton(text="� �азад", callback_data=f"pay_methods_{transaction_id}")
+        InlineKeyboardButton(text="� �азад", callback_data=f"pay_methods_{transaction_id}")
     )
     return builder.as_markup()
 @router.callback_query(F.data.startswith("buy_"))
@@ -83,7 +83,7 @@ async def process_buy_points(callback: CallbackQuery):
         "2500": {"points": 2500, "price": 1499}
     }
     if amount_str not in packages:
-        await callback.answer("�еве�н�й пакет", show_alert=True)
+        await callback.answer("�еве�н�й пакет", show_alert=True)
         return
     package = packages[amount_str]
     async for session in get_session():
@@ -101,7 +101,7 @@ async def process_buy_points(callback: CallbackQuery):
             )
         except Exception as e:
             logger.error(f"Error creating payment: {e}")
-            await callback.answer("Ош��ка п�� �оздан�� платежа", show_alert=True)
+            await callback.answer("Ош��ка п�� �оздан�� платежа", show_alert=True)
     await callback.answer()
 @router.callback_query(F.data.startswith("pay_telegram_"))
 async def process_telegram_payment(callback: CallbackQuery, bot):
@@ -112,14 +112,14 @@ async def process_telegram_payment(callback: CallbackQuery, bot):
         )
         transaction = result.scalar_one_or_none()
         if not transaction or transaction.user_id != callback.from_user.id:
-            await callback.answer("Т�анзакц�� не найдена", show_alert=True)
+            await callback.answer("Т�анзакц�� не найдена", show_alert=True)
             return
-        prices = [LabeledPrice(label=f"{transaction.amount} по�нтов", amount=int(transaction.price * 100))]
+        prices = [LabeledPrice(label=f"{transaction.amount} по�нтов", amount=int(transaction.price * 100))]
         try:
             await bot.send_invoice(
                 chat_id=callback.from_user.id,
-                title=f"�окупка {transaction.amount} по�нтов",
-                description=f"�ополнен�е �алан�а на {transaction.amount} по�нтов",
+                title=f"�окупка {transaction.amount} по�нтов",
+                description=f"�ополнен�е �алан�а на {transaction.amount} по�нтов",
                 payload=f"transaction_{transaction_id}",
                 provider_token=settings.STRIPE_SECRET_KEY or "TEST",
                 currency="RUB",
@@ -133,7 +133,7 @@ async def process_telegram_payment(callback: CallbackQuery, bot):
             await callback.answer()
         except Exception as e:
             logger.error(f"Error sending invoice: {e}")
-            await callback.answer("Ош��ка п�� �оздан�� платежа", show_alert=True)
+            await callback.answer("Ош��ка п�� �оздан�� платежа", show_alert=True)
 @router.pre_checkout_query()
 async def process_pre_checkout(pre_checkout_query: PreCheckoutQuery, bot):
     await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
@@ -151,17 +151,17 @@ async def process_successful_payment(message: Message):
         if success:
             user = await UserService.get_user_by_telegram_id(session, message.from_user.id)
             await message.answer(
-                f"�латеж у�пешно о��а�отан!\n\n"
-                f"�ач��лено: {payment.total_amount / 100} по�нтов\n"
-                f"�аш �алан�: {user.balance if user else 0} по�нтов"
+                f"�латеж у�пешно о��а�отан!\n\n"
+                f"�ач��лено: {payment.total_amount / 100} по�нтов\n"
+                f"�аш �алан�: {user.balance if user else 0} по�нтов"
             )
         else:
-            await message.answer("Ош��ка п�� о��а�отке платежа")
+            await message.answer("Ош��ка п�� о��а�отке платежа")
 @router.callback_query(F.data.startswith("pay_crypto_"))
 async def process_crypto_payment(callback: CallbackQuery):
     transaction_id = int(callback.data.replace("pay_crypto_", ""))
     await callback.message.edit_text(
-        "���е��те к��птовал�ту:",
+        "���е��те к��птовал�ту:",
         reply_markup=get_crypto_methods_keyboard(transaction_id)
     )
     await callback.answer()
@@ -180,14 +180,14 @@ async def process_crypto_method(callback: CallbackQuery):
             elif crypto_currency == "USDT":
                 wallet_address = settings.CRYPTO_WALLET_ADDRESS_USDT
             if not wallet_address:
-                await callback.answer("���птовал�та не на�т�оена", show_alert=True)
+                await callback.answer("���птовал�та не на�т�оена", show_alert=True)
                 return
             result = await session.execute(
                 select(Transaction).where(Transaction.id == transaction_id)
             )
             transaction = result.scalar_one_or_none()
             if not transaction:
-                await callback.answer("Т�анзакц�� не найдена", show_alert=True)
+                await callback.answer("Т�анзакц�� не найдена", show_alert=True)
                 return
             crypto_data = await payment_service.PaymentService.process_crypto_payment(
                 session=session,
@@ -199,29 +199,29 @@ async def process_crypto_method(callback: CallbackQuery):
             builder = InlineKeyboardBuilder()
             builder.row(
                 InlineKeyboardButton(
-                    text="�одтве�д�т� оплату",
+                    text="�одтве�д�т� оплату",
                     callback_data=f"confirm_crypto_{transaction_id}"
                 )
             )
             builder.row(
-                InlineKeyboardButton(text="�азад", callback_data="buy_points")
+                InlineKeyboardButton(text="�азад", callback_data="buy_points")
             )
             await callback.message.edit_text(text, reply_markup=builder.as_markup())
         except Exception as e:
             logger.error(f"Error processing crypto payment: {e}")
-            await callback.answer("Ош��ка п�� �оздан�� платежа", show_alert=True)
+            await callback.answer("Ош��ка п�� �оздан�� платежа", show_alert=True)
     await callback.answer()
 @router.callback_query(F.data.startswith("pay_card_"))
 async def process_card_payment(callback: CallbackQuery):
     transaction_id = int(callback.data.replace("pay_card_", ""))
     await callback.answer(
-        " Оплата ка�той �удет до�тупна по�ле на�т�ойк� YooKassa",
+        " Оплата ка�той �удет до�тупна по�ле на�т�ойк� YooKassa",
         show_alert=True
     )
 @router.callback_query(F.data.startswith("pay_wallet_"))
 async def process_wallet_payment(callback: CallbackQuery):
     transaction_id = int(callback.data.replace("pay_wallet_", ""))
     await callback.answer(
-        " Оплата че�ез Google Pay / Samsung Pay �удет до�тупна по�ле на�т�ойк�",
+        " Оплата че�ез Google Pay / Samsung Pay �удет до�тупна по�ле на�т�ойк�",
         show_alert=True
     )

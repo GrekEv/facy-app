@@ -107,7 +107,7 @@ class UserService:
     ) -> tuple[bool, Optional[str]]:
         from services.email_service import EmailService
         if not EmailService.validate_email(email):
-            return False, "�еве�н�й фо�мат email"
+            return False, "РРµРІРµСРЅСР№ С„РѕСРјР°С‚ email"
         user = await UserService.get_or_create_user(
             session,
             telegram_id=telegram_id
@@ -125,7 +125,7 @@ class UserService:
             return True, None
         else:
             logger.error(f"Failed to send verification code to {email}")
-            return False, "�е удало�� отп�ав�т� код. ��ове��те на�т�ойк� SMTP."
+            return False, "РРµ СѓРґР°Р»РѕСС РѕС‚РїСР°РІРС‚С РєРѕРґ. РСРѕРІРµССС‚Рµ РЅР°СС‚СРѕР№РєР SMTP."
     @staticmethod
     async def verify_email_code(
         session: AsyncSession,
@@ -137,13 +137,13 @@ class UserService:
         )
         user = result.scalar_one_or_none()
         if not user:
-            return False, "�ол�зовател� не найден"
+            return False, "РРѕР»СР·РѕРІР°С‚РµР»С РЅРµ РЅР°Р№РґРµРЅ"
         if not user.verification_code:
-            return False, "�од подтве�жден�� не ��л отп�авлен"
+            return False, "РРѕРґ РїРѕРґС‚РІРµСР¶РґРµРЅРС РЅРµ РСР» РѕС‚РїСР°РІР»РµРЅ"
         if user.verification_code != code:
-            return False, "�еве�н�й код подтве�жден��"
+            return False, "РРµРІРµСРЅСР№ РєРѕРґ РїРѕРґС‚РІРµСР¶РґРµРЅРС"
         if user.verification_code_expires and user.verification_code_expires < datetime.utcnow():
-            return False, "�од подтве�жден�� ��тек. Зап�о��те нов�й код."
+            return False, "РРѕРґ РїРѕРґС‚РІРµСР¶РґРµРЅРС РСС‚РµРє. Р—Р°РїСРѕСРС‚Рµ РЅРѕРІСР№ РєРѕРґ."
         user.email_verified = True
         user.verification_code = None
         user.verification_code_expires = None

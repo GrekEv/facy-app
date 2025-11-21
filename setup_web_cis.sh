@@ -1,5 +1,5 @@
 #!/bin/bash
-# �к��пт на�т�ойк� ве�-п��ложен�� дл� �Ф/�Б
+# �к��пт на�т�ойк� ве�-п��ложен�� дл� �Ф/�Б
 
 set -e
 
@@ -11,28 +11,28 @@ NC='\033[0m'
 
 cd ~/facy-app || cd /home/ubuntu/facy-app || exit 1
 
-echo -e "${BLUE} �а�т�ойка ве�-п��ложен�� дл� �Ф/�Б${NC}"
+echo -e "${BLUE} �а�т�ойка ве�-п��ложен�� дл� �Ф/�Б${NC}"
 echo "======================================"
 echo ""
 
-# Зап�о� домена
-echo -e "${BLUE}�вед�те ваш домен (по умолчан��: onlyface.art):${NC}"
+# Зап�о� домена
+echo -e "${BLUE}�вед�те ваш домен (по умолчан��: onlyface.art):${NC}"
 read -r DOMAIN
 
 if [ -z "$DOMAIN" ]; then
     DOMAIN="onlyface.art"
-    echo -e "${GREEN}И�пол�зует�� домен по умолчан��: $DOMAIN${NC}"
+    echo -e "${GREEN}И�пол�зует�� домен по умолчан��: $DOMAIN${NC}"
 fi
 
 echo ""
-echo -e "${BLUE}� У�тановка Nginx...${NC}"
+echo -e "${BLUE}� У�тановка Nginx...${NC}"
 sudo apt update
 sudo apt install -y nginx
 
 echo ""
-echo -e "${BLUE} �оздан�е конф��у�ац�� Nginx...${NC}"
+echo -e "${BLUE} �оздан�е конф��у�ац�� Nginx...${NC}"
 
-# �оздаем конф��у�ац��
+# �оздаем конф��у�ац��
 sudo tee /etc/nginx/sites-available/facy > /dev/null <<EOF
 server {
     listen 80;
@@ -81,74 +81,74 @@ server {
 }
 EOF
 
-# �кт�вац��
+# �кт�вац��
 sudo ln -sf /etc/nginx/sites-available/facy /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 
 echo ""
-echo -e "${BLUE} ��ове�ка конф��у�ац��...${NC}"
+echo -e "${BLUE} ��ове�ка конф��у�ац��...${NC}"
 sudo nginx -t
 
 echo ""
-echo -e "${BLUE}� �е�езапу�к Nginx...${NC}"
+echo -e "${BLUE}� �е�езапу�к Nginx...${NC}"
 sudo systemctl restart nginx
 sudo systemctl enable nginx
 
 echo ""
-echo -e "${GREEN} Nginx на�т�оен!${NC}"
+echo -e "${GREEN} Nginx на�т�оен!${NC}"
 
 echo ""
-echo -e "${YELLOW}  У�ед�те��, что DNS зап��� дл� $DOMAIN указ�вает на 158.160.96.182${NC}"
-echo -e "${YELLOW}�ажм�те Enter ко�да DNS на�т�оен, �л� Ctrl+C дл� отмен�...${NC}"
+echo -e "${YELLOW}  У�ед�те��, что DNS зап��� дл� $DOMAIN указ�вает на 158.160.96.182${NC}"
+echo -e "${YELLOW}�ажм�те Enter ко�да DNS на�т�оен, �л� Ctrl+C дл� отмен�...${NC}"
 read -r
 
 echo ""
-echo -e "${BLUE} У�тановка SSL �е�т�ф�ката (Let's Encrypt)...${NC}"
+echo -e "${BLUE} У�тановка SSL �е�т�ф�ката (Let's Encrypt)...${NC}"
 sudo apt install -y certbot python3-certbot-nginx
 
 echo ""
-echo -e "${BLUE}�олучен�е SSL �е�т�ф�ката...${NC}"
+echo -e "${BLUE}�олучен�е SSL �е�т�ф�ката...${NC}"
 sudo certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --non-interactive --agree-tos --email "admin@$DOMAIN" || {
-    echo -e "${RED} �е удало�� получ�т� �е�т�ф�кат!${NC}"
-    echo -e "${YELLOW}��ове��те DNS на�т�ойк� � поп�о�уйте позже:${NC}"
+    echo -e "${RED} �е удало�� получ�т� �е�т�ф�кат!${NC}"
+    echo -e "${YELLOW}��ове��те DNS на�т�ойк� � поп�о�уйте позже:${NC}"
     echo "sudo certbot --nginx -d $DOMAIN"
     exit 1
 }
 
-# О�новлен�е .env
+# О�новлен�е .env
 if [ -f .env ]; then
     echo ""
-    echo -e "${BLUE}О�новлен�е WEBAPP_URL в .env...${NC}"
+    echo -e "${BLUE}О�новлен�е WEBAPP_URL в .env...${NC}"
     sed -i "s|WEBAPP_URL=.*|WEBAPP_URL=https://$DOMAIN|g" .env
-    echo -e "${GREEN} WEBAPP_URL о�новлен на https://$DOMAIN${NC}"
+    echo -e "${GREEN} WEBAPP_URL о�новлен на https://$DOMAIN${NC}"
 fi
 
-# �а�т�ойка firewall
+# �а�т�ойка firewall
 echo ""
-echo -e "${BLUE} �а�т�ойка firewall...${NC}"
+echo -e "${BLUE} �а�т�ойка firewall...${NC}"
 sudo ufw allow 22/tcp
 sudo ufw allow 80/tcp
 sudo ufw allow 443/tcp
 sudo ufw --force enable || true
 
 echo ""
-echo -e "${GREEN} �е�-п��ложен�е на�т�оено!${NC}"
+echo -e "${GREEN} �е�-п��ложен�е на�т�оено!${NC}"
 echo ""
-echo -e "${BLUE} Инфо�мац��:${NC}"
+echo -e "${BLUE} Инфо�мац��:${NC}"
 echo "  - HTTPS: https://$DOMAIN"
 echo "  - HTTP: http://$DOMAIN"
 echo "  - API Health: https://$DOMAIN/health"
 echo ""
-echo -e "${BLUE} �леду���е ша��:${NC}"
-echo "1. �а�т�ойте Menu Button в BotFather:"
-echo "   - Отк�ойте @BotFather"
-echo "   - /mybots � в��е��те �ота"
-echo "   - Bot Settings � Menu Button"
+echo -e "${BLUE} �леду���е ша��:${NC}"
+echo "1. �а�т�ойте Menu Button в BotFather:"
+echo "   - Отк�ойте @BotFather"
+echo "   - /mybots � в��е��те �ота"
+echo "   - Bot Settings � Menu Button"
 echo "   - URL: https://$DOMAIN"
 echo ""
-echo "2. �е�езапу�т�те п��ложен�е:"
+echo "2. �е�езапу�т�те п��ложен�е:"
 echo "   docker compose -f docker-compose.prod.yml restart"
 echo ""
-echo "3. ��ове��те �а�оту:"
+echo "3. ��ове��те �а�оту:"
 echo "   curl https://$DOMAIN/health"
 

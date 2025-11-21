@@ -1,4 +1,4 @@
-"""�е�в�� дл� о��а�отк� платежей"""
+"""РРµСРІРС РґР»С РѕРСР°РРѕС‚РєР РїР»Р°С‚РµР¶РµР№"""
 import logging
 import json
 import uuid
@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class PaymentService:
-    """�е�в�� дл� �а�от� � платежам�"""
+    """РРµСРІРС РґР»С СР°РРѕС‚С С РїР»Р°С‚РµР¶Р°РјР"""
     
-    # �акет� по�нтов
+    # РР°РєРµС‚С РїРѕРРЅС‚РѕРІ
     POINT_PACKAGES = {
         "100": {"points": 100, "price": 99.0},
         "500": {"points": 500, "price": 399.0},
@@ -33,28 +33,28 @@ class PaymentService:
         promo_code: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        �оздат� платеж
+        РРѕР·РґР°С‚С РїР»Р°С‚РµР¶
         
         Args:
-            session: �е���� Б�
-            user_id: ID пол�зовател�
-            package_key: �л�ч пакета (100, 500, 1000, 2500)
-            payment_provider: ��овайде� платежа (telegram, stripe, yookassa, crypto, google_pay, samsung_pay)
-            promo_code: ��омокод (опц�онал�но)
+            session: РРµССРС Р‘Р
+            user_id: ID РїРѕР»СР·РѕРІР°С‚РµР»С
+            package_key: РР»СС‡ РїР°РєРµС‚Р° (100, 500, 1000, 2500)
+            payment_provider: РСРѕРІР°Р№РґРµС РїР»Р°С‚РµР¶Р° (telegram, stripe, yookassa, crypto, google_pay, samsung_pay)
+            promo_code: РСРѕРјРѕРєРѕРґ (РѕРїС†РРѕРЅР°Р»СРЅРѕ)
             
         Returns:
-            �лова�� � данн�м� платежа
+            РР»РѕРІР°СС С РґР°РЅРЅСРјР РїР»Р°С‚РµР¶Р°
         """
         if package_key not in PaymentService.POINT_PACKAGES:
-            raise ValueError(f"�еве�н�й пакет: {package_key}")
+            raise ValueError(f"РРµРІРµСРЅСР№ РїР°РєРµС‚: {package_key}")
         
         package = PaymentService.POINT_PACKAGES[package_key]
         user = await UserService.get_user_by_id(session, user_id)
         
         if not user:
-            raise ValueError("�ол�зовател� не найден")
+            raise ValueError("РРѕР»СР·РѕРІР°С‚РµР»С РЅРµ РЅР°Р№РґРµРЅ")
         
-        # ��ове�ка п�омокода
+        # РСРѕРІРµСРєР° РїСРѕРјРѕРєРѕРґР°
         discount_amount = 0.0
         promo_code_obj = None
         
@@ -72,7 +72,7 @@ class PaymentService:
         
         final_price = package["price"] - discount_amount
         
-        # �оздан�е т�анзакц��
+        # РРѕР·РґР°РЅРРµ С‚СР°РЅР·Р°РєС†РР
         transaction = Transaction(
             user_id=user_id,
             amount=package["points"],
@@ -82,7 +82,7 @@ class PaymentService:
             payment_provider=payment_provider,
             promo_code_id=promo_code_obj.id if promo_code_obj else None,
             discount_amount=discount_amount,
-            expires_at=datetime.utcnow() + timedelta(hours=24)  # �л� к��птоплатежей
+            expires_at=datetime.utcnow() + timedelta(hours=24)  # РР»С РєСРРїС‚РѕРїР»Р°С‚РµР¶РµР№
         )
         
         session.add(transaction)
@@ -107,7 +107,7 @@ class PaymentService:
         code: str,
         order_amount: float
     ) -> Optional[PromoCode]:
-        """�ал�дац�� п�омокода"""
+        """РР°Р»РРґР°С†РС РїСРѕРјРѕРєРѕРґР°"""
         result = await session.execute(
             select(PromoCode).where(PromoCode.code == code.upper())
         )
@@ -119,18 +119,18 @@ class PaymentService:
         if not promo.is_active:
             return None
         
-        # ��ове�ка ��ока дей�тв��
+        # РСРѕРІРµСРєР° ССРѕРєР° РґРµР№СС‚РІРС
         now = datetime.utcnow()
         if promo.valid_from and now < promo.valid_from:
             return None
         if promo.valid_until and now > promo.valid_until:
             return None
         
-        # ��ове�ка м�н�мал�ной �умм�
+        # РСРѕРІРµСРєР° РјРРЅРРјР°Р»СРЅРѕР№ ССѓРјРјС
         if promo.min_amount and order_amount < promo.min_amount:
             return None
         
-        # ��ове�ка мак��мал�но�о кол�че�тва ��пол�зован�й
+        # РСРѕРІРµСРєР° РјР°РєСРРјР°Р»СРЅРѕРРѕ РєРѕР»РС‡РµСС‚РІР° РСРїРѕР»СР·РѕРІР°РЅРР№
         if promo.max_uses and promo.used_count >= promo.max_uses:
             return None
         
@@ -143,7 +143,7 @@ class PaymentService:
         payment_id: str,
         provider_payment_charge_id: str
     ) -> bool:
-        """О��а�отка платежа че�ез Telegram Payments"""
+        """РћРСР°РРѕС‚РєР° РїР»Р°С‚РµР¶Р° С‡РµСРµР· Telegram Payments"""
         result = await session.execute(
             select(Transaction).where(Transaction.id == transaction_id)
         )
@@ -155,12 +155,12 @@ class PaymentService:
         if transaction.status != "pending":
             return False
         
-        # О�новлен�е т�анзакц��
+        # РћРРЅРѕРІР»РµРЅРРµ С‚СР°РЅР·Р°РєС†РР
         transaction.status = "completed"
         transaction.payment_id = provider_payment_charge_id
         transaction.completed_at = datetime.utcnow()
         
-        # �ач��лен�е по�нтов пол�зовател�
+        # РР°С‡РСР»РµРЅРРµ РїРѕРРЅС‚РѕРІ РїРѕР»СР·РѕРІР°С‚РµР»С
         user = await UserService.get_user_by_id(session, transaction.user_id)
         if user:
             user.balance += transaction.amount
@@ -182,16 +182,16 @@ class PaymentService:
         crypto_address: str,
         crypto_amount: float
     ) -> Dict[str, Any]:
-        """�оздан�е к��птоплатежа"""
+        """РРѕР·РґР°РЅРРµ РєСРРїС‚РѕРїР»Р°С‚РµР¶Р°"""
         result = await session.execute(
             select(Transaction).where(Transaction.id == transaction_id)
         )
         transaction = result.scalar_one_or_none()
         
         if not transaction:
-            raise ValueError("Т�анзакц�� не найдена")
+            raise ValueError("РўСР°РЅР·Р°РєС†РС РЅРµ РЅР°Р№РґРµРЅР°")
         
-        # О�новлен�е т�анзакц�� � данн�м� к��пт�
+        # РћРРЅРѕРІР»РµРЅРРµ С‚СР°РЅР·Р°РєС†РР С РґР°РЅРЅСРјР РєСРРїС‚С
         transaction.crypto_currency = crypto_currency
         transaction.crypto_address = crypto_address
         transaction.crypto_amount = crypto_amount
@@ -213,7 +213,7 @@ class PaymentService:
         transaction_id: int,
         tx_hash: str
     ) -> bool:
-        """��ове�ка к��птоплатежа по �ешу т�анзакц��"""
+        """РСРѕРІРµСРєР° РєСРРїС‚РѕРїР»Р°С‚РµР¶Р° РїРѕ СРµС€Сѓ С‚СР°РЅР·Р°РєС†РР"""
         result = await session.execute(
             select(Transaction).where(Transaction.id == transaction_id)
         )
@@ -222,13 +222,13 @@ class PaymentService:
         if not transaction:
             return False
         
-        # Зде�� должна ��т� п�ове�ка т�анзакц�� че�ез �локчейн API
-        # �ока что п�о�то о�новл�ем �тату�
+        # Р—РґРµСС РґРѕР»Р¶РЅР° РСС‚С РїСРѕРІРµСРєР° С‚СР°РЅР·Р°РєС†РР С‡РµСРµР· РР»РѕРєС‡РµР№РЅ API
+        # РРѕРєР° С‡С‚Рѕ РїСРѕСС‚Рѕ РѕРРЅРѕРІР»СРµРј СС‚Р°С‚СѓС
         transaction.crypto_tx_hash = tx_hash
         transaction.status = "completed"
         transaction.completed_at = datetime.utcnow()
         
-        # �ач��лен�е по�нтов
+        # РР°С‡РСР»РµРЅРРµ РїРѕРРЅС‚РѕРІ
         user = await UserService.get_user_by_id(session, transaction.user_id)
         if user:
             user.balance += transaction.amount
@@ -243,7 +243,7 @@ class PaymentService:
         session: AsyncSession,
         transaction_id: int
     ) -> Optional[Dict[str, Any]]:
-        """�олуч�т� �тату� платежа"""
+        """РРѕР»СѓС‡РС‚С СС‚Р°С‚СѓС РїР»Р°С‚РµР¶Р°"""
         result = await session.execute(
             select(Transaction).where(Transaction.id == transaction_id)
         )

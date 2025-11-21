@@ -94,9 +94,6 @@ async def read_root(request: Request):
         "os_getenv": {
             "API_BASE_URL": os.getenv("API_BASE_URL", "NOT SET"),
             "WEBAPP_URL": os.getenv("WEBAPP_URL", "NOT SET"),
-            "VERCEL": os.getenv("VERCEL", "NOT SET"),
-            "VERCEL_URL": os.getenv("VERCEL_URL", "NOT SET"),
-            "VERCEL_ENV": os.getenv("VERCEL_ENV", "NOT SET"),
             "DATABASE_URL": "SET" if os.getenv("DATABASE_URL") else "NOT SET",
             "BOT_TOKEN": "SET" if os.getenv("BOT_TOKEN") else "NOT SET",
             "REPLICATE_API_KEY": "SET" if os.getenv("REPLICATE_API_KEY") else "NOT SET",
@@ -150,16 +147,8 @@ async def read_root(request: Request):
                 parsed = urlparse(str(request.url))
                 hostname = parsed.netloc.lower()
                 
-                # Проверяем, является ли это Vercel deployment
-                is_vercel = (
-                    "vercel.app" in hostname or
-                    os.getenv("VERCEL") == "1" or
-                    os.getenv("VERCEL_URL") is not None
-                )
-                
-                # Проверяем другие платформы, где API и фронтенд на одном домене
+                # Проверяем, где API и фронтенд на одном домене
                 is_same_domain = (
-                    is_vercel or
                     "onlyface.art" in hostname or
                     "onlyface" in hostname or
                     hostname in ["localhost", "127.0.0.1"] or
@@ -169,7 +158,7 @@ async def read_root(request: Request):
                 if is_same_domain:
                     # API и фронтенд на одном домене - используем относительные пути
                     api_base_url = ""
-                    platform = "Vercel" if is_vercel else "same domain"
+                    platform = "same domain"
                     logger.info(
                         f"API_BASE_URL not set, detected {platform} deployment. "
                         f"Using relative paths (empty string). Hostname: {hostname}"
@@ -630,7 +619,7 @@ async def generate_referral_qr(
             await session.refresh(user)
             logger.info(f"Generated referral_code {new_referral_code} for user {telegram_id} in QR endpoint")
         referral_code = user.referral_code
-        webapp_url = settings.WEBAPP_URL or "https://facy-app.vercel.app"
+        webapp_url = settings.WEBAPP_URL or "https://onlyface.art"
         referral_link = f"{webapp_url}?ref={referral_code}"
         qr = qrcode.QRCode(
             version=1,

@@ -1,4 +1,5 @@
-"""�одул� �аз� данн��"""
+# -*- coding: utf-8 -*-
+"""Модуль базы данных"""
 from .models import Base, User, Generation, Transaction
 from .database import init_db, get_session
 

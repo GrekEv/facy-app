@@ -1,4 +1,5 @@
-"""�а�ота � �азой данн��"""
+# -*- coding: utf-8 -*-
+"""ÐÐ°ÐÐ¾ÑÐ° Ñ ÐÐ°Ð·Ð¾Ð¹ Ð´Ð°Ð½Ð½ÑÑ"""
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
@@ -9,47 +10,52 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Лен�ва� �н�ц�ал�зац�� дв�жка �аз� данн��
+# ÐÐµÐ½ÐÐ²Ð°Ñ ÐÐ½ÐÑÐÐ°Ð»ÐÐ·Ð°ÑÐÑ Ð´Ð²ÐÐ¶ÐºÐ° ÐÐ°Ð·Ñ Ð´Ð°Ð½Ð½ÑÑ
 _engine = None
 _AsyncSessionLocal = None
 
 def _init_engine():
-    """Ин�ц�ал�з��оват� дв�жок �аз� данн��"""
+    """ÐÐ½ÐÑÐÐ°Ð»ÐÐ·ÐÑÐ¾Ð²Ð°ÑÑ Ð´Ð²ÐÐ¶Ð¾Ðº ÐÐ°Ð·Ñ Ð´Ð°Ð½Ð½ÑÑ"""
     global _engine, _AsyncSessionLocal
     
     if _engine is not None:
-        return  # Уже �н�ц�ал�з��ован
+        return  # Ð£Ð¶Ðµ ÐÐ½ÐÑÐÐ°Ð»ÐÐ·ÐÑÐ¾Ð²Ð°Ð½
     
     if not settings.DATABASE_URL:
         logger.warning(
             "DATABASE_URL not set. Database operations will fail. "
             "Please set DATABASE_URL environment variable. "
-            "For Vercel serverless, use PostgreSQL: postgresql+asyncpg://user:password@host:port/dbname"
+            "For Yandex Cloud, use PostgreSQL: postgresql+asyncpg://user:password@rc1a-xxx.mdb.yandexcloud.net:6432/dbname?ssl=require"
         )
-        # �оздаем за�лушку что�� не падат� п�� �мпо�те
+        # ÐÐ¾Ð·Ð´Ð°ÐµÐ¼ Ð·Ð°ÐÐ»ÑÑÐºÑ ÑÑÐ¾ÐÑ Ð½Ðµ Ð¿Ð°Ð´Ð°ÑÑ Ð¿ÑÐ ÐÐ¼Ð¿Ð¾ÑÑÐµ
         return
     
-    # �втомат�че�кое п�ео��азован�е �танда�тно�о PostgreSQL URL дл� asyncpg
+    # ÐÐ²ÑÐ¾Ð¼Ð°ÑÐÑÐµÑÐºÐ¾Ðµ Ð¿ÑÐµÐ¾ÐÑÐ°Ð·Ð¾Ð²Ð°Ð½ÐÐµ ÑÑÐ°Ð½Ð´Ð°ÑÑÐ½Ð¾ÐÐ¾ PostgreSQL URL Ð´Ð»Ñ asyncpg
     database_url = settings.DATABASE_URL
     ssl_required = False
     
-    # ��ове��ем нал�ч�е sslmode=require в URL
-    if "sslmode=require" in database_url:
+    # ÐÑÐ¾Ð²ÐµÑÑÐµÐ¼ Ð½Ð°Ð»ÐÑÐÐµ sslmode=require Ð² URL
+    if "sslmode=require" in database_url or "ssl=require" in database_url:
         ssl_required = True
-        # У���аем па�амет� sslmode �з URL (asyncpg не подде�ж�вает е�о в URL)
+        # Ð£ÐÐÑÐ°ÐµÐ¼ Ð¿Ð°ÑÐ°Ð¼ÐµÑÑ sslmode ÐÐ· URL (asyncpg Ð½Ðµ Ð¿Ð¾Ð´Ð´ÐµÑÐ¶ÐÐ²Ð°ÐµÑ ÐµÐÐ¾ Ð² URL)
         database_url = database_url.replace("?sslmode=require", "").replace("&sslmode=require", "")
+        database_url = database_url.replace("?ssl=require", "").replace("&ssl=require", "")
     
     if database_url.startswith("postgresql://") and not database_url.startswith("postgresql+asyncpg://"):
-        # ��ео��азуем �танда�тн�й PostgreSQL URL дл� asyncpg
+        # ÐÑÐµÐ¾ÐÑÐ°Ð·ÑÐµÐ¼ ÑÑÐ°Ð½Ð´Ð°ÑÑÐ½ÑÐ¹ PostgreSQL URL Ð´Ð»Ñ asyncpg
         database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        logger.info("Converted PostgreSQL URL to asyncpg format for Neon/Postgres compatibility")
+        logger.info("Converted PostgreSQL URL to asyncpg format for Yandex Cloud compatibility")
     
-    # �а�т�ойка SSL дл� Neon � д�у��� п�овайде�ов, т�е�у���� SSL
+    # ÐÐ°ÑÑÑÐ¾Ð¹ÐºÐ° SSL Ð´Ð»Ñ Yandex Cloud Ð Ð´ÑÑÐÐÑ Ð¿ÑÐ¾Ð²Ð°Ð¹Ð´ÐµÑÐ¾Ð², ÑÑÐµÐÑÑÑÐÑ SSL
     connect_args = {}
     if ssl_required:
         import ssl
-        connect_args["ssl"] = ssl.create_default_context()
-        logger.info("SSL enabled for database connection (Neon/Postgres)")
+        # Yandex Cloud использует самоподписанный сертификат, поэтому отключаем проверку
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        connect_args["ssl"] = ssl_context
+        logger.info("SSL enabled for database connection (Yandex Cloud, self-signed cert)")
     
     try:
         _engine = create_async_engine(
@@ -69,25 +75,25 @@ def _init_engine():
         logger.error(f"Failed to initialize database engine: {e}")
         raise
 
-# Ин�ц�ал�з��уем п�� �мпо�те модул� (но тол�ко е�л� DATABASE_URL у�тановлен)
+# ÐÐ½ÐÑÐÐ°Ð»ÐÐ·ÐÑÑÐµÐ¼ Ð¿ÑÐ ÐÐ¼Ð¿Ð¾ÑÑÐµ Ð¼Ð¾Ð´ÑÐ»Ñ (Ð½Ð¾ ÑÐ¾Ð»ÑÐºÐ¾ ÐµÑÐ»Ð DATABASE_URL ÑÑÑÐ°Ð½Ð¾Ð²Ð»ÐµÐ½)
 _init_engine()
 
-# �л� о��атной �овме�т�мо�т� - ��пол�зуем функц�� вме�то п��мо�о до�тупа
+# ÐÐ»Ñ Ð¾ÐÑÐ°ÑÐ½Ð¾Ð¹ ÑÐ¾Ð²Ð¼ÐµÑÑÐÐ¼Ð¾ÑÑÐ - ÐÑÐ¿Ð¾Ð»ÑÐ·ÑÐµÐ¼ ÑÑÐ½ÐºÑÐÐ Ð²Ð¼ÐµÑÑÐ¾ Ð¿ÑÑÐ¼Ð¾ÐÐ¾ Ð´Ð¾ÑÑÑÐ¿Ð°
 def get_engine():
-    """�олуч�т� дв�жок �аз� данн��"""
+    """ÐÐ¾Ð»ÑÑÐÑÑ Ð´Ð²ÐÐ¶Ð¾Ðº ÐÐ°Ð·Ñ Ð´Ð°Ð½Ð½ÑÑ"""
     _init_engine()
     if _engine is None:
         raise ValueError("DATABASE_URL not set. Cannot initialize database engine.")
     return _engine
 
 def get_session_factory():
-    """�олуч�т� фа���ку �е���й"""
+    """ÐÐ¾Ð»ÑÑÐÑÑ ÑÐ°ÐÑÐÐºÑ ÑÐµÑÑÐÐ¹"""
     _init_engine()
     if _AsyncSessionLocal is None:
         raise ValueError("DATABASE_URL not set. Cannot initialize session factory.")
     return _AsyncSessionLocal
 
-# �л� о��атной �овме�т�мо�т� - �вой�тва
+# ÐÐ»Ñ Ð¾ÐÑÐ°ÑÐ½Ð¾Ð¹ ÑÐ¾Ð²Ð¼ÐµÑÑÐÐ¼Ð¾ÑÑÐ - ÑÐ²Ð¾Ð¹ÑÑÐ²Ð°
 class _EngineProxy:
     def __getattr__(self, name):
         return getattr(get_engine(), name)
@@ -103,27 +109,27 @@ AsyncSessionLocal = _SessionFactoryProxy()
 
 
 async def apply_security_policies():
-    """���мен�т� п�ав�ла �езопа�но�т� �з SQL файла (тол�ко дл� PostgreSQL)"""
+    """ÐÑÐÐ¼ÐµÐ½ÐÑÑ Ð¿ÑÐ°Ð²ÐÐ»Ð° ÐÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑÐ ÐÐ· SQL ÑÐ°Ð¹Ð»Ð° (ÑÐ¾Ð»ÑÐºÐ¾ Ð´Ð»Ñ PostgreSQL)"""
     if not settings.DATABASE_URL.startswith("postgresql"):
-        logger.info("��ав�ла �езопа�но�т� п��мен��т�� тол�ко дл� PostgreSQL. ��опу�каем.")
+        logger.info("ÐÑÐ°Ð²ÐÐ»Ð° ÐÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑÐ Ð¿ÑÐÐ¼ÐµÐ½ÑÑÑÑÑ ÑÐ¾Ð»ÑÐºÐ¾ Ð´Ð»Ñ PostgreSQL. ÐÑÐ¾Ð¿ÑÑÐºÐ°ÐµÐ¼.")
         return
     
     sql_file_path = os.path.join(os.path.dirname(__file__), "security_policies.sql")
     
     if not os.path.exists(sql_file_path):
-        logger.warning(f"Файл п�ав�л �езопа�но�т� не найден: {sql_file_path}")
+        logger.warning(f"Ð¤Ð°Ð¹Ð» Ð¿ÑÐ°Ð²ÐÐ» ÐÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑÐ Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½: {sql_file_path}")
         return
     
     try:
         with open(sql_file_path, "r", encoding="utf-8") as f:
             sql_content = f.read()
         
-        # У���аем мно�о�т�очн�е коммента��� /* ... */
+        # Ð£ÐÐÑÐ°ÐµÐ¼ Ð¼Ð½Ð¾ÐÐ¾ÑÑÑÐ¾ÑÐ½ÑÐµ ÐºÐ¾Ð¼Ð¼ÐµÐ½ÑÐ°ÑÐÐ /* ... */
         import re
         sql_content = re.sub(r'/\*.*?\*/', '', sql_content, flags=re.DOTALL)
         
-        # �аздел�ем на команд� по точке � зап�той
-        # Уч�т�ваем, что точка � зап�той может ��т� внут�� �т�ок, функц�й �л� dollar-quoted �локов
+        # ÐÐ°Ð·Ð´ÐµÐ»ÑÐµÐ¼ Ð½Ð° ÐºÐ¾Ð¼Ð°Ð½Ð´Ñ Ð¿Ð¾ ÑÐ¾ÑÐºÐµ Ñ Ð·Ð°Ð¿ÑÑÐ¾Ð¹
+        # Ð£ÑÐÑÑÐ²Ð°ÐµÐ¼, ÑÑÐ¾ ÑÐ¾ÑÐºÐ° Ñ Ð·Ð°Ð¿ÑÑÐ¾Ð¹ Ð¼Ð¾Ð¶ÐµÑ ÐÑÑÑ Ð²Ð½ÑÑÑÐ ÑÑÑÐ¾Ðº, ÑÑÐ½ÐºÑÐÐ¹ ÐÐ»Ð dollar-quoted ÐÐ»Ð¾ÐºÐ¾Ð²
         commands = []
         current_command = []
         in_string = False
@@ -138,45 +144,45 @@ async def apply_security_policies():
             char = sql_content[i]
             next_chars = sql_content[i:i+10] if i + 10 < content_length else sql_content[i:]
             
-            # ��ове��ем начало dollar-quoted �т�ок� ($$ �л� $tag$)
+            # ÐÑÐ¾Ð²ÐµÑÑÐµÐ¼ Ð½Ð°ÑÐ°Ð»Ð¾ dollar-quoted ÑÑÑÐ¾ÐºÐ ($$ ÐÐ»Ð $tag$)
             if char == '$' and not in_string and not in_dollar_quote:
-                # И�ем зак��ва���й $ дл� оп�еделен�� те�а
+                # ÐÑÐµÐ¼ Ð·Ð°ÐºÑÑÐ²Ð°ÑÑÐÐ¹ $ Ð´Ð»Ñ Ð¾Ð¿ÑÐµÐ´ÐµÐ»ÐµÐ½ÐÑ ÑÐµÐÐ°
                 tag_start = i
                 tag_end = i + 1
-                # И�ем пе�в�й $ по�ле отк��ва��е�о
+                # ÐÑÐµÐ¼ Ð¿ÐµÑÐ²ÑÐ¹ $ Ð¿Ð¾ÑÐ»Ðµ Ð¾ÑÐºÑÑÐ²Ð°ÑÑÐµÐÐ¾
                 while tag_end < content_length and sql_content[tag_end] != '$':
                     tag_end += 1
                 
                 if tag_end < content_length:
                     tag = sql_content[tag_start:tag_end+1]
                     if not dollar_tag:
-                        # �ачало dollar-quoted �лока
+                        # ÐÐ°ÑÐ°Ð»Ð¾ dollar-quoted ÐÐ»Ð¾ÐºÐ°
                         dollar_tag = tag
                         in_dollar_quote = True
-                        # �о�авл�ем ве�� те� ��азу
+                        # ÐÐ¾ÐÐ°Ð²Ð»ÑÐµÐ¼ Ð²ÐµÑÑ ÑÐµÐ ÑÑÐ°Ð·Ñ
                         for j in range(tag_start, tag_end + 1):
                             current_command.append(sql_content[j])
                         i = tag_end + 1
                         continue
                     elif tag == dollar_tag:
-                        # �онец dollar-quoted �лока
+                        # ÐÐ¾Ð½ÐµÑ dollar-quoted ÐÐ»Ð¾ÐºÐ°
                         dollar_tag = None
                         in_dollar_quote = False
-                        # �о�авл�ем ве�� те� ��азу
+                        # ÐÐ¾ÐÐ°Ð²Ð»ÑÐµÐ¼ Ð²ÐµÑÑ ÑÐµÐ ÑÑÐ°Ð·Ñ
                         for j in range(tag_start, tag_end + 1):
                             current_command.append(sql_content[j])
                         i = tag_end + 1
                         continue
             
-            # Е�л� м� внут�� dollar-quoted �лока, ��ем е�о зак��т�е
+            # ÐÑÐ»Ð Ð¼Ñ Ð²Ð½ÑÑÑÐ dollar-quoted ÐÐ»Ð¾ÐºÐ°, ÐÑÐµÐ¼ ÐµÐÐ¾ Ð·Ð°ÐºÑÑÑÐÐµ
             if in_dollar_quote and char == '$' and dollar_tag:
-                # ��ове��ем, не �то л� зак��ва���й те�
+                # ÐÑÐ¾Ð²ÐµÑÑÐµÐ¼, Ð½Ðµ ÑÑÐ¾ Ð»Ð Ð·Ð°ÐºÑÑÐ²Ð°ÑÑÐÐ¹ ÑÐµÐ
                 tag_len = len(dollar_tag)
                 if i + tag_len - 1 < content_length:
                     potential_tag = sql_content[i:i+tag_len]
                     if potential_tag == dollar_tag:
-                        # �онец dollar-quoted �лока
-                        # �о�авл�ем ве�� те�
+                        # ÐÐ¾Ð½ÐµÑ dollar-quoted ÐÐ»Ð¾ÐºÐ°
+                        # ÐÐ¾ÐÐ°Ð²Ð»ÑÐµÐ¼ Ð²ÐµÑÑ ÑÐµÐ
                         for j in range(i, i + tag_len):
                             current_command.append(sql_content[j])
                         i += tag_len
@@ -184,14 +190,14 @@ async def apply_security_policies():
                         in_dollar_quote = False
                         continue
             
-            # О��а�ат�ваем о��чн�е �т�ок� (тол�ко е�л� не в dollar-quote)
+            # ÐÐÑÐ°ÐÐ°ÑÑÐ²Ð°ÐµÐ¼ Ð¾ÐÑÑÐ½ÑÐµ ÑÑÑÐ¾ÐºÐ (ÑÐ¾Ð»ÑÐºÐ¾ ÐµÑÐ»Ð Ð½Ðµ Ð² dollar-quote)
             if not in_dollar_quote:
                 if char in ("'", '"') and (not in_string or char == string_char):
                     in_string = not in_string
                     string_char = char if in_string else None
                     current_command.append(char)
                 elif char == ";" and not in_string:
-                    # �онец команд�
+                    # ÐÐ¾Ð½ÐµÑ ÐºÐ¾Ð¼Ð°Ð½Ð´Ñ
                     cmd = "".join(current_command).strip()
                     if cmd:
                         commands.append(cmd)
@@ -199,18 +205,18 @@ async def apply_security_policies():
                 else:
                     current_command.append(char)
             else:
-                # �нут�� dollar-quoted �лока - до�авл�ем в�е ��мвол� как е�т�
+                # ÐÐ½ÑÑÑÐ dollar-quoted ÐÐ»Ð¾ÐºÐ° - Ð´Ð¾ÐÐ°Ð²Ð»ÑÐµÐ¼ Ð²ÑÐµ ÑÐÐ¼Ð²Ð¾Ð»Ñ ÐºÐ°Ðº ÐµÑÑÑ
                 current_command.append(char)
             
             i += 1
         
-        # �о�авл�ем по�ледн�� команду е�л� е�т�
+        # ÐÐ¾ÐÐ°Ð²Ð»ÑÐµÐ¼ Ð¿Ð¾ÑÐ»ÐµÐ´Ð½ÑÑ ÐºÐ¾Ð¼Ð°Ð½Ð´Ñ ÐµÑÐ»Ð ÐµÑÑÑ
         if current_command:
             cmd = "".join(current_command).strip()
             if cmd:
                 commands.append(cmd)
         
-        # ��полн�ем SQL команд�
+        # ÐÑÐ¿Ð¾Ð»Ð½ÑÐµÐ¼ SQL ÐºÐ¾Ð¼Ð°Ð½Ð´Ñ
         db_engine = get_engine()
         async with db_engine.begin() as conn:
             applied_count = 0
@@ -224,52 +230,52 @@ async def apply_security_policies():
                 try:
                     await conn.execute(text(command))
                     applied_count += 1
-                    logger.debug(f" ���менена команда: {command[:60]}...")
+                    logger.debug(f" ÐÑÐÐ¼ÐµÐ½ÐµÐ½Ð° ÐºÐ¾Ð¼Ð°Ð½Ð´Ð°: {command[:60]}...")
                 except Exception as e:
                     error_msg = str(e).lower()
-                    # И�но���уем ош��к� "уже �у�е�твует" дл� пол�т�к � �ндек�ов
+                    # ÐÐÐ½Ð¾ÑÐÑÑÐµÐ¼ Ð¾ÑÐÐÐºÐ "ÑÐ¶Ðµ ÑÑÑÐµÑÑÐ²ÑÐµÑ" Ð´Ð»Ñ Ð¿Ð¾Ð»ÐÑÐÐº Ð ÐÐ½Ð´ÐµÐºÑÐ¾Ð²
                     if any(keyword in error_msg for keyword in [
                         "already exists", "duplicate", "does not exist"
                     ]):
                         skipped_count += 1
-                        logger.debug(f"  ��опу�ена команда (уже �у�е�твует): {command[:60]}...")
+                        logger.debug(f"  ÐÑÐ¾Ð¿ÑÑÐµÐ½Ð° ÐºÐ¾Ð¼Ð°Ð½Ð´Ð° (ÑÐ¶Ðµ ÑÑÑÐµÑÑÐ²ÑÐµÑ): {command[:60]}...")
                     else:
-                        logger.warning(f"  Ош��ка п�� в�полнен�� команд� �езопа�но�т�: {e}")
-                        logger.debug(f"�оманда: {command[:200]}")
+                        logger.warning(f"  ÐÑÐÐÐºÐ° Ð¿ÑÐ Ð²ÑÐ¿Ð¾Ð»Ð½ÐµÐ½ÐÐ ÐºÐ¾Ð¼Ð°Ð½Ð´Ñ ÐÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑÐ: {e}")
+                        logger.debug(f"ÐÐ¾Ð¼Ð°Ð½Ð´Ð°: {command[:200]}")
             
-            logger.info(f" ��ав�ла �езопа�но�т� п��менен�: {applied_count} команд, п�опу�ено: {skipped_count}")
+            logger.info(f" ÐÑÐ°Ð²ÐÐ»Ð° ÐÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑÐ Ð¿ÑÐÐ¼ÐµÐ½ÐµÐ½Ñ: {applied_count} ÐºÐ¾Ð¼Ð°Ð½Ð´, Ð¿ÑÐ¾Ð¿ÑÑÐµÐ½Ð¾: {skipped_count}")
     except Exception as e:
-        logger.error(f" Ош��ка п�� п��менен�� п�ав�л �езопа�но�т�: {e}")
-        # �е п�е��ваем �н�ц�ал�зац��, е�л� не удало�� п��мен�т� п�ав�ла
+        logger.error(f" ÐÑÐÐÐºÐ° Ð¿ÑÐ Ð¿ÑÐÐ¼ÐµÐ½ÐµÐ½ÐÐ Ð¿ÑÐ°Ð²ÐÐ» ÐÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑÐ: {e}")
+        # ÐÐµ Ð¿ÑÐµÑÑÐ²Ð°ÐµÐ¼ ÐÐ½ÐÑÐÐ°Ð»ÐÐ·Ð°ÑÐÑ, ÐµÑÐ»Ð Ð½Ðµ ÑÐ´Ð°Ð»Ð¾ÑÑ Ð¿ÑÐÐ¼ÐµÐ½ÐÑÑ Ð¿ÑÐ°Ð²ÐÐ»Ð°
 
 
 async def init_db():
-    """Ин�ц�ал�зац�� �аз� данн��"""
-    # �оздаем д��екто��� дл� SQLite е�л� ��пол�зует�� SQLite
+    """ÐÐ½ÐÑÐÐ°Ð»ÐÐ·Ð°ÑÐÑ ÐÐ°Ð·Ñ Ð´Ð°Ð½Ð½ÑÑ"""
+    # ÐÐ¾Ð·Ð´Ð°ÐµÐ¼ Ð´ÐÑÐµÐºÑÐ¾ÑÐÑ Ð´Ð»Ñ SQLite ÐµÑÐ»Ð ÐÑÐ¿Ð¾Ð»ÑÐ·ÑÐµÑÑÑ SQLite
     if settings.DATABASE_URL.startswith("sqlite"):
         db_dir = os.path.dirname(settings.DATABASE_URL.replace("sqlite+aiosqlite:///", ""))
         if db_dir and not os.path.exists(db_dir):
             os.makedirs(db_dir, exist_ok=True)
     
-    # �оздаем в�е та�л�ц�
+    # ÐÐ¾Ð·Ð´Ð°ÐµÐ¼ Ð²ÑÐµ ÑÐ°ÐÐ»ÐÑÑ
     db_engine = get_engine()
     async with db_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     
-    # ���мен�ем п�ав�ла �езопа�но�т� (тол�ко дл� PostgreSQL)
+    # ÐÑÐÐ¼ÐµÐ½ÑÐµÐ¼ Ð¿ÑÐ°Ð²ÐÐ»Ð° ÐÐµÐ·Ð¾Ð¿Ð°ÑÐ½Ð¾ÑÑÐ (ÑÐ¾Ð»ÑÐºÐ¾ Ð´Ð»Ñ PostgreSQL)
     await apply_security_policies()
 
 
 async def get_session() -> AsyncSession:
-    """�олуч�т� �е���� �аз� данн��"""
+    """ÐÐ¾Ð»ÑÑÐÑÑ ÑÐµÑÑÐÑ ÐÐ°Ð·Ñ Ð´Ð°Ð½Ð½ÑÑ"""
     try:
         session_factory = get_session_factory()
         async with session_factory() as session:
             yield session
     except ValueError as e:
-        # Е�л� �аза данн�� не �н�ц�ал�з��ована, �оздаем за�лушку
+        # ÐÑÐ»Ð ÐÐ°Ð·Ð° Ð´Ð°Ð½Ð½ÑÑ Ð½Ðµ ÐÐ½ÐÑÐÐ°Ð»ÐÐ·ÐÑÐ¾Ð²Ð°Ð½Ð°, ÑÐ¾Ð·Ð´Ð°ÐµÐ¼ Ð·Ð°ÐÐ»ÑÑÐºÑ
         logger.error(f"Database session error: {e}")
-        # � production лучше подн�т� ош��ку, но дл� �аз�а�отк� можно ве�нут� None
-        # � о��а�отат� в endpoint
-        raise ValueError(f"База данн�� не на�т�оена: {e}")
+        # Ð production Ð»ÑÑÑÐµ Ð¿Ð¾Ð´Ð½ÑÑÑ Ð¾ÑÐÐÐºÑ, Ð½Ð¾ Ð´Ð»Ñ ÑÐ°Ð·ÑÐ°ÐÐ¾ÑÐºÐ Ð¼Ð¾Ð¶Ð½Ð¾ Ð²ÐµÑÐ½ÑÑÑ None
+        # Ð Ð¾ÐÑÐ°ÐÐ¾ÑÐ°ÑÑ Ð² endpoint
+        raise ValueError(f"ÐÐ°Ð·Ð° Ð´Ð°Ð½Ð½ÑÑ Ð½Ðµ Ð½Ð°ÑÑÑÐ¾ÐµÐ½Ð°: {e}")
 

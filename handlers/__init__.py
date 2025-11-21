@@ -1,11 +1,11 @@
-"""�одул� о��а�отч�ков"""
+"""РРѕРґСѓР»С РѕРСР°РРѕС‚С‡РРєРѕРІ"""
 from aiogram import Router
 from . import start, balance, help, content_policy, payments
 
-# �оздаем �лавн�й �оуте�
+# РРѕР·РґР°РµРј РР»Р°РІРЅСР№ СРѕСѓС‚РµС
 main_router = Router()
 
-# �одкл�чаем в�е �оуте��
+# РРѕРґРєР»СС‡Р°РµРј РІСРµ СРѕСѓС‚РµСС
 main_router.include_router(start.router)
 main_router.include_router(balance.router)
 main_router.include_router(help.router)

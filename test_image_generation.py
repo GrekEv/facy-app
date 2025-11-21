@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Те�тов�й �к��пт дл� п�ове�к� �ене�ац�� �зо��ажен�й че�ез OpenAI"""
+"""Ð¢ÐµÑÑÐ¾Ð²ÑÐ¹ ÑÐºÑÐÐ¿Ñ Ð´Ð»Ñ Ð¿ÑÐ¾Ð²ÐµÑÐºÐ ÐÐµÐ½ÐµÑÐ°ÑÐÐ ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÐ¹ ÑÐµÑÐµÐ· OpenAI"""
 import asyncio
 import sys
 from pathlib import Path
@@ -10,36 +10,36 @@ from services.image_generation_service import image_generation_service
 from config import settings
 
 async def test_generation():
-    """Те�т �ене�ац�� �зо��ажен��"""
+    """Ð¢ÐµÑÑ ÐÐµÐ½ÐµÑÐ°ÑÐÐ ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÑ"""
     print("=" * 60)
-    print("Те�т �ене�ац�� �зо��ажен�й че�ез OpenAI")
+    print("Ð¢ÐµÑÑ ÐÐµÐ½ÐµÑÐ°ÑÐÐ ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÐ¹ ÑÐµÑÐµÐ· OpenAI")
     print("=" * 60)
     
-    # ��ове�ка на�т�оек
-    print(f"\n��ове�ка на�т�оек:")
-    print(f"  OPENAI_API_KEY: {'У�тановлен' if settings.OPENAI_API_KEY else '�Е У�Т��О�ЛЕ�'}")
+    # ÐÑÐ¾Ð²ÐµÑÐºÐ° Ð½Ð°ÑÑÑÐ¾ÐµÐº
+    print(f"\nÐÑÐ¾Ð²ÐµÑÐºÐ° Ð½Ð°ÑÑÑÐ¾ÐµÐº:")
+    print(f"  OPENAI_API_KEY: {'Ð£ÑÑÐ°Ð½Ð¾Ð²Ð»ÐµÐ½' if settings.OPENAI_API_KEY else 'ÐÐ Ð£ÐÐ¢ÐÐÐÐÐÐÐ'}")
     if settings.OPENAI_API_KEY:
-        print(f"  �л�ч нач�нает�� �: {settings.OPENAI_API_KEY[:20]}...")
+        print(f"  ÐÐ»ÑÑ Ð½Ð°ÑÐÐ½Ð°ÐµÑÑÑ Ñ: {settings.OPENAI_API_KEY[:20]}...")
     print(f"  IMAGE_GENERATION_PROVIDER: {settings.IMAGE_GENERATION_PROVIDER}")
-    print(f"  ��овайде� в �е�в��е: {image_generation_service.provider}")
-    print(f"  OpenAI кл�ч в �е�в��е: {'Е�т�' if image_generation_service.openai_key else '�ЕТ'}")
+    print(f"  ÐÑÐ¾Ð²Ð°Ð¹Ð´ÐµÑ Ð² ÑÐµÑÐ²ÐÑÐµ: {image_generation_service.provider}")
+    print(f"  OpenAI ÐºÐ»ÑÑ Ð² ÑÐµÑÐ²ÐÑÐµ: {'ÐÑÑÑ' if image_generation_service.openai_key else 'ÐÐÐ¢'}")
     
     if not settings.OPENAI_API_KEY:
-        print("\n О�ИБ��: OPENAI_API_KEY не у�тановлен в .env файле!")
+        print("\n ÐÐÐÐÐÐ: OPENAI_API_KEY Ð½Ðµ ÑÑÑÐ°Ð½Ð¾Ð²Ð»ÐµÐ½ Ð² .env ÑÐ°Ð¹Ð»Ðµ!")
         return
     
     if settings.IMAGE_GENERATION_PROVIDER != "openai":
-        print(f"\n  ��И���ИЕ: IMAGE_GENERATION_PROVIDER={settings.IMAGE_GENERATION_PROVIDER}, должен ��т� 'openai'")
+        print(f"\n  ÐÐÐÐÐÐÐÐ: IMAGE_GENERATION_PROVIDER={settings.IMAGE_GENERATION_PROVIDER}, Ð´Ð¾Ð»Ð¶ÐµÐ½ ÐÑÑÑ 'openai'")
     
-    # Те�това� �ене�ац��
+    # Ð¢ÐµÑÑÐ¾Ð²Ð°Ñ ÐÐµÐ½ÐµÑÐ°ÑÐÑ
     print(f"\n{'=' * 60}")
-    print("Запу�к �ене�ац�� �зо��ажен��...")
+    print("ÐÐ°Ð¿ÑÑÐº ÐÐµÐ½ÐµÑÐ°ÑÐÐ ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÑ...")
     print(f"{'=' * 60}")
     
     test_prompt = "A beautiful sunset over the ocean, realistic photo"
     
-    print(f"\n��омпт: {test_prompt}")
-    print("Ож�дайте...\n")
+    print(f"\nÐÑÐ¾Ð¼Ð¿Ñ: {test_prompt}")
+    print("ÐÐ¶ÐÐ´Ð°Ð¹ÑÐµ...\n")
     
     try:
         result = await image_generation_service.generate_image(
@@ -49,23 +49,23 @@ async def test_generation():
             height=1024
         )
         
-        print(f"\n�езул�тат:")
-        print(f"  �тату�: {result.get('status')}")
-        print(f"  �оо��ен�е: {result.get('message')}")
+        print(f"\nÐÐµÐ·ÑÐ»ÑÑÐ°Ñ:")
+        print(f"  ÐÑÐ°ÑÑÑ: {result.get('status')}")
+        print(f"  ÐÐ¾Ð¾ÐÑÐµÐ½ÐÐµ: {result.get('message')}")
         
         if result.get("status") == "success":
             images = result.get("images", [])
             if images:
-                print(f"\n У��Е�! Изо��ажен�е ��ене���овано:")
+                print(f"\n Ð£ÐÐÐÐ! ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÐµ ÑÐÐµÐ½ÐµÑÐÑÐ¾Ð²Ð°Ð½Ð¾:")
                 print(f"  URL: {images[0]}")
             else:
-                print(f"\n  �тату� у�пе�, но нет URL �зо��ажен��")
+                print(f"\n  ÐÑÐ°ÑÑÑ ÑÑÐ¿ÐµÑ, Ð½Ð¾ Ð½ÐµÑ URL ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÑ")
         else:
-            print(f"\n О�ИБ�� �ене�ац��:")
+            print(f"\n ÐÐÐÐÐÐ ÐÐµÐ½ÐµÑÐ°ÑÐÐ:")
             print(f"  {result.get('message', 'Unknown error')}")
             
     except Exception as e:
-        print(f"\n И��ЛЮ�Е�ИЕ п�� �ене�ац��:")
+        print(f"\n ÐÐÐÐÐ®ÐÐÐÐÐ Ð¿ÑÐ ÐÐµÐ½ÐµÑÐ°ÑÐÐ:")
         print(f"  {type(e).__name__}: {e}")
         import traceback
         traceback.print_exc()

@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """
-�к��пт дл� о��езк� �ел�� полей � �зо��ажен�� � �о��анен�� в demo-before-1.png
+ÐÐºÑÐÐ¿Ñ Ð´Ð»Ñ Ð¾ÐÑÐµÐ·ÐºÐ ÐÐµÐ»ÑÑ Ð¿Ð¾Ð»ÐµÐ¹ Ñ ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÑ Ð ÑÐ¾ÑÑÐ°Ð½ÐµÐ½ÐÑ Ð² demo-before-1.png
 """
 from PIL import Image
 import sys
 import os
 
 def remove_white_borders(image_path, output_path):
-    """О��езает �ел�е пол� � �зо��ажен��"""
+    """ÐÐÑÐµÐ·Ð°ÐµÑ ÐÐµÐ»ÑÐµ Ð¿Ð¾Ð»Ñ Ñ ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÑ"""
     img = Image.open(image_path)
     
-    # �онве�т��уем в RGB е�л� нужно
+    # ÐÐ¾Ð½Ð²ÐµÑÑÐÑÑÐµÐ¼ Ð² RGB ÐµÑÐ»Ð Ð½ÑÐ¶Ð½Ð¾
     if img.mode != 'RGB':
         img = img.convert('RGB')
     
-    # �олучаем данн�е �зо��ажен��
+    # ÐÐ¾Ð»ÑÑÐ°ÐµÐ¼ Ð´Ð°Ð½Ð½ÑÐµ ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÑ
     img_data = img.load()
     width, height = img.size
     
-    # �а�од�м ��ан�ц� контента (не �ело�о)
-    # Бел�й цвет: RGB �л�зко к (255, 255, 255)
-    threshold = 240  # �о�о� дл� оп�еделен�� "�ело�о"
+    # ÐÐ°ÑÐ¾Ð´ÐÐ¼ ÐÑÐ°Ð½ÐÑÑ ÐºÐ¾Ð½ÑÐµÐ½ÑÐ° (Ð½Ðµ ÐÐµÐ»Ð¾ÐÐ¾)
+    # ÐÐµÐ»ÑÐ¹ ÑÐ²ÐµÑ: RGB ÐÐ»ÐÐ·ÐºÐ¾ Ðº (255, 255, 255)
+    threshold = 240  # ÐÐ¾ÑÐ¾Ð Ð´Ð»Ñ Ð¾Ð¿ÑÐµÐ´ÐµÐ»ÐµÐ½ÐÑ "ÐÐµÐ»Ð¾ÐÐ¾"
     
     left = width
     right = 0
@@ -30,33 +30,33 @@ def remove_white_borders(image_path, output_path):
     for y in range(height):
         for x in range(width):
             r, g, b = img_data[x, y]
-            # Е�л� п�к�ел� не �ел�й
+            # ÐÑÐ»Ð Ð¿ÐÐºÑÐµÐ»Ñ Ð½Ðµ ÐÐµÐ»ÑÐ¹
             if r < threshold or g < threshold or b < threshold:
                 left = min(left, x)
                 right = max(right, x)
                 top = min(top, y)
                 bottom = max(bottom, y)
     
-    # �о�авл�ем не�ол�шой от�туп (5% � каждой �то�он�)
+    # ÐÐ¾ÐÐ°Ð²Ð»ÑÐµÐ¼ Ð½ÐµÐÐ¾Ð»ÑÑÐ¾Ð¹ Ð¾ÑÑÑÑÐ¿ (5% Ñ ÐºÐ°Ð¶Ð´Ð¾Ð¹ ÑÑÐ¾ÑÐ¾Ð½Ñ)
     padding = int(min(width, height) * 0.05)
     left = max(0, left - padding)
     right = min(width - 1, right + padding)
     top = max(0, top - padding)
     bottom = min(height - 1, bottom + padding)
     
-    # О��езаем �зо��ажен�е
+    # ÐÐÑÐµÐ·Ð°ÐµÐ¼ ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÐµ
     cropped = img.crop((left, top, right + 1, bottom + 1))
     
     cropped.save(output_path, 'PNG', optimize=True)
-    print(f"Изо��ажен�е о��езано � �о��анено: {output_path}")
-    print(f"   И��одн�й �азме�: {width}x{height}")
-    print(f"   �ов�й �азме�: {cropped.size[0]}x{cropped.size[1]}")
-    print(f"   О��езано: {width - cropped.size[0]}px по ш���не, {height - cropped.size[1]}px по в��оте")
+    print(f"ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÐµ Ð¾ÐÑÐµÐ·Ð°Ð½Ð¾ Ð ÑÐ¾ÑÑÐ°Ð½ÐµÐ½Ð¾: {output_path}")
+    print(f"   ÐÑÑÐ¾Ð´Ð½ÑÐ¹ ÑÐ°Ð·Ð¼ÐµÑ: {width}x{height}")
+    print(f"   ÐÐ¾Ð²ÑÐ¹ ÑÐ°Ð·Ð¼ÐµÑ: {cropped.size[0]}x{cropped.size[1]}")
+    print(f"   ÐÐÑÐµÐ·Ð°Ð½Ð¾: {width - cropped.size[0]}px Ð¿Ð¾ ÑÐÑÐÐ½Ðµ, {height - cropped.size[1]}px Ð¿Ð¾ Ð²ÑÑÐ¾ÑÐµ")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("И�пол�зован�е: python3 process_demo_image.py <пут�_к_�зо��ажен��> [before|after]")
-        print("���ме�: python3 process_demo_image.py ~/Downloads/image.png after")
+        print("ÐÑÐ¿Ð¾Ð»ÑÐ·Ð¾Ð²Ð°Ð½ÐÐµ: python3 process_demo_image.py <Ð¿ÑÑÑ_Ðº_ÐÐ·Ð¾ÐÑÐ°Ð¶ÐµÐ½ÐÑ> [before|after]")
+        print("ÐÑÐÐ¼ÐµÑ: python3 process_demo_image.py ~/Downloads/image.png after")
         sys.exit(1)
     
     input_path = sys.argv[1]
@@ -64,10 +64,10 @@ if __name__ == "__main__":
     output_path = f"static/images/demo-{position}-1.png"
     
     if not os.path.exists(input_path):
-        print(f"Ош��ка: Файл не найден: {input_path}")
+        print(f"ÐÑÐÐÐºÐ°: Ð¤Ð°Ð¹Ð» Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½: {input_path}")
         sys.exit(1)
     
-    # �оздаем д��екто��� е�л� нужно
+    # ÐÐ¾Ð·Ð´Ð°ÐµÐ¼ Ð´ÐÑÐµÐºÑÐ¾ÑÐÑ ÐµÑÐ»Ð Ð½ÑÐ¶Ð½Ð¾
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
     remove_white_borders(input_path, output_path)

@@ -16,7 +16,7 @@ pydantic==2.5.3
 pydantic-settings==2.1.0
 jinja2==3.1.3
 openai>=1.0.0  # Для OpenAI Sora API
-mangum>=0.17.0  # Для адаптации FastAPI к Vercel/AWS Lambda
+mangum>=0.17.0  # Для адаптации FastAPI к Yandex Cloud
 
 # Payment providers (опционально, устанавливайте по необходимости)
 # stripe==7.0.0  # Для Stripe (Google Pay, Samsung Pay)

@@ -1,8 +1,9 @@
-# Облегченные зависимости для Vercel Serverless Functions
+# Зависимости для Yandex Cloud
 # Тяжелые зависимости (opencv-python, numpy, pillow) исключены для уменьшения размера
 
 # FastAPI и сервер
 fastapi==0.109.2
+uvicorn[standard]==0.27.0
 mangum>=0.17.0
 python-multipart==0.0.9
 

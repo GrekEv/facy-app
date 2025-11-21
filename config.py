@@ -8,12 +8,6 @@ class Settings(BaseSettings):
         import os
         if self.WEBAPP_URL:
             return self.WEBAPP_URL
-        railway_url = os.getenv("RAILWAY_PUBLIC_DOMAIN")
-        if railway_url:
-            return f"https://{railway_url}"
-        render_url = os.getenv("RENDER_EXTERNAL_URL")
-        if render_url:
-            return render_url
         port = self.port
         return f"http://{self.HOST}:{port}"
     ENVIRONMENT: str = "production"

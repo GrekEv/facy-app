@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -6,10 +7,10 @@ router = Router()
 async def show_help(callback: CallbackQuery):
     builder = InlineKeyboardBuilder()
     builder.row(
-        InlineKeyboardButton(text="�ол�т�ка контента", callback_data="content_policy")
+        InlineKeyboardButton(text="�ол�т�ка контента", callback_data="content_policy")
     )
     builder.row(
-        InlineKeyboardButton(text="�азад", callback_data="back_to_main")
+        InlineKeyboardButton(text="�азад", callback_data="back_to_main")
     )
     await callback.message.edit_text(
         help_text,

@@ -1,5 +1,5 @@
-# Пример переменных окружения для Railway
-# Скопируйте эти переменные в Railway → Settings → Variables
+# Пример переменных окружения для Yandex Cloud
+# Скопируйте эти переменные в .env файл на сервере Yandex Cloud
 
 # ============================================
 # ОБЯЗАТЕЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -8,15 +8,19 @@
 # Токен бота от BotFather
 BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
 
-# URL вашего Web App (ОПЦИОНАЛЬНО - можно использовать домен или Railway/Render/Vercel/ngrok URL)
-# Варианты:
-# 1. С доменом: WEBAPP_URL=https://your-domain.com
-# 2. Vercel: WEBAPP_URL=https://facy-app.vercel.app
-# 3. Railway: WEBAPP_URL=https://your-app.up.railway.app (или оставьте пустым - определится автоматически)
-# 4. Render: WEBAPP_URL=https://your-app.onrender.com (или оставьте пустым - определится автоматически)
-# 5. ngrok: WEBAPP_URL=https://xxx.ngrok-free.app
-# 6. Оставить пустым - будет использован автоматически определенный URL или http://localhost:8000
-WEBAPP_URL=https://facy-app.vercel.app
+# URL вашего Web App на Yandex Cloud
+# Укажите домен или IP адрес вашего сервера
+WEBAPP_URL=https://your-domain.com
+
+# База данных PostgreSQL на Yandex Cloud
+# Формат: postgresql+asyncpg://user:password@rc1a-xxx.mdb.yandexcloud.net:6432/dbname?ssl=require
+DATABASE_URL=postgresql+asyncpg://user:password@rc1a-xxx.mdb.yandexcloud.net:6432/dbname?ssl=require
+
+# Режим работы (production для продакшена)
+ENVIRONMENT=production
+
+# ID администраторов через запятую
+ADMIN_IDS=123456789,987654321
 
 # ============================================
 # ОПЦИОНАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -89,30 +93,6 @@ VIDEO_GENERATION_PROVIDER=replicate  # replicate, sora, higgsfield
 
 # Примечание: Если API ключи не указаны, используется mock режим для тестирования
 
-# База данных
-# Оставьте пустым для SQLite (по умолчанию, НЕ работает на Vercel/Railway serverless)
-# Или укажите PostgreSQL URL:
-# 
-# Для Neon:
-# DATABASE_URL=postgresql+asyncpg://username:password@ep-xxx-xxx.region.aws.neon.tech/dbname?sslmode=require
-#
-# Для Railway PostgreSQL:
-# DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname
-#
-# Для Vercel Postgres:
-# DATABASE_URL=$POSTGRES_URL  (Vercel автоматически подставит)
-#
-# Для Supabase:
-# DATABASE_URL=postgresql+asyncpg://user:password@host:port/dbname
-#
-DATABASE_URL=
-
-# Режим работы (production для продакшена)
-ENVIRONMENT=production
-
-# ID администраторов через запятую
-ADMIN_IDS=123456789,987654321
-
 # ============================================
 # ПЛАТЕЖИ И ПОДПИСКИ
 # ============================================
@@ -136,17 +116,20 @@ SMTP_FROM_NAME=OnlyFace
 # ПРИМЕЧАНИЯ
 # ============================================
 
-# Railway автоматически предоставляет переменную PORT
-# Не нужно добавлять её вручную!
-
 # Для получения BOT_TOKEN:
 # 1. Откройте @BotFather в Telegram
 # 2. Отправьте /newbot
 # 3. Следуйте инструкциям
 # 4. Скопируйте токен
 
-# Для получения WEBAPP_URL:
-# 1. Деплойте на Vercel или Railway
-# 2. Скопируйте предоставленный URL
-# 3. Убедитесь, что URL доступен (откройте в браузере)
+# Для получения DATABASE_URL на Yandex Cloud:
+# 1. Откройте консоль Yandex Cloud: https://console.cloud.yandex.ru
+# 2. Перейдите в раздел Managed Service for PostgreSQL
+# 3. Выберите вашу базу данных
+# 4. Скопируйте строку подключения
+# 5. Добавьте ?ssl=require в конец URL
 
+# Для получения WEBAPP_URL:
+# 1. Настройте домен на вашем сервере Yandex Cloud
+# 2. Или используйте IP адрес сервера
+# 3. Убедитесь, что URL доступен (откройте в браузере)

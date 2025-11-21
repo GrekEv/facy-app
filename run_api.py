@@ -1,4 +1,5 @@
-"""Запу�к FastAPI �е�ве�а"""
+# -*- coding: utf-8 -*-
+"""Запуск FastAPI сервера"""
 import uvicorn
 import asyncio
 import os
@@ -7,7 +8,7 @@ from database import init_db
 
 
 async def startup():
-    """Ин�ц�ал�зац�� п�� запу�ке"""
+    """Инициализация при запуске"""
     await init_db()
     port = settings.port
     print(f" Database initialized")
@@ -16,14 +17,14 @@ async def startup():
 
 
 if __name__ == "__main__":
-    # Ин�ц�ал�з��уем Б�
+    # Инициализируем БД
     asyncio.run(startup())
     
-    # Оп�едел�ем �еж�м (dev/prod)
+    # Определяем режим (dev/prod)
     is_dev = os.getenv("ENVIRONMENT", "production") == "development"
     port = settings.port
     
-    # Запу�каем �е�ве�
+    # Запускаем сервер
     uvicorn.run(
         "api.main:app",
         host=settings.HOST,
@@ -31,4 +32,3 @@ if __name__ == "__main__":
         reload=is_dev,
         log_level="info"
     )
-

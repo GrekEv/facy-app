@@ -251,3 +251,6 @@ CREATE INDEX IF NOT EXISTS idx_promo_codes_active ON promo_codes(is_active, vali
 -- 4. Эти политики применяются автоматически при инициализации БД
 
 
+
+
+

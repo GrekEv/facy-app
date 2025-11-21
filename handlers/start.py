@@ -11,19 +11,19 @@ def get_main_keyboard() -> InlineKeyboardMarkup:
     webapp_url = settings.webapp_url
     builder.row(
         InlineKeyboardButton(
-            text="Отк��т� п��ложен�е",
+            text="РћС‚РєССС‚С РїСРР»РѕР¶РµРЅРРµ",
             web_app=WebAppInfo(url=webapp_url)
         )
     )
     builder.row(
-        InlineKeyboardButton(text="�ой �алан�", callback_data="balance"),
-        InlineKeyboardButton(text="�тат��т�ка", callback_data="stats")
+        InlineKeyboardButton(text="РРѕР№ РР°Р»Р°РЅС", callback_data="balance"),
+        InlineKeyboardButton(text="РС‚Р°С‚РСС‚РРєР°", callback_data="stats")
     )
     builder.row(
-        InlineKeyboardButton(text="�уп�т� по�нт�", callback_data="buy_points"),
+        InlineKeyboardButton(text="РСѓРїРС‚С РїРѕРРЅС‚С", callback_data="buy_points"),
     )
     builder.row(
-        InlineKeyboardButton(text="�омо��", callback_data="help")
+        InlineKeyboardButton(text="РРѕРјРѕСС", callback_data="help")
     )
     return builder.as_markup()
 @router.message(CommandStart())
@@ -76,7 +76,7 @@ async def cmd_start(message: Message):
 @router.callback_query(F.data == "back_to_main")
 async def back_to_main(callback):
     await callback.message.edit_text(
-        "<b>�лавное мен�</b>\n\n���е��те дей�тв�е:",
+        "<b>РР»Р°РІРЅРѕРµ РјРµРЅС</b>\n\nРСРРµСРС‚Рµ РґРµР№СС‚РІРРµ:",
         reply_markup=get_main_keyboard()
     )
     await callback.answer()
