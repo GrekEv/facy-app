@@ -18,7 +18,11 @@ const getApiBaseUrl = () => {
     if (currentHost === 'onlyface.art' || currentHost.includes('onlyface')) {
         return '';
     }
-    return 'https:
+    // Если приложение на Vercel или другом хостинге, используем API на onlyface.art
+    if (currentHost.includes('vercel.app') || currentHost.includes('vercel')) {
+        return 'https://onlyface.art';
+    }
+    return '';
 };
 const API_BASE_URL = getApiBaseUrl();
 console.log('API_BASE_URL determined:', API_BASE_URL);
