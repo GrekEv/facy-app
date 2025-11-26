@@ -88,11 +88,6 @@ Telegram Mini App для замены лиц в видео (Face Swap) и ген
 1. **📖 [DEPLOY_COMPLETE.md](DEPLOY_COMPLETE.md)** ⭐⭐⭐ - Полная инструкция с доменом
 2. **📚 [DEPLOYMENT_OPTIONS.md](DEPLOYMENT_OPTIONS.md)** ⭐ - Все варианты развертывания (с доменом и без)
 
-#### 🚀 Vercel (Backend + Frontend)
-
-1. **⚡ [QUICKSTART_VERCEL.md](QUICKSTART_VERCEL.md)** ⭐ - Быстрый старт на Vercel за 10 минут
-2. **📚 [DEPLOY_VERCEL.md](DEPLOY_VERCEL.md)** - Подробная инструкция по развертыванию на Vercel
-
 **Просто укажите `WEBAPP_URL=https://your-domain.com` в `.env` или оставьте пустым для автоматического определения!**
 
 ---
@@ -236,7 +231,7 @@ API сервер автоматически перезагружается пр�
 - **PostgreSQL** (рекомендуется для production): настройте `DATABASE_URL` в `.env`
   - **Neon Postgres**: см. [NEON_SETUP.md](NEON_SETUP.md) 📚
   - **Railway PostgreSQL**: укажите connection string от Railway
-  - **Vercel Postgres**: используйте `$POSTGRES_URL`
+  - **Postgres**: используйте connection string
   - **Supabase**: укажите connection string от Supabase
 
 Модели:
@@ -267,7 +262,7 @@ A: Добавьте модели в `services/image_generation_service.py` в м
 **Q: Поддерживается ли PostgreSQL?**  
 A: Да! Проект поддерживает PostgreSQL через asyncpg. Настройте `DATABASE_URL` в `.env`:
    - **Neon**: см. [NEON_SETUP.md](NEON_SETUP.md) - подробная инструкция
-   - **Railway/Supabase/Vercel**: укажите connection string в формате `postgresql+asyncpg://...`
+   - **Railway/Supabase**: укажите connection string в формате `postgresql+asyncpg://...`
    
    Проект автоматически преобразует стандартный `postgresql://` URL в формат для asyncpg.
 
