@@ -8,9 +8,9 @@
 # Токен бота от BotFather
 BOT_TOKEN=1234567890:ABCdefGHIjklMNOpqrsTUVwxyz
 
-# URL вашего Web App на Yandex Cloud
-# Укажите домен или IP адрес вашего сервера
-WEBAPP_URL=https://your-domain.com
+# URL вашего Web App
+# Укажите домен вашего сервера
+WEBAPP_URL=https://onlyface.art
 
 # База данных PostgreSQL на Yandex Cloud
 # Формат: postgresql+asyncpg://user:password@rc1a-xxx.mdb.yandexcloud.net:6432/dbname?ssl=require
