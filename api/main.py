@@ -619,7 +619,7 @@ async def generate_referral_qr(
             await session.refresh(user)
             logger.info(f"Generated referral_code {new_referral_code} for user {telegram_id} in QR endpoint")
         referral_code = user.referral_code
-        webapp_url = settings.WEBAPP_URL or ""
+        webapp_url = settings.WEBAPP_URL or "https://onlyface.art"
         referral_link = f"{webapp_url}?ref={referral_code}"
         qr = qrcode.QRCode(
             version=1,
