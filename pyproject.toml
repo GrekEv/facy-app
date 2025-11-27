@@ -7,6 +7,3 @@ description = "Telegram Mini App for DeepFace AI"
 [project.scripts]
 app = "api.main:app"
 
-[tool.vercel]
-python-version = "3.11"
-
